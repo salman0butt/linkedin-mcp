@@ -6,10 +6,12 @@
   "activeBranch": "feat/m00-foundation",
   "activePr": 1,
   "baseBranch": "main",
-  "latestVerifiedSha": "a43f94918916fa425f03c8dbc0d1f3284c83f449",
-  "ciStatus": "PENDING_PERMANENT_CI",
+  "latestVerifiedSha": "1137d9fa31e49a53d38fe812e4937f93ec54baa7",
+  "ciStatus": "CI_37307266150_QUEUED",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Verify permanent frozen-lockfile CI on the current feat/m00-foundation head; if green, activate M00.2 and establish the first autonomous-framework verifier RED."
+  "blockers": [
+    "Permanent CI previously exposed a typed ESLint project-service configuration error; minimal exclusion fix is committed at c1c79bb46cc04a75b6cc22377d3fb017c6a0b316 and exact-head CI is queued."
+  ],
+  "exactNextWork": "Verify CI run 37307266150 on c1c79bb46cc04a75b6cc22377d3fb017c6a0b316; if green, activate M00.2 and establish the first genuine verifier RED."
 }
