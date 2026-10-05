@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "currentMilestone": "M00",
+  "currentIteration": "M00.1",
+  "status": "ACTIVE",
+  "activeBranch": "feat/m00-foundation",
+  "activePr": null,
+  "baseBranch": "main",
+  "latestVerifiedSha": null,
+  "ciStatus": "NOT_RUN",
+  "criticalFindings": 0,
+  "importantFindings": 0,
+  "blockers": [],
+  "exactNextWork": "Finish the M00 repository/control-plane bootstrap, generate the real pnpm lockfile, then establish the first verifier RED."
+}

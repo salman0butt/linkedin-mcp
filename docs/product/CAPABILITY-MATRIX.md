@@ -1,0 +1,27 @@
+# Capability Matrix
+
+State values: `PLANNED`, `ACTIVE`, `BLOCKED`, `VERIFIED`, `DEFERRED`, `REJECTED`, `UNAVAILABLE`.
+
+| Capability | Desired behavior | Provider classification | Access / permission dependency | Milestone | State | Verification evidence | Approval / safety |
+|---|---|---|---|---|---|---|---|
+| `linkedin.health` | Local server health | LOCAL_ONLY | None | M00 | ACTIVE | Pending | Read-only |
+| `linkedin.version` | Local version/protocol metadata | LOCAL_ONLY | None | M00 | ACTIVE | Pending | Read-only |
+| `linkedin.capabilities` | Truthful capability registry | LOCAL_ONLY | None | M00 | ACTIVE | Pending | Read-only |
+| `profile.me` | Authenticated identity | OFFICIAL_API | OAuth/scopes | M01 | PLANNED | None | Read-only |
+| `post.create.text` | Publish text post | OFFICIAL_API | LinkedIn write access | M02 | PLANNED | None | Preview/approval/idempotency |
+| `post.create.image` | Publish image post | OFFICIAL_API | Media + write access | M03 | PLANNED | None | Preview/approval/idempotency |
+| `post.create.multi_image` | Publish multi-image post | OFFICIAL_API | Media + write access | M03 | PLANNED | None | Preview/approval/idempotency |
+| `comments.list` | Read comments | OFFICIAL_API | Read permissions may be restricted | M04 | PLANNED | None | Capability-aware |
+| `comments.reply` | Reply to comment | OFFICIAL_API | Write/read context permissions | M04 | PLANNED | None | Approval by default |
+| `reactions.add` | Add reaction | OFFICIAL_API | Eligible access | M04 | PLANNED | None | Bounded writes |
+| `posts.search` | Discover LinkedIn posts | EXTERNAL_DISCOVERY | Broad official search not assumed | M05 | PLANNED | None | Provenance required |
+| `jobs.search` | Discover jobs | EXTERNAL_DISCOVERY | Talent partner API optional later | M06 | PLANNED | None | Freshness + provenance |
+| `jobs.score` | Analyze job fit | LOCAL_ONLY | Host/user context | M07 | PLANNED | None | No false factual claims |
+| `article.draft` | Create structured article project | LOCAL_ONLY | None | M08 | PLANNED | None | Draft only |
+| `article.native.publish` | Publish native long-form article | BROWSER_INTERACTIVE | No ordinary public API assumed | M09 | PLANNED | None | Final approval; stop on security challenge |
+| `research.topic` | Research content topic | EXTERNAL_DISCOVERY | External sources/provider | M10 | PLANNED | None | Source provenance |
+| `schedule.create` | Schedule approved content | LOCAL_ONLY | Runtime persistence | M11 | PLANNED | None | Approval policy |
+| `analytics.post` | Read post analytics | OFFICIAL_API | Permission/account dependent | M12 | PLANNED | None | Capability-aware |
+| `organization.post.create` | Publish as organization | OFFICIAL_API | Organization/community approval | M13 | PLANNED | None | Approval/idempotency |
+| `network.connect` | Connection workflow | UNAVAILABLE | Provider/access to be established | M14 | PLANNED | None | High-risk, no bulk spam |
+| `messages.send` | Send LinkedIn message | UNAVAILABLE | Provider/access to be established | M15 | PLANNED | None | Explicit approval, no bulk outreach |
