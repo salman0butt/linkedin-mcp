@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
-import { createHealthResult } from './foundation.js';
+import { createHealthResult, createVersionResult } from './foundation.js';
 
 export interface LinkedInMcpServerDeps {
   createRequestId?: () => string;
@@ -18,6 +18,21 @@ const healthOutputSchema = z.object({
     ok: z.literal(true),
     service: z.literal('linkedin-mcp'),
     linkedinConnected: z.literal(false),
+  }),
+  provider: z.object({
+    type: z.literal('LOCAL_ONLY'),
+    name: z.literal('linkedin-mcp'),
+  }),
+  metadata: z.object({
+    requestId: z.string(),
+    timestamp: z.string(),
+  }),
+});
+const versionOutputSchema = z.object({
+  status: z.literal('succeeded'),
+  data: z.object({
+    name: z.literal('linkedin-mcp'),
+    version: z.string(),
   }),
   provider: z.object({
     type: z.literal('LOCAL_ONLY'),
@@ -44,6 +59,22 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
     },
     () => {
       const result = createHealthResult({ requestId: createRequestId(), now });
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result) }],
+        structuredContent: { ...result },
+      };
+    },
+  );
+
+  server.registerTool(
+    'linkedin.version',
+    {
+      description: 'Report local LinkedIn MCP server version metadata.',
+      inputSchema: emptyInputSchema,
+      outputSchema: versionOutputSchema,
+    },
+    () => {
+      const result = createVersionResult({ requestId: createRequestId(), now, version });
       return {
         content: [{ type: 'text', text: JSON.stringify(result) }],
         structuredContent: { ...result },
