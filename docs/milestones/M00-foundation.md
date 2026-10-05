@@ -1,6 +1,6 @@
 # M00 — Foundation + Autonomous Control Plane
 
-Status: **IMPLEMENTING — M00.1 bootstrap**
+Status: **IMPLEMENTING — M00.3 core contracts**
 
 ## Goal
 
@@ -32,9 +32,9 @@ LinkedIn OAuth/tokens/account data, post mutation, search providers, browser aut
 
 ## Tasks / Iterations
 
-1. **ACTIVE** — M00.1 toolchain/control-plane bootstrap + real lockfile.
-2. **PLANNED** — M00.2 autonomous/state verifiers.
-3. **PLANNED** — M00.3 core result/capability contracts.
+1. **COMPLETE** — M00.1 toolchain/control-plane bootstrap + real lockfile.
+2. **COMPLETE** — M00.2 autonomous/state verifiers.
+3. **ACTIVE** — M00.3 core result/capability contracts.
 4. **PLANNED** — M00.4 config/logger.
 5. **PLANNED** — M00.5 foundation result factories.
 6. **PLANNED** — M00.6 MCP server factory/real-client contract.
@@ -44,15 +44,19 @@ LinkedIn OAuth/tokens/account data, post mutation, search providers, browser aut
 
 ## TDD Evidence
 
-No behavioral RED/GREEN recorded yet. M00.1 is primarily configuration/documentation bootstrap; do not invent a behavioral RED for it.
+- M00.1 is configuration/documentation bootstrap; no artificial behavioral RED was invented.
+- M00.2 first RED: `b66011d5edffd57ec38da356b179cedc52edd74d`, CI run `37308359474` — Vitest failed because `scripts/verify-autonomous-framework.ts` did not exist.
+- M00.2 first GREEN: `0b7a6a4bd66ada6da4e53d2193e429cdabd4026c`, CI run `37308599483` — frozen install, format, tests, lint, typecheck and build passed.
+- M00.2 expanded RED: `91c9668f1daf70482f9e3e8447fd57530d2ce92c`, CI run `37309022429` — three verifier modules were missing and the ledger-section invariant failed.
+- M00.2 expanded GREEN/full gate: `94f144166dcb8c85396ce3ff7bff8395f48b9854`, CI run `37309640467` — all framework tests and quality gates passed.
 
 ## Integration Test Evidence
 
-Pending.
+Pending runtime MCP integration in M00.6–M00.8.
 
 ## Security Review
 
-Initial policy requires loopback HTTP, Host/Origin validation, bounded body, secret redaction, no credentials in M00, no browser automation, explicit capability provenance.
+Initial policy requires loopback HTTP, Host/Origin validation, bounded body, secret redaction, no credentials in M00, no browser automation, explicit capability provenance. M00.2 verifiers reject unsupported provider/state values and VERIFIED capabilities lacking evidence.
 
 ## Code Review Findings
 
@@ -60,7 +64,7 @@ Critical: 0 known. Important: 0 known. Independent closeout review pending.
 
 ## Fresh Verification Results
 
-Not run yet. Record only observed results.
+Exact-head CI run `37309640467` is GREEN on `94f144166dcb8c85396ce3ff7bff8395f48b9854` for frozen install, format, tests, lint, typecheck and build. Newer documentation-only commits require later verification before any completion claim.
 
 ## Durable Recovery Sources
 
@@ -78,4 +82,4 @@ Not run yet. Record only observed results.
 
 ## Exact Next Work
 
-Finish bootstrap and generate/persist the real lockfile, then establish M00.2 RED.
+Establish the M00.3 provider/status/capability-registry RED, then implement the minimum truthful provider-aware core contracts.
