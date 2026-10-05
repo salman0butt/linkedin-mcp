@@ -32,7 +32,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
       - name: Generate lockfile from registry
         run: pnpm install --lockfile-only --no-frozen-lockfile
       - name: Verify lockfile exists
