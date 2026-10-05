@@ -188,14 +188,12 @@ describe('LinkedIn MCP server contract', () => {
       });
 
       expect(result.isError).toBe(true);
-      expect(result.content).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            type: 'text',
-            text: expect.stringMatching(/input validation error.*unrecognized key.*unexpected/i),
-          }),
-        ]),
-      );
+      const firstContent = result.content[0];
+      expect(firstContent?.type).toBe('text');
+      if (firstContent?.type !== 'text') {
+        throw new Error('Expected MCP validation error as text content');
+      }
+      expect(firstContent.text).toMatch(/input validation error.*unrecognized key.*unexpected/i);
     } finally {
       await client.close();
       await handler.close();
