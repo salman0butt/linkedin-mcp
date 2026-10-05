@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  isProviderType,
-  isToolResultStatus,
-  providerTypes,
-  toolResultStatuses,
-} from '../src/result.js';
+import { isProviderType, isToolResultStatus, providerTypes, toolResultStatuses } from '../src/result.js';
 
 describe('provider/result contracts', () => {
   it('accepts only executing provider classifications', () => {

@@ -30,8 +30,13 @@ export function createCapabilityRegistry(
     if (ids.has(descriptor.id)) throw new Error(`Duplicate capability identifier: ${descriptor.id}`);
     ids.add(descriptor.id);
 
-    if ((descriptor.status === 'VERIFIED' || descriptor.availability === 'AVAILABLE') && !hasVerificationEvidence(descriptor.evidence)) {
-      throw new Error(`Capability ${descriptor.id} requires verification evidence before it can be VERIFIED or AVAILABLE`);
+    if (
+      (descriptor.status === 'VERIFIED' || descriptor.availability === 'AVAILABLE') &&
+      !hasVerificationEvidence(descriptor.evidence)
+    ) {
+      throw new Error(
+        `Capability ${descriptor.id} requires verification evidence before it can be VERIFIED or AVAILABLE`,
+      );
     }
   }
 

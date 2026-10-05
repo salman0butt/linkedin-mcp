@@ -24,9 +24,9 @@ describe('capability registry', () => {
         'messages.send',
       ]),
     );
-    expect(foundationCapabilityRegistry.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(
-      true,
-    );
+    expect(
+      foundationCapabilityRegistry.every((descriptor) => descriptor.availability === 'UNAVAILABLE'),
+    ).toBe(true);
     expect(foundationCapabilityRegistry.every((descriptor) => descriptor.status !== 'VERIFIED')).toBe(true);
   });
 
@@ -37,11 +37,11 @@ describe('capability registry', () => {
 
   it('rejects VERIFIED or AVAILABLE capabilities without evidence', () => {
     const descriptor = foundationCapabilityRegistry[0];
-    expect(() => createCapabilityRegistry([{ ...descriptor, status: 'VERIFIED', evidence: undefined }])).toThrow(
-      /evidence/i,
-    );
-    expect(() => createCapabilityRegistry([{ ...descriptor, availability: 'AVAILABLE', evidence: 'Pending' }])).toThrow(
-      /evidence/i,
-    );
+    expect(() =>
+      createCapabilityRegistry([{ ...descriptor, status: 'VERIFIED', evidence: undefined }]),
+    ).toThrow(/evidence/i);
+    expect(() =>
+      createCapabilityRegistry([{ ...descriptor, availability: 'AVAILABLE', evidence: 'Pending' }]),
+    ).toThrow(/evidence/i);
   });
 });
