@@ -31,7 +31,8 @@ describe('verifyMilestoneState', () => {
     activePr: 1,
     exactNextWork: 'Implement verifier.',
   };
-  const current = 'Milestone: M00 — Foundation\nStatus: ACTIVE — M00.2\nBranch: `feat/m00-foundation`\nPR: #1 — draft\n';
+  const current =
+    'Milestone: M00 — Foundation\nStatus: ACTIVE — M00.2\nBranch: `feat/m00-foundation`\nPR: #1 — draft\n';
 
   it('accepts matching machine and markdown state with one next work action', () => {
     expect(verifyMilestoneState(fixture(state, current))).toEqual([]);

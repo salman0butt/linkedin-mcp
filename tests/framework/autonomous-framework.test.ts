@@ -44,6 +44,10 @@ describe('verifyAutonomousFramework', () => {
       'docs/milestones/CURRENT.md': '# current',
       'docs/milestones/M00-foundation.md': '# M00\n\n## Goal\nFoundation',
     });
-    expect(verifyAutonomousFramework(root).some((error) => error.includes('M00-foundation.md missing required section'))).toBe(true);
+    expect(
+      verifyAutonomousFramework(root).some((error) =>
+        error.includes('M00-foundation.md missing required section'),
+      ),
+    ).toBe(true);
   });
 });

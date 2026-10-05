@@ -21,21 +21,30 @@ afterEach(() => {
 });
 
 describe('verifyCapabilityMatrix', () => {
-  const header = '| Capability | Desired behavior | Provider classification | Access / permission dependency | Milestone | State | Verification evidence | Approval / safety |\n| --- | --- | --- | --- | --- | --- | --- | --- |';
+  const header =
+    '| Capability | Desired behavior | Provider classification | Access / permission dependency | Milestone | State | Verification evidence | Approval / safety |\n| --- | --- | --- | --- | --- | --- | --- | --- |';
 
   it('accepts supported provider/state combinations', () => {
-    const root = fixture(`${header}\n| x | Local | LOCAL_ONLY | None | M00 | ACTIVE | Pending | Read-only |\n`);
+    const root = fixture(
+      `${header}\n| x | Local | LOCAL_ONLY | None | M00 | ACTIVE | Pending | Read-only |\n`,
+    );
     expect(verifyCapabilityMatrix(root)).toEqual([]);
   });
 
   it('rejects unsupported provider classifications', () => {
-    const root = fixture(`${header}\n| x | Local | MAGIC_API | None | M00 | ACTIVE | Pending | Read-only |\n`);
+    const root = fixture(
+      `${header}\n| x | Local | MAGIC_API | None | M00 | ACTIVE | Pending | Read-only |\n`,
+    );
     expect(verifyCapabilityMatrix(root).some((error) => error.includes('unsupported provider'))).toBe(true);
   });
 
   it('rejects verified capabilities without evidence', () => {
-    const root = fixture(`${header}\n| x | Local | LOCAL_ONLY | None | M00 | VERIFIED | Pending | Read-only |\n`);
-    expect(verifyCapabilityMatrix(root).some((error) => error.includes('VERIFIED capability requires evidence'))).toBe(true);
+    const root = fixture(
+      `${header}\n| x | Local | LOCAL_ONLY | None | M00 | VERIFIED | Pending | Read-only |\n`,
+    );
+    expect(
+      verifyCapabilityMatrix(root).some((error) => error.includes('VERIFIED capability requires evidence')),
+    ).toBe(true);
   });
 
   it('accepts unavailable capability state separately from provider execution', () => {

@@ -19,7 +19,12 @@ function tableRows(markdown: string): string[][] {
     .split('\n')
     .filter((line) => line.trim().startsWith('|'))
     .filter((line) => !/^\|[\s|:-]+\|$/.test(line.trim()))
-    .map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
+    .map((line) =>
+      line
+        .split('|')
+        .slice(1, -1)
+        .map((cell) => cell.trim()),
+    );
 }
 
 export function verifyRequirementsCoverage(root: string): string[] {
@@ -36,7 +41,8 @@ export function verifyRequirementsCoverage(root: string): string[] {
   if (statusIndex >= 0) {
     for (const row of rows.slice(1)) {
       const status = row[statusIndex] ?? '';
-      if (!SUPPORTED_STATUSES.has(status)) errors.push(`Traceability table has unsupported status: ${status}`);
+      if (!SUPPORTED_STATUSES.has(status))
+        errors.push(`Traceability table has unsupported status: ${status}`);
     }
   }
 

@@ -20,7 +20,15 @@ const SUPPORTED_PROVIDERS = new Set([
   'LOCAL_ONLY',
   'UNAVAILABLE',
 ]);
-const SUPPORTED_STATES = new Set(['PLANNED', 'ACTIVE', 'BLOCKED', 'VERIFIED', 'DEFERRED', 'REJECTED', 'UNAVAILABLE']);
+const SUPPORTED_STATES = new Set([
+  'PLANNED',
+  'ACTIVE',
+  'BLOCKED',
+  'VERIFIED',
+  'DEFERRED',
+  'REJECTED',
+  'UNAVAILABLE',
+]);
 const EMPTY_EVIDENCE = new Set(['', 'None', 'Pending', '-']);
 
 function tableRows(markdown: string): string[][] {
@@ -28,7 +36,12 @@ function tableRows(markdown: string): string[][] {
     .split('\n')
     .filter((line) => line.trim().startsWith('|'))
     .filter((line) => !/^\|[\s|:-]+\|$/.test(line.trim()))
-    .map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim().replace(/^`|`$/g, '')));
+    .map((line) =>
+      line
+        .split('|')
+        .slice(1, -1)
+        .map((cell) => cell.trim().replace(/^`|`$/g, '')),
+    );
 }
 
 export function verifyCapabilityMatrix(root: string): string[] {

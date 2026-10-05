@@ -21,7 +21,8 @@ afterEach(() => {
 });
 
 describe('verifyRequirementsCoverage', () => {
-  const header = '| Requirement | Milestone | Spec | Plan | Implementation | Tests | Verification | Status |\n| --- | --- | --- | --- | --- | --- | --- | --- |';
+  const header =
+    '| Requirement | Milestone | Spec | Plan | Implementation | Tests | Verification | Status |\n| --- | --- | --- | --- | --- | --- | --- | --- |';
 
   it('accepts required columns and supported statuses', () => {
     const root = fixture(`${header}\n| R-1 | M00 | spec | plan | code | tests | evidence | ACTIVE |\n`);
@@ -29,8 +30,12 @@ describe('verifyRequirementsCoverage', () => {
   });
 
   it('rejects missing required columns', () => {
-    const root = fixture('| Requirement | Milestone | Status |\n| --- | --- | --- |\n| R-1 | M00 | ACTIVE |\n');
-    expect(verifyRequirementsCoverage(root).some((error) => error.includes('missing required column'))).toBe(true);
+    const root = fixture(
+      '| Requirement | Milestone | Status |\n| --- | --- | --- |\n| R-1 | M00 | ACTIVE |\n',
+    );
+    expect(verifyRequirementsCoverage(root).some((error) => error.includes('missing required column'))).toBe(
+      true,
+    );
   });
 
   it('rejects unsupported requirement status values', () => {

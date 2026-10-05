@@ -23,7 +23,10 @@ export function verifyMilestoneState(root: string): string[] {
     errors.push('project-state.json must contain exactly one non-empty exactNextWork action');
   }
 
-  if (typeof state.currentMilestone !== 'string' || !current.includes(`Milestone: ${state.currentMilestone}`)) {
+  if (
+    typeof state.currentMilestone !== 'string' ||
+    !current.includes(`Milestone: ${state.currentMilestone}`)
+  ) {
     errors.push('CURRENT.md disagrees with project-state.json current milestone');
   }
 
