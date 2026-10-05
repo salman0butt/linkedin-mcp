@@ -6,6 +6,12 @@ import {
   foundationCapabilityRegistry,
 } from '../src/capabilities.js';
 
+function firstDescriptor() {
+  const descriptor = foundationCapabilityRegistry.at(0);
+  if (!descriptor) throw new Error('Expected foundation capability fixture');
+  return descriptor;
+}
+
 describe('capability registry', () => {
   it('contains the required future capability identifiers without claiming availability', () => {
     expect(capabilityIds).toEqual(
@@ -31,15 +37,15 @@ describe('capability registry', () => {
   });
 
   it('rejects duplicate capability identifiers', () => {
-    const descriptor = foundationCapabilityRegistry[0];
+    const descriptor = firstDescriptor();
     expect(() => createCapabilityRegistry([descriptor, descriptor])).toThrow(/duplicate capability/i);
   });
 
   it('rejects VERIFIED or AVAILABLE capabilities without evidence', () => {
-    const descriptor = foundationCapabilityRegistry[0];
-    expect(() =>
-      createCapabilityRegistry([{ ...descriptor, status: 'VERIFIED', evidence: undefined }]),
-    ).toThrow(/evidence/i);
+    const descriptor = firstDescriptor();
+    expect(() => createCapabilityRegistry([{ ...descriptor, status: 'VERIFIED', evidence: '' }])).toThrow(
+      /evidence/i,
+    );
     expect(() =>
       createCapabilityRegistry([{ ...descriptor, availability: 'AVAILABLE', evidence: 'Pending' }]),
     ).toThrow(/evidence/i);
