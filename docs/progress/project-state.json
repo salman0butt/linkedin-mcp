@@ -6,12 +6,10 @@
   "activeBranch": "feat/m00-foundation",
   "activePr": 1,
   "baseBranch": "main",
-  "latestVerifiedSha": "ec740928858bba9288517cd9bf999027f1231a3e",
-  "ciStatus": "GREEN_BOOTSTRAP",
+  "latestVerifiedSha": "a43f94918916fa425f03c8dbc0d1f3284c83f449",
+  "ciStatus": "PENDING_PERMANENT_CI",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [
-    "Generated pnpm-lock.yaml exists as artifact 11332613470 from successful exact-head Bootstrap Lockfile run 37282093242, but this worker cannot persist the artifact bytes through the available GitHub text-file write interface."
-  ],
-  "exactNextWork": "Persist pnpm-lock.yaml from successful workflow artifact 11332613470 on feat/m00-foundation, then replace bootstrap CI with frozen-lockfile CI and establish the first M00.2 verifier RED."
+  "blockers": [],
+  "exactNextWork": "Verify permanent frozen-lockfile CI on the current feat/m00-foundation head; if green, activate M00.2 and establish the first autonomous-framework verifier RED."
 }
