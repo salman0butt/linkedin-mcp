@@ -4,6 +4,19 @@ import { describe, expect, it } from 'vitest';
 
 import { createLinkedInMcpServer } from '../src/create-server.js';
 
+interface CapabilityContract {
+  id: string;
+  status: string;
+  availability: string;
+}
+
+interface CapabilitiesStructuredContent {
+  status?: string;
+  provider?: { type?: string; name?: string };
+  metadata?: { requestId?: string; timestamp?: string };
+  data?: { capabilities?: CapabilityContract[] };
+}
+
 describe('LinkedIn MCP server contract', () => {
   it('lists and calls linkedin.health through a real MCP client', async () => {
     const handler = createMcpHandler(() =>
@@ -76,6 +89,58 @@ describe('LinkedIn MCP server contract', () => {
           timestamp: '2026-10-05T12:00:00.000Z',
         },
       });
+    } finally {
+      await client.close();
+      await handler.close();
+    }
+  });
+
+  it('lists and calls linkedin.capabilities without upgrading future LinkedIn access', async () => {
+    const handler = createMcpHandler(() =>
+      createLinkedInMcpServer({
+        createRequestId: () => 'req-mcp-capabilities',
+        now: () => new Date('2026-10-05T12:00:00.000Z'),
+        version: '1.2.3',
+      }),
+    );
+    const transport = new StreamableHTTPClientTransport(new URL('http://test.local/mcp'), {
+      fetch: (url, init) => handler.fetch(new Request(url, init)),
+    });
+    const client = new Client({ name: 'linkedin-mcp-test', version: '1.0.0' });
+
+    try {
+      await client.connect(transport);
+
+      const { tools } = await client.listTools();
+      expect(tools.map((tool) => tool.name)).toContain('linkedin.capabilities');
+
+      const result = await client.callTool({ name: 'linkedin.capabilities', arguments: {} });
+      const structured = result.structuredContent as CapabilitiesStructuredContent | undefined;
+
+      expect(structured).toMatchObject({
+        status: 'succeeded',
+        provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
+        metadata: {
+          requestId: 'req-mcp-capabilities',
+          timestamp: '2026-10-05T12:00:00.000Z',
+        },
+      });
+
+      const capabilities = structured?.data?.capabilities ?? [];
+      expect(capabilities).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'profile.me',
+            status: 'PLANNED',
+            availability: 'UNAVAILABLE',
+          }),
+        ]),
+      );
+      expect(
+        capabilities
+          .filter((capability) => !capability.id.startsWith('linkedin.'))
+          .every((capability) => capability.status !== 'VERIFIED'),
+      ).toBe(true);
     } finally {
       await client.close();
       await handler.close();
