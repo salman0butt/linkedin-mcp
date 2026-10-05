@@ -42,7 +42,7 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
       inputSchema: emptyInputSchema,
       outputSchema: healthOutputSchema,
     },
-    async () => {
+    () => {
       const result = createHealthResult({ requestId: createRequestId(), now });
       return {
         content: [{ type: 'text', text: JSON.stringify(result) }],
