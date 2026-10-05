@@ -146,4 +146,48 @@ describe('LinkedIn MCP server contract', () => {
       await handler.close();
     }
   });
+
+  it('advertises exactly the three M00 tools with input and output schemas', async () => {
+    const handler = createMcpHandler(() => createLinkedInMcpServer({ version: '1.2.3' }));
+    const transport = new StreamableHTTPClientTransport(new URL('http://test.local/mcp'), {
+      fetch: (url, init) => handler.fetch(new Request(url, init)),
+    });
+    const client = new Client({ name: 'linkedin-mcp-test', version: '1.0.0' });
+
+    try {
+      await client.connect(transport);
+      const { tools } = await client.listTools();
+
+      expect(tools.map((tool) => tool.name).sort()).toEqual([
+        'linkedin.capabilities',
+        'linkedin.health',
+        'linkedin.version',
+      ]);
+      for (const tool of tools) {
+        expect(tool.inputSchema).toMatchObject({ type: 'object' });
+        expect(tool.outputSchema).toMatchObject({ type: 'object' });
+      }
+    } finally {
+      await client.close();
+      await handler.close();
+    }
+  });
+
+  it('rejects unexpected tool arguments through MCP input validation', async () => {
+    const handler = createMcpHandler(() => createLinkedInMcpServer({ version: '1.2.3' }));
+    const transport = new StreamableHTTPClientTransport(new URL('http://test.local/mcp'), {
+      fetch: (url, init) => handler.fetch(new Request(url, init)),
+    });
+    const client = new Client({ name: 'linkedin-mcp-test', version: '1.0.0' });
+
+    try {
+      await client.connect(transport);
+      await expect(
+        client.callTool({ name: 'linkedin.health', arguments: { unexpected: true } }),
+      ).rejects.toThrow(/input|argument|valid/i);
+    } finally {
+      await client.close();
+      await handler.close();
+    }
+  });
 });
