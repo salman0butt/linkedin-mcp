@@ -45,4 +45,23 @@ describe('createHttpServer', () => {
       await server.close();
     }
   });
+
+  it('rejects browser Origin headers while preserving origin-less MCP clients', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
+
+    try {
+      await expect(
+        getStatus(server.address.port, {
+          Host: `127.0.0.1:${server.address.port}`,
+          Origin: 'https://evil.example',
+        }),
+      ).resolves.toBe(403);
+
+      await expect(
+        getStatus(server.address.port, { Host: `127.0.0.1:${server.address.port}` }),
+      ).resolves.not.toBe(403);
+    } finally {
+      await server.close();
+    }
+  });
 });
