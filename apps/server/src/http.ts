@@ -17,6 +17,26 @@ export interface RunningHttpServer {
   close(): Promise<void>;
 }
 
+const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
+
+function isAllowedHost(hostHeader: string | undefined): boolean {
+  if (hostHeader === undefined) return false;
+
+  try {
+    const parsed = new URL(`http://${hostHeader}`);
+    return (
+      parsed.username === '' &&
+      parsed.password === '' &&
+      parsed.pathname === '/' &&
+      parsed.search === '' &&
+      parsed.hash === '' &&
+      LOOPBACK_HOSTNAMES.has(parsed.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 function toHeaders(request: IncomingMessage): Headers {
   const headers = new Headers();
   for (const [name, value] of Object.entries(request.headers)) {
@@ -71,6 +91,12 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
   const handler = createMcpHandler(() => createLinkedInMcpServer());
 
   const server = createServer((request, response) => {
+    if (!isAllowedHost(request.headers.host)) {
+      response.statusCode = 403;
+      response.end();
+      return;
+    }
+
     void (async () => {
       const webRequest = await toRequest(request, host);
       const webResponse = await handler.fetch(webRequest);
