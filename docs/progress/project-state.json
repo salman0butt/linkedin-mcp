@@ -4,12 +4,14 @@
   "currentIteration": "M00.1",
   "status": "ACTIVE",
   "activeBranch": "feat/m00-foundation",
-  "activePr": null,
+  "activePr": 1,
   "baseBranch": "main",
-  "latestVerifiedSha": null,
-  "ciStatus": "NOT_RUN",
+  "latestVerifiedSha": "72473e639f807a6f117c53e1fccb6f5196aecae1",
+  "ciStatus": "FAILED",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Finish the M00 repository/control-plane bootstrap, generate the real pnpm lockfile, then establish the first verifier RED."
+  "blockers": [
+    "Bootstrap Lockfile CI failed at setup-node because pnpm caching required pnpm-lock.yaml before the bootstrap workflow generated it; fix committed at 9fb9f6212d3bf8d447b0ee481d0a91e410583eb6 and awaiting CI evidence."
+  ],
+  "exactNextWork": "Verify the bootstrap workflow on 9fb9f6212d3bf8d447b0ee481d0a91e410583eb6, persist its generated pnpm-lock.yaml, then establish the first M00.2 verifier RED."
 }
