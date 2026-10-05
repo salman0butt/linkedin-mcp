@@ -1,7 +1,4 @@
-import {
-  foundationCapabilityRegistry,
-  type ToolResult,
-} from '../../../packages/core/src/index.js';
+import { foundationCapabilityRegistry, type ToolResult } from '../../../packages/core/src/index.js';
 
 interface FoundationDeps {
   requestId: string;
