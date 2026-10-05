@@ -1,0 +1,43 @@
+name: Bootstrap Lockfile
+
+on:
+  push:
+    branches:
+      - feat/m00-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bootstrap-lockfile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Generate lockfile from registry
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+      - name: Verify lockfile exists
+        run: test -s pnpm-lock.yaml
+      - name: Upload generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-lockfile
+          path: pnpm-lock.yaml
+          if-no-files-found: error
+          retention-days: 1
