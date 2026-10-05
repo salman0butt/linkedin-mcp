@@ -1,4 +1,7 @@
-import { foundationCapabilityRegistry, type ToolResult } from '../../../packages/core/src/index.js';
+import {
+  foundationCapabilityRegistry,
+  type ToolResult,
+} from '../../../packages/core/dist/index.js';
 
 interface FoundationDeps {
   requestId: string;
@@ -24,7 +27,7 @@ interface CapabilitiesData {
   capabilities: typeof foundationCapabilityRegistry;
 }
 
-type SucceededToolResult<T> = ToolResult<T> & {
+type SuccessfulResult<T> = ToolResult<T> & {
   status: 'succeeded';
   data: T;
 };
@@ -38,7 +41,7 @@ function metadata(deps: FoundationDeps): ToolResult<unknown>['metadata'] {
   };
 }
 
-export function createHealthResult(deps: FoundationDeps): SucceededToolResult<HealthData> {
+export function createHealthResult(deps: FoundationDeps): SuccessfulResult<HealthData> {
   return {
     status: 'succeeded',
     data: {
@@ -51,7 +54,7 @@ export function createHealthResult(deps: FoundationDeps): SucceededToolResult<He
   };
 }
 
-export function createVersionResult(deps: VersionDeps): SucceededToolResult<VersionData> {
+export function createVersionResult(deps: VersionDeps): SuccessfulResult<VersionData> {
   return {
     status: 'succeeded',
     data: {
@@ -63,7 +66,7 @@ export function createVersionResult(deps: VersionDeps): SucceededToolResult<Vers
   };
 }
 
-export function createCapabilitiesResult(deps: FoundationDeps): SucceededToolResult<CapabilitiesData> {
+export function createCapabilitiesResult(deps: FoundationDeps): SuccessfulResult<CapabilitiesData> {
   return {
     status: 'succeeded',
     data: {

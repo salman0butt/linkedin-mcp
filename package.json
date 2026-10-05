@@ -12,7 +12,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint \"**/*.ts\" --no-error-on-unmatched-pattern",
+    "pretypecheck": "pnpm --filter @linkedin-mcp/core build",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "pretest": "pnpm --filter @linkedin-mcp/server build",
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "pnpm -r --if-present build"
