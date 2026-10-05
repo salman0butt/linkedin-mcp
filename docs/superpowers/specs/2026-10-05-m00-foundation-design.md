@@ -397,25 +397,20 @@ Define an initial provider-aware result envelope reusable by later milestones:
 ```ts
 interface ToolResult<T> {
   status:
-    | "succeeded"
-    | "requires_approval"
-    | "human_action_required"
-    | "unsupported"
-    | "permission_required"
-    | "partner_access_required"
-    | "restricted"
-    | "rate_limited"
-    | "duplicate"
-    | "partial"
-    | "failed";
+    | 'succeeded'
+    | 'requires_approval'
+    | 'human_action_required'
+    | 'unsupported'
+    | 'permission_required'
+    | 'partner_access_required'
+    | 'restricted'
+    | 'rate_limited'
+    | 'duplicate'
+    | 'partial'
+    | 'failed';
   data?: T;
   provider: {
-    type:
-      | "OFFICIAL_API"
-      | "PARTNER_API"
-      | "EXTERNAL_DISCOVERY"
-      | "BROWSER_INTERACTIVE"
-      | "LOCAL_ONLY";
+    type: 'OFFICIAL_API' | 'PARTNER_API' | 'EXTERNAL_DISCOVERY' | 'BROWSER_INTERACTIVE' | 'LOCAL_ONLY';
     name: string;
   };
   warnings?: string[];
@@ -587,21 +582,27 @@ These belong to later milestones.
 ## 25. Main risks and mitigations
 
 ### LinkedIn API access changes
+
 Mitigation: capability router + provider provenance + capability matrix.
 
 ### Browser flows become brittle
+
 Mitigation: browser adapter isolated and optional; never part of core official provider.
 
 ### Autonomous workers trust stale docs
+
 Mitigation: Git/CI precedence plus machine-readable project state and consistency verifiers.
 
 ### Scheduler prompt becomes a second policy source
+
 Mitigation: keep scheduler short; repository policy is authoritative.
 
 ### Accidental write/destructive behavior
+
 Mitigation: later write tools use preview/approval/idempotency/verification. M00 has no LinkedIn writes.
 
 ### Architecture bloat
+
 Mitigation: create only concrete M00 packages; provider interfaces grow with real capabilities.
 
 ## 26. Design decision summary

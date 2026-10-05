@@ -35,6 +35,7 @@ Repair stale prose to match verified reality.
 ## Mandatory fresh-session recovery
 
 Before repository writes:
+
 1. invoke/read Superpowers `using-superpowers`;
 2. read this file and `CODEX-START-HERE.md`;
 3. read `docs/AUTONOMOUS-DEVELOPMENT.md`;

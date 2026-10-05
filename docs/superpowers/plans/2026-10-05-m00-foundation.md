@@ -7,6 +7,7 @@
 **Architecture:** A small TypeScript monorepo with an MCP server factory, provider-aware core contracts, three read-only foundation tools, stdio and Streamable HTTP transports, plus Git-backed project state, milestone ledgers, traceability, capability provenance, and CI-enforced recovery invariants.
 
 **Implementation-time toolchain baseline (verified 2026-10-05):**
+
 - Node.js 24 LTS line.
 - pnpm 12.x current line; pin via `packageManager` and CI.
 - TypeScript current stable line; choose the latest compatible stable release and lock it.
@@ -34,6 +35,7 @@
 ## Review focus
 
 Skeptical review must explicitly look for these failure modes:
+
 1. **False LinkedIn availability** — capabilities described as official/available without evidence.
 2. **Transport exposure** — HTTP binding beyond loopback by default, missing Host/Origin validation, or unbounded request bodies.
 3. **Secret leakage** — config/logging paths that could emit credentials in later milestones.
@@ -45,6 +47,7 @@ Skeptical review must explicitly look for these failure modes:
 ## Task 1 — Establish repository toolchain and durable control-plane skeleton
 
 **Files:**
+
 - Create: `package.json`
 - Create: `pnpm-workspace.yaml`
 - Create: `tsconfig.base.json`
@@ -96,6 +99,7 @@ Skeptical review must explicitly look for these failure modes:
 ## Task 2 — Autonomous framework and state consistency verifier (TDD)
 
 **Files:**
+
 - Create: `scripts/verify-autonomous-framework.ts`
 - Create: `scripts/verify-milestone-state.ts`
 - Create: `scripts/verify-requirements-coverage.ts`
@@ -108,6 +112,7 @@ Skeptical review must explicitly look for these failure modes:
 ### Required behavior
 
 The verifiers must fail on:
+
 - missing mandatory recovery files;
 - missing M00–M17 ledgers;
 - missing required milestone-ledger sections;
@@ -132,6 +137,7 @@ The verifiers must fail on:
 ## Task 3 — Core provider-aware contracts and capability registry (TDD)
 
 **Files:**
+
 - Create: `packages/core/package.json`
 - Create: `packages/core/tsconfig.json`
 - Create: `packages/core/src/result.ts`
@@ -143,6 +149,7 @@ The verifiers must fail on:
 ### Contracts
 
 Define:
+
 - `ProviderType = OFFICIAL_API | PARTNER_API | EXTERNAL_DISCOVERY | BROWSER_INTERACTIVE | LOCAL_ONLY`.
 - Capability availability/state separately includes `UNAVAILABLE`; do **not** misuse `UNAVAILABLE` as a provider that executed a tool.
 - Tool result statuses from the design spec.
@@ -176,6 +183,7 @@ M00 must truthfully mark future LinkedIn-backed capabilities as PLANNED/UNAVAILA
 ## Task 4 — Server configuration and structured logger (TDD)
 
 **Files:**
+
 - Create: `apps/server/package.json`
 - Create: `apps/server/tsconfig.json`
 - Create: `apps/server/src/config.ts`
@@ -212,10 +220,12 @@ Redact secret-like keys including tokens, authorization headers, cookies, passwo
 ## Task 5 — Foundation result factories (TDD)
 
 **Files:**
+
 - Create: `apps/server/src/foundation.ts`
 - Create: `apps/server/test/foundation.test.ts`
 
 Implement deterministic/testable factories for:
+
 - health result;
 - version result;
 - capabilities result.
@@ -237,12 +247,14 @@ Inject request ID and clock/time source so tests do not depend on wall-clock ran
 ## Task 6 — MCP server factory and real-client contract tests (TDD)
 
 **Files:**
+
 - Create: `apps/server/src/create-server.ts`
 - Create: `apps/server/test/mcp-contract.test.ts`
 
 ### MCP API
 
 Create `createLinkedInMcpServer(deps?)` using current MCP v2 APIs:
+
 - `McpServer` from `@modelcontextprotocol/server`;
 - `registerTool` for:
   - `linkedin.health`
@@ -268,6 +280,7 @@ Do not test only handler internals. Drive the server with the real `@modelcontex
 ## Task 7 — stdio transport and built-process smoke (TDD)
 
 **Files:**
+
 - Create: `apps/server/src/stdio.ts`
 - Create/update: `apps/server/package.json`
 - Create: `tests/contract/stdio-smoke.test.ts`
@@ -287,11 +300,13 @@ Use `serveStdio` / `StdioServerTransport` from `@modelcontextprotocol/server/std
 ## Task 8 — Streamable HTTP transport hardening (TDD)
 
 **Files:**
+
 - Create: `apps/server/src/http.ts`
 - Create: `apps/server/test/http.test.ts`
 - Create: `tests/contract/http-smoke.test.ts`
 
 Use current MCP v2 server/Node APIs:
+
 - `createMcpHandler` from `@modelcontextprotocol/server`;
 - Node bridge from `@modelcontextprotocol/node`;
 - localhost Host validation;
@@ -317,6 +332,7 @@ Use current MCP v2 server/Node APIs:
 ## Task 9 — CI workflow and quality gate
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 - Update: `package.json`
 - Update: workspace package scripts.
@@ -324,6 +340,7 @@ Use current MCP v2 server/Node APIs:
 CI must run on pull requests and `main` pushes with concurrency cancellation per ref.
 
 Required steps:
+
 1. checkout;
 2. setup pinned pnpm;
 3. setup Node 24;
@@ -348,6 +365,7 @@ After the first workflow-capable commit, use GitHub Actions as durable RED/GREEN
 ## Task 10 — Open the durable M00 draft PR
 
 After the first coherent branch state and basic CI exist:
+
 - open one draft PR titled `Build LinkedIn MCP foundation`;
 - base `main`, head `feat/m00-foundation`;
 - describe goal, architecture, safety boundaries, current TDD evidence, verification status, and exact next unit;
@@ -360,6 +378,7 @@ Do not create duplicate PRs on later scheduled runs.
 ## Task 11 — M00 closeout, skeptical review, exact-SHA verification and merge
 
 **Files to reconcile:**
+
 - `docs/progress/project-state.json`
 - `docs/progress/STATUS.md`
 - `docs/progress/KNOWN-ISSUES.md`
@@ -373,6 +392,7 @@ Do not create duplicate PRs on later scheduled runs.
 ### Review
 
 Perform skeptical review across:
+
 - PRD/requirement compliance;
 - architecture/YAGNI/coupling;
 - MCP protocol correctness;
@@ -392,6 +412,7 @@ Run the complete repository gate locally when possible and then require GitHub A
 ### Merge gate
 
 When and only when every durable M00 acceptance criterion is satisfied:
+
 1. mark PR ready if needed;
 2. verify remote head and mergeability again;
 3. squash-merge under the standing owner authorization;
@@ -406,6 +427,7 @@ When and only when every durable M00 acceptance criterion is satisfied:
 ## Execution ledger
 
 During implementation, the active M00 ledger must record per behavioral unit:
+
 - RED commit/SHA and why it is a genuine RED;
 - GREEN commit/SHA;
 - exact CI run/result when available;
@@ -418,6 +440,7 @@ Never infer that tests or CI passed. Record only observed evidence.
 ## Plan self-review
 
 This plan intentionally avoids:
+
 - OAuth/database/browser work before M01+ requirements need it;
 - speculative empty packages;
 - microservices/queues/generic agent frameworks;
