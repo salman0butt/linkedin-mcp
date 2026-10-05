@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
-import { createHealthResult, createVersionResult } from './foundation.js';
+import { createCapabilitiesResult, createHealthResult, createVersionResult } from './foundation.js';
 
 export interface LinkedInMcpServerDeps {
   createRequestId?: () => string;
@@ -33,6 +33,40 @@ const versionOutputSchema = z.object({
   data: z.object({
     name: z.literal('linkedin-mcp'),
     version: z.string(),
+  }),
+  provider: z.object({
+    type: z.literal('LOCAL_ONLY'),
+    name: z.literal('linkedin-mcp'),
+  }),
+  metadata: z.object({
+    requestId: z.string(),
+    timestamp: z.string(),
+  }),
+});
+const capabilitiesOutputSchema = z.object({
+  status: z.literal('succeeded'),
+  data: z.object({
+    capabilities: z.array(
+      z.object({
+        id: z.string(),
+        desiredBehavior: z.string(),
+        provider: z
+          .enum([
+            'OFFICIAL_API',
+            'PARTNER_API',
+            'EXTERNAL_DISCOVERY',
+            'BROWSER_INTERACTIVE',
+            'LOCAL_ONLY',
+          ])
+          .nullable(),
+        availability: z.enum(['AVAILABLE', 'UNAVAILABLE']),
+        milestone: z.string(),
+        status: z.enum(['PLANNED', 'ACTIVE', 'BLOCKED', 'VERIFIED', 'DEFERRED', 'REJECTED']),
+        accessNote: z.string(),
+        approvalRequired: z.boolean(),
+        evidence: z.string().optional(),
+      }),
+    ),
   }),
   provider: z.object({
     type: z.literal('LOCAL_ONLY'),
@@ -75,6 +109,22 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
     },
     () => {
       const result = createVersionResult({ requestId: createRequestId(), now, version });
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result) }],
+        structuredContent: { ...result },
+      };
+    },
+  );
+
+  server.registerTool(
+    'linkedin.capabilities',
+    {
+      description: 'Report truthful LinkedIn MCP capability state and provider provenance.',
+      inputSchema: emptyInputSchema,
+      outputSchema: capabilitiesOutputSchema,
+    },
+    () => {
+      const result = createCapabilitiesResult({ requestId: createRequestId(), now });
       return {
         content: [{ type: 'text', text: JSON.stringify(result) }],
         structuredContent: { ...result },
