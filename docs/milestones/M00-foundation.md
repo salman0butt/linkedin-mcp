@@ -54,6 +54,7 @@ LinkedIn OAuth/tokens/account data, post mutation, search providers, browser aut
 - M00.5 intermediate diagnostic: `2bfb2eaca8f47eed46aa46f28f9edc4411d47fe6`, CI run `37349330469` — behavior implementation was present, but the format gate correctly failed before tests.
 - M00.5 type-contract diagnostic: `30a0d83f56c71e895a8850a9bcf12dff6dd35605`, CI run `37349647425` — 29 tests and lint passed, then typecheck found `result.data` possibly undefined because the success factory return type was too weak.
 - M00.5 GREEN: `c2ae24bff19ff0499d318c39b455ac0ba9e58d77`, CI run `37349762748` — frozen install, format, 29 tests, lint, typecheck and build all passed.
+- Ruling: M00.6 will pin the stable MCP v2.0.0 client/server line instead of the plan's just-published 2.3.x baseline. The repository's seven-day `minimumReleaseAge` supply-chain policy and the instruction not to weaken security outrank dependency freshness; v2.0.0 is on the same stable v2 protocol line and supports the required v2 server/client APIs. Cost if wrong: recent SDK fixes or conveniences may be absent, so an upgrade must be reconsidered after the age gate with fresh contract tests and exact-SHA CI.
 
 ## Integration Test Evidence
 
