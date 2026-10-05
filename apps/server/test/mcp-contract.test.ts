@@ -43,4 +43,42 @@ describe('LinkedIn MCP server contract', () => {
       await handler.close();
     }
   });
+
+  it('lists and calls linkedin.version through a real MCP client', async () => {
+    const handler = createMcpHandler(() =>
+      createLinkedInMcpServer({
+        createRequestId: () => 'req-mcp-version',
+        now: () => new Date('2026-10-05T12:00:00.000Z'),
+        version: '1.2.3',
+      }),
+    );
+    const transport = new StreamableHTTPClientTransport(new URL('http://test.local/mcp'), {
+      fetch: (url, init) => handler.fetch(new Request(url, init)),
+    });
+    const client = new Client({ name: 'linkedin-mcp-test', version: '1.0.0' });
+
+    try {
+      await client.connect(transport);
+
+      const { tools } = await client.listTools();
+      expect(tools.map((tool) => tool.name)).toContain('linkedin.version');
+
+      const result = await client.callTool({ name: 'linkedin.version', arguments: {} });
+      expect(result.structuredContent).toEqual({
+        status: 'succeeded',
+        data: {
+          name: 'linkedin-mcp',
+          version: '1.2.3',
+        },
+        provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
+        metadata: {
+          requestId: 'req-mcp-version',
+          timestamp: '2026-10-05T12:00:00.000Z',
+        },
+      });
+    } finally {
+      await client.close();
+      await handler.close();
+    }
+  });
 });
