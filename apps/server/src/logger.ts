@@ -35,7 +35,9 @@ export interface StructuredLogger {
   info(payload: JsonObject, message?: string): void;
 }
 
-export function createLogger(sink: Sink = (line) => process.stderr.write(`${line}\n`)): StructuredLogger {
+export function createLogger(
+  sink: Sink = (line) => process.stderr.write(`${line}\n`),
+): StructuredLogger {
   return {
     info(payload, message) {
       sink(
