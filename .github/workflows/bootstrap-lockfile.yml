@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: bootstrap-lockfile-${{ github.workflow }}-${{ github.ref }}
@@ -36,6 +36,18 @@ jobs:
         run: pnpm install --lockfile-only --no-frozen-lockfile
       - name: Verify lockfile exists
         run: test -s pnpm-lock.yaml
+      - name: Persist generated lockfile
+        if: github.event_name == 'push' && github.ref == 'refs/heads/feat/m00-foundation'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "Lockfile already current"
+          else
+            git commit -m "chore: persist generated pnpm lockfile"
+            git push origin HEAD:feat/m00-foundation
+          fi
       - name: Upload generated lockfile
         uses: actions/upload-artifact@v4
         with:
