@@ -4,13 +4,16 @@ on:
   push:
     branches:
       - feat/m00-foundation
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: bootstrap-lockfile-${{ github.ref }}
+  group: bootstrap-lockfile-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
