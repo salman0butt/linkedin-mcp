@@ -24,6 +24,11 @@ interface CapabilitiesData {
   capabilities: typeof foundationCapabilityRegistry;
 }
 
+type SucceededToolResult<T> = ToolResult<T> & {
+  status: 'succeeded';
+  data: T;
+};
+
 const provider = { type: 'LOCAL_ONLY' as const, name: 'linkedin-mcp' };
 
 function metadata(deps: FoundationDeps): ToolResult<unknown>['metadata'] {
@@ -33,7 +38,7 @@ function metadata(deps: FoundationDeps): ToolResult<unknown>['metadata'] {
   };
 }
 
-export function createHealthResult(deps: FoundationDeps): ToolResult<HealthData> {
+export function createHealthResult(deps: FoundationDeps): SucceededToolResult<HealthData> {
   return {
     status: 'succeeded',
     data: {
@@ -46,7 +51,7 @@ export function createHealthResult(deps: FoundationDeps): ToolResult<HealthData>
   };
 }
 
-export function createVersionResult(deps: VersionDeps): ToolResult<VersionData> {
+export function createVersionResult(deps: VersionDeps): SucceededToolResult<VersionData> {
   return {
     status: 'succeeded',
     data: {
@@ -58,7 +63,7 @@ export function createVersionResult(deps: VersionDeps): ToolResult<VersionData> 
   };
 }
 
-export function createCapabilitiesResult(deps: FoundationDeps): ToolResult<CapabilitiesData> {
+export function createCapabilitiesResult(deps: FoundationDeps): SucceededToolResult<CapabilitiesData> {
   return {
     status: 'succeeded',
     data: {
