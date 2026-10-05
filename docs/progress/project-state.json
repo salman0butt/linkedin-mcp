@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M00",
-  "currentIteration": "M00.7",
+  "currentIteration": "M00.8",
   "status": "ACTIVE",
   "activeBranch": "feat/m00-foundation",
   "activePr": 1,
   "baseBranch": "main",
-  "latestVerifiedSha": "cdde65df7b8d267646da67684586372421d8c1ff",
+  "latestVerifiedSha": "ee0984919bfc90be79a073737cbf800e1eb057be",
   "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish the M00.7 built-process stdio smoke RED so the real StdioClientTransport fails against the not-yet-created stdio entrypoint before production stdio composition is added."
+  "exactNextWork": "Establish the M00.8 HTTP composition RED by requiring a loopback Streamable HTTP server lifecycle from the not-yet-created apps/server/src/http.ts module."
 }
