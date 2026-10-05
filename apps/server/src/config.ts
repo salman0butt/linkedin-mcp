@@ -17,7 +17,12 @@ const TRANSPORTS = new Set<TransportMode>(['stdio', 'http']);
 const LOG_LEVELS = new Set<LogLevel>(['trace', 'debug', 'info', 'warn', 'error', 'fatal']);
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', '::1', 'localhost']);
 
-function parsePositiveInteger(value: string | undefined, fallback: number, label: string, max?: number): number {
+function parsePositiveInteger(
+  value: string | undefined,
+  fallback: number,
+  label: string,
+  max?: number,
+): number {
   if (value === undefined || value === '') return fallback;
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0 || (max !== undefined && parsed > max)) {
