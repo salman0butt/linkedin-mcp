@@ -182,9 +182,20 @@ describe('LinkedIn MCP server contract', () => {
 
     try {
       await client.connect(transport);
-      await expect(
-        client.callTool({ name: 'linkedin.health', arguments: { unexpected: true } }),
-      ).rejects.toThrow(/input|argument|valid/i);
+      const result = await client.callTool({
+        name: 'linkedin.health',
+        arguments: { unexpected: true },
+      });
+
+      expect(result.isError).toBe(true);
+      expect(result.content).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'text',
+            text: expect.stringMatching(/input validation error.*unrecognized key.*unexpected/i),
+          }),
+        ]),
+      );
     } finally {
       await client.close();
       await handler.close();
