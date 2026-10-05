@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M00",
-  "currentIteration": "M00.3",
+  "currentIteration": "M00.4",
   "status": "ACTIVE",
   "activeBranch": "feat/m00-foundation",
   "activePr": 1,
   "baseBranch": "main",
-  "latestVerifiedSha": "94f144166dcb8c85396ce3ff7bff8395f48b9854",
+  "latestVerifiedSha": "2e17a2f611c7859c2e80cf2e41d292c3cd35519e",
   "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish the M00.3 provider/status/capability-registry RED, then implement the minimum truthful provider-aware core contracts."
+  "exactNextWork": "Establish the M00.4 configuration-defaults RED, then implement validated loopback-safe server configuration and secret-redacting structured logging."
 }
