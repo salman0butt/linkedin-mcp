@@ -51,13 +51,7 @@ const capabilitiesOutputSchema = z.object({
         id: z.string(),
         desiredBehavior: z.string(),
         provider: z
-          .enum([
-            'OFFICIAL_API',
-            'PARTNER_API',
-            'EXTERNAL_DISCOVERY',
-            'BROWSER_INTERACTIVE',
-            'LOCAL_ONLY',
-          ])
+          .enum(['OFFICIAL_API', 'PARTNER_API', 'EXTERNAL_DISCOVERY', 'BROWSER_INTERACTIVE', 'LOCAL_ONLY'])
           .nullable(),
         availability: z.enum(['AVAILABLE', 'UNAVAILABLE']),
         milestone: z.string(),
