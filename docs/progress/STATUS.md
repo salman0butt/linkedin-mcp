@@ -6,22 +6,25 @@ Last reconciled: 2026-10-05. Actual Git/code/exact-SHA CI outrank these notes.
 
 M00 — Foundation + Autonomous Control Plane — **ACTIVE**.
 
-Active task: M00.1 repository/toolchain/control-plane bootstrap.
+Active task: M00.3 core provider-aware result/capability contracts.
 
 Active branch: `feat/m00-foundation`.
 Active PR: #1 — `Build LinkedIn MCP foundation` (draft).
-CI status: FAILED on `72473e639f807a6f117c53e1fccb6f5196aecae1`; bootstrap fix `9fb9f6212d3bf8d447b0ee481d0a91e410583eb6` awaits CI evidence.
+Latest verified SHA: `94f144166dcb8c85396ce3ff7bff8395f48b9854`.
+CI status: GREEN — run `37309640467` passed frozen install, format, tests, lint, typecheck and build on that exact SHA.
 Critical findings: 0 known unresolved.
 Important findings: 0 known unresolved.
 
 ## Evidence
 
-- M00 design committed on `main`.
-- M00 executable plan committed on `main`.
-- Owner standing authorization: routine design/spec/plan gates auto-approved while rigor remains mandatory.
+- M00.1: real registry-generated `pnpm-lock.yaml` is committed and permanent frozen-lockfile CI is active.
+- M00.2 first RED: run `37308359474` on `b66011d5edffd57ec38da356b179cedc52edd74d` failed because `verify-autonomous-framework.ts` did not exist.
+- M00.2 first GREEN: run `37308599483` on `0b7a6a4bd66ada6da4e53d2193e429cdabd4026c` passed.
+- M00.2 expanded RED: run `37309022429` on `91c9668f1daf70482f9e3e8447fd57530d2ce92c` failed on the three missing verifier modules and the missing ledger-section invariant.
+- M00.2 expanded GREEN/full quality gate: run `37309640467` on `94f144166dcb8c85396ce3ff7bff8395f48b9854` passed.
 
 ## Blockers
 
-Bootstrap CI failed because `actions/setup-node` enabled pnpm caching before the bootstrap lockfile existed. The minimal cache-removal fix is committed at `9fb9f6212d3bf8d447b0ee481d0a91e410583eb6`; verification is pending. Local dependency resolution remains delegated to GitHub Actions.
+No repository/product blocker is currently known. Interactive container network isolation remains an execution-environment limitation; dependency resolution and authoritative verification use GitHub Actions.
 
-Exact next work: verify bootstrap CI on `9fb9f6212d3bf8d447b0ee481d0a91e410583eb6`, persist the generated `pnpm-lock.yaml`, then establish the first M00.2 verifier RED.
+Exact next work: establish the M00.3 provider/status/capability-registry RED, then implement the minimum truthful provider-aware core contracts.
