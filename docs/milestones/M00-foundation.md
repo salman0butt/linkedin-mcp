@@ -1,6 +1,6 @@
 # M00 — Foundation + Autonomous Control Plane
 
-Status: **IMPLEMENTING — M00.6 MCP server factory / real-client contract**
+Status: **IMPLEMENTING — M00.7 stdio transport / built-process smoke**
 
 ## Goal
 
@@ -37,8 +37,8 @@ LinkedIn OAuth/tokens/account data, post mutation, search providers, browser aut
 3. **COMPLETE** — M00.3 core result/capability contracts.
 4. **COMPLETE** — M00.4 config/logger.
 5. **COMPLETE** — M00.5 foundation result factories.
-6. **ACTIVE** — M00.6 MCP server factory/real-client contract.
-7. **PLANNED** — M00.7 stdio transport.
+6. **COMPLETE** — M00.6 MCP server factory/real-client contract.
+7. **ACTIVE** — M00.7 stdio transport.
 8. **PLANNED** — M00.8 hardened Streamable HTTP.
 9. **PLANNED** — M00.9 final CI/review/closeout.
 
@@ -54,15 +54,20 @@ LinkedIn OAuth/tokens/account data, post mutation, search providers, browser aut
 - M00.5 intermediate diagnostic: `2bfb2eaca8f47eed46aa46f28f9edc4411d47fe6`, CI run `37349330469` — behavior implementation was present, but the format gate correctly failed before tests.
 - M00.5 type-contract diagnostic: `30a0d83f56c71e895a8850a9bcf12dff6dd35605`, CI run `37349647425` — 29 tests and lint passed, then typecheck found `result.data` possibly undefined because the success factory return type was too weak.
 - M00.5 GREEN: `c2ae24bff19ff0499d318c39b455ac0ba9e58d77`, CI run `37349762748` — frozen install, format, 29 tests, lint, typecheck and build all passed.
-- Ruling: M00.6 will pin the stable MCP v2.0.0 client/server line instead of the plan's just-published 2.3.x baseline. The repository's seven-day `minimumReleaseAge` supply-chain policy and the instruction not to weaken security outrank dependency freshness; v2.0.0 is on the same stable v2 protocol line and supports the required v2 server/client APIs. Cost if wrong: recent SDK fixes or conveniences may be absent, so an upgrade must be reconsidered after the age gate with fresh contract tests and exact-SHA CI.
+- Ruling: M00.6 pins the stable MCP v2.0.0 client/server line instead of the plan's just-published 2.3.x baseline. The repository's seven-day `minimumReleaseAge` supply-chain policy and the instruction not to weaken security outrank dependency freshness; v2.0.0 is on the same stable v2 protocol line and supports the required v2 server/client APIs. Cost if wrong: recent SDK fixes or conveniences may be absent, so an upgrade must be reconsidered after the age gate with fresh contract tests and exact-SHA CI.
+- M00.6 health RED: `c07a4d71c4590065c3e2d8a95468ef2b187d860d`, CI run `37351189511` — the real MCP client contract failed because `apps/server/src/create-server.ts` did not exist; 29 unrelated tests passed.
+- M00.6 health GREEN: `a281e3b4e2da9849b561017a6ae768962684901f`, CI run `37351359309` — health registration through the real client passed after correcting the handler contract.
+- M00.6 version RED: `52d6ce6538cc78b09bc8d6427e5dfdf416019437`, CI run `37351517171`; GREEN: `e78ad1aa7463b602546637a25d1875e4b5b33c6d`, CI run `37351830890`.
+- M00.6 capabilities RED: `0790a8a9eb0f15206ff759e0b4a5a62fcb2e1869`, CI run `37351982136`; the first implementation candidate `4628e734f8e0fbb3d2eab6154b893bfe6806893e` exposed formatting drift in run `37352109168`; formatted GREEN `162c2db665d9ecdfafa5e1d9ca7e053dbb02b99c` passed CI run `37352516950`.
+- M00.6 final contract hardening added the exact three advertised M00 tools, input/output schemas and MCP-native malformed-argument rejection. Exact-head GREEN: `cdde65df7b8d267646da67684586372421d8c1ff`, CI run `37353017223` — 34 tests plus format, lint, typecheck and build passed.
 
 ## Integration Test Evidence
 
-Pending real-client MCP integration in M00.6 and built transport smoke coverage in M00.7–M00.8.
+M00.6 uses the real `@modelcontextprotocol/client` with `StreamableHTTPClientTransport` against an in-process `createMcpHandler` bridge. It lists and calls `linkedin.health`, `linkedin.version`, and `linkedin.capabilities`, checks exact public tool names/schemas, validates truthful `LOCAL_ONLY` structured content, and proves malformed inputs are rejected through MCP validation. Built stdio and hardened HTTP transport smoke coverage remain pending in M00.7–M00.8.
 
 ## Security Review
 
-Initial policy requires loopback HTTP, Host/Origin validation, bounded body, secret redaction, no credentials in M00, no browser automation, explicit capability provenance. M00.2 verifiers reject unsupported provider/state values and VERIFIED capabilities lacking evidence. M00.5 health results explicitly report `linkedinConnected: false` and all three foundation results use `LOCAL_ONLY` provenance.
+Initial policy requires loopback HTTP, Host/Origin validation, bounded body, secret redaction, no credentials in M00, no browser automation, explicit capability provenance. M00.2 verifiers reject unsupported provider/state values and VERIFIED capabilities lacking evidence. M00.5 health results explicitly report `linkedinConnected: false` and all three foundation results use `LOCAL_ONLY` provenance. M00.6 keeps those boundaries intact through the public MCP contract and does not introduce LinkedIn credentials, account access, browser automation, or mutation.
 
 ## Code Review Findings
 
@@ -70,7 +75,7 @@ Critical: 0 known. Important: 0 known. Independent closeout review pending.
 
 ## Fresh Verification Results
 
-Exact-head PR CI run `37349762748` is GREEN on `c2ae24bff19ff0499d318c39b455ac0ba9e58d77` for frozen install, format, 29 tests, lint, typecheck and build. M00.6 has not started yet, so this evidence proves M00.5 completion but not M00.6 behavior.
+Exact-head PR CI run `37353017223` is GREEN on `cdde65df7b8d267646da67684586372421d8c1ff`: frozen install, format, 34 tests across 10 files, lint, typecheck and build all passed. This proves M00.6 completion; built stdio and HTTP transport acceptance remain pending.
 
 ## Durable Recovery Sources
 
@@ -88,4 +93,4 @@ Exact-head PR CI run `37349762748` is GREEN on `c2ae24bff19ff0499d318c39b455ac0b
 
 ## Exact Next Work
 
-Establish the M00.6 real-client MCP contract RED so it fails for the missing server factory before any M00.6 production implementation is written.
+Establish the M00.7 built-process stdio smoke RED so the real `StdioClientTransport` fails against the not-yet-created stdio entrypoint before production stdio composition is added.

@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M00",
-  "currentIteration": "M00.6",
+  "currentIteration": "M00.7",
   "status": "ACTIVE",
   "activeBranch": "feat/m00-foundation",
   "activePr": 1,
   "baseBranch": "main",
-  "latestVerifiedSha": "c2ae24bff19ff0499d318c39b455ac0ba9e58d77",
+  "latestVerifiedSha": "cdde65df7b8d267646da67684586372421d8c1ff",
   "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish the M00.6 real-client MCP contract RED so it fails for the missing server factory before any M00.6 production implementation is written."
+  "exactNextWork": "Establish the M00.7 built-process stdio smoke RED so the real StdioClientTransport fails against the not-yet-created stdio entrypoint before production stdio composition is added."
 }
