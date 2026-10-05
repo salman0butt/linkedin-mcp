@@ -33,8 +33,15 @@ async function readBody(request: IncomingMessage): Promise<Buffer | undefined> {
   if (request.method === 'GET' || request.method === 'HEAD') return undefined;
 
   const chunks: Buffer[] = [];
-  for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  for await (const rawChunk of request) {
+    const chunk: unknown = rawChunk;
+    if (typeof chunk === 'string') {
+      chunks.push(Buffer.from(chunk));
+    } else if (chunk instanceof Uint8Array) {
+      chunks.push(Buffer.from(chunk));
+    } else {
+      throw new TypeError('Unexpected HTTP request body chunk');
+    }
   }
 
   if (chunks.length === 0) return undefined;
