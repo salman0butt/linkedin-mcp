@@ -1,0 +1,44 @@
+name: M00 Lockfile Bootstrap
+
+on:
+  push:
+    branches:
+      - feat/m00-foundation
+    paths:
+      - apps/server/package.json
+      - .github/workflows/m00-lockfile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: feat/m00-foundation
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Resolve lockfile only
+        run: pnpm install --lockfile-only
+      - name: Commit lockfile update
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "Lockfile already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "build: lock MCP SDK dependencies"
+          git push origin HEAD:feat/m00-foundation
