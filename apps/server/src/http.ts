@@ -47,7 +47,7 @@ async function toRequest(request: IncomingMessage, host: string): Promise<Reques
     method: request.method ?? 'GET',
     headers: toHeaders(request),
   };
-  if (body !== undefined) init.body = body;
+  if (body !== undefined) init.body = Uint8Array.from(body);
 
   return new Request(`http://${request.headers.host ?? host}${request.url ?? '/'}`, init);
 }
