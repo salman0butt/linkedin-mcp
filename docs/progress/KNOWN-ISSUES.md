@@ -2,13 +2,17 @@
 
 ## Current unresolved issues
 
-### Bootstrap lockfile CI
-
-Run on `72473e639f807a6f117c53e1fccb6f5196aecae1` failed because `actions/setup-node` pnpm caching required `pnpm-lock.yaml` before the workflow could generate it. Minimal fix committed at `9fb9f6212d3bf8d447b0ee481d0a91e410583eb6`; awaiting exact-head workflow evidence.
-
 ### Interactive container network isolation
 
-The current interactive container cannot resolve GitHub/package registries. This is not a repository/product defect. GitHub Actions is the authoritative remote execution environment for dependency resolution/CI in this session. Do not hand-write or claim a lockfile without generated evidence.
+The current interactive container cannot resolve GitHub/package registries. This is not a repository/product defect. GitHub Actions is the authoritative remote execution environment for dependency resolution and CI in this session.
+
+## Resolved during M00
+
+- Bootstrap lockfile cache ordering failure was fixed; the real registry-generated `pnpm-lock.yaml` is committed.
+- pnpm 12 lifecycle approval now explicitly permits the required `esbuild` build.
+- Repository formatting drift was normalized.
+- Typed ESLint was pointed at `tsconfig.base.json` and lint now targets TypeScript sources.
+- M00.2 autonomous/state verifier RED/GREEN cycles are complete with exact-SHA CI evidence.
 
 ## Review state
 
