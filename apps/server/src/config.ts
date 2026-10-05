@@ -26,7 +26,9 @@ function parsePositiveInteger(
   if (value === undefined || value === '') return fallback;
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0 || (max !== undefined && parsed > max)) {
-    throw new Error(`${label} must be a positive integer${max === undefined ? '' : ` no greater than ${max}`}`);
+    throw new Error(
+      `${label} must be a positive integer${max === undefined ? '' : ` no greater than ${max}`}`,
+    );
   }
   return parsed;
 }
