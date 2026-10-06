@@ -4,37 +4,39 @@ Last reconciled: 2026-10-06. Actual Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M00 — Foundation + Autonomous Control Plane — **CLOSEOUT**.
+M01 — Authentication & Identity — **ACTIVE**.
 
-Active task: M00.9 final exact-head CI and merge gate.
+Active task: M01.1 activation/design/plan complete; next is M01.2 auth configuration and provider-neutral auth contracts RED.
 
-Active branch: `feat/m00-foundation`.
-Active PR: #1 — `Build LinkedIn MCP foundation` (draft until final-head CI is proven).
-Latest verified SHA: `93f5d7ae26ed50d62814ed6f17b412c0e7470157`.
-CI status: GREEN — PR CI run `37425655212` passed frozen install, format, 42/42 tests across 13 files, lint, typecheck and build on that exact SHA.
+Active branch: `feat/m01-auth-identity`.
+Active PR: #2 — `Build M01 authentication and identity` (draft).
+Verified base `main`: `dde9bde5b136b0c352a864fadce08f02cab32938`.
+Post-M00 main CI: GREEN — push run `37469308840` passed on that exact SHA.
+Current M01 branch CI: PENDING after activation reconciliation.
 Critical findings: 0 unresolved.
 Important findings: 0 unresolved.
 
-## Closeout Findings
+## M01 Architecture
 
-The skeptical M00.9 review found and resolved three Important issues through evidence-backed RED→GREEN cycles:
+- Official LinkedIn OAuth/OIDC only for identity.
+- Default identity scopes: `openid profile email`.
+- Standard confidential authorization-code mode and access-dependent native-PKCE mode are explicit rather than silently interchangeable.
+- OAuth state is mandatory and single-use; native PKCE uses S256 and loopback-only callbacks.
+- Credentials will be encrypted locally with AES-256-GCM using an externally supplied 32-byte key.
+- Programmatic refresh-token support remains conditional on actual provider entitlement/token response.
+- Local logout will clear local credentials without claiming remote revocation.
+- `profile.me` remains `OFFICIAL_API` and unavailable until legitimate configured access exists.
 
-- direct `createHttpServer()` callers could bind a non-loopback interface; now rejected before opening a socket;
-- browser Origin validation accepted a different loopback service/port; now same-origin HTTP is required while origin-less MCP clients remain supported;
-- the runtime capability registry still reported the implemented M00 local tools as unavailable; they now report `AVAILABLE`/`VERIFIED` with evidence while future LinkedIn capabilities remain unavailable.
+## Plan Self-Review Ruling
 
-One Minor packaging debt remains: the private server package imports the private core package through a repository-relative built path and explicitly builds core first. This is verified inside the monorepo and does not block M00, but should become a declared workspace package dependency when package-consumer boundaries are expanded.
+The first M01 plan draft omitted the temporary loopback OAuth callback listener even though the spec requires it. Ruling: implement and test `apps/server/src/auth/callback-listener.ts` as part of the OAuth-session work before credential persistence. The listener must bind loopback only, validate the configured callback path, reject invalid/replayed state through the session coordinator, and close on success, terminal failure, or timeout. Cost if wrong: OAuth could be unusable from stdio mode or expose an unsafe callback surface.
 
-## Verified M00 Surface
+## Known Carryover
 
-- three `LOCAL_ONLY` foundation tools with real MCP client contract coverage;
-- built stdio process smoke through `StdioClientTransport` with protocol-clean stdout;
-- hardened loopback Streamable HTTP with real network client smoke, loopback bind enforcement, Host/same-origin Origin validation, 1 MiB default streaming request-body limit and clean shutdown;
-- durable autonomous state, capability and requirements verifiers;
-- frozen-install CI with format/test/lint/typecheck/build gates.
+The M00 private package-boundary debt remains Minor and deferred. Interactive local container cloning is currently rate-limited, so exact-head GitHub Actions is the authoritative RED/GREEN execution environment for this run.
 
 ## Blockers
 
-No product/repository blocker is known. Interactive container network isolation remains a tooling limitation; GitHub Actions is authoritative for dependency resolution and verification.
+No M01 implementation blocker is currently proven. Live LinkedIn verification will eventually require a configured LinkedIn developer application/product access; native PKCE and programmatic refresh are access-dependent and will not be claimed without evidence.
 
-Exact next work: verify the final durable-state reconciliation head on exact-SHA CI, then mark PR #1 ready and merge if all gates remain satisfied.
+Exact next work: execute the M01.2 auth configuration/contracts RED by adding failing tests on PR #2.

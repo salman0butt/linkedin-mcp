@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M00",
-  "currentIteration": "M00.9",
+  "currentMilestone": "M01",
+  "currentIteration": "M01.1",
   "status": "ACTIVE",
-  "activeBranch": "feat/m00-foundation",
-  "activePr": 1,
+  "activeBranch": "feat/m01-auth-identity",
+  "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "93f5d7ae26ed50d62814ed6f17b412c0e7470157",
-  "ciStatus": "GREEN",
+  "latestVerifiedSha": "dde9bde5b136b0c352a864fadce08f02cab32938",
+  "ciStatus": "PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Mark PR #1 ready and merge if remote head, review threads, mergeability and exact-head CI remain clean; then verify post-merge main."
+  "exactNextWork": "Execute the M01.2 auth configuration/contracts RED by adding failing tests on PR #2."
 }
