@@ -18,6 +18,7 @@ export interface RunningHttpServer {
   close(): Promise<void>;
 }
 
+const LOOPBACK_BIND_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
 const DEFAULT_REQUEST_BODY_LIMIT_BYTES = 1_048_576;
 
@@ -129,6 +130,10 @@ async function writeResponse(response: Response, target: ServerResponse): Promis
 
 export async function createHttpServer(options: HttpServerOptions = {}): Promise<RunningHttpServer> {
   const host = options.host ?? '127.0.0.1';
+  if (!LOOPBACK_BIND_HOSTS.has(host.toLowerCase())) {
+    throw new Error('HTTP server host must be a loopback address');
+  }
+
   const port = options.port ?? 3000;
   const requestBodyLimitBytes = options.requestBodyLimitBytes ?? DEFAULT_REQUEST_BODY_LIMIT_BYTES;
   const handler = createMcpHandler(() => createLinkedInMcpServer());
