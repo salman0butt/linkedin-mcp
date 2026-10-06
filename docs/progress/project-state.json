@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M01",
-  "currentIteration": "M01.1",
+  "currentIteration": "M01.2",
   "status": "ACTIVE",
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "dde9bde5b136b0c352a864fadce08f02cab32938",
-  "ciStatus": "PENDING",
+  "latestVerifiedSha": "30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc",
+  "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Execute the M01.2 auth configuration/contracts RED by adding failing tests on PR #2."
+  "exactNextWork": "Execute the M01.3 OAuth session and loopback callback RED on PR #2."
 }

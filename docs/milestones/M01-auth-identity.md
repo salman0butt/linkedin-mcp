@@ -1,6 +1,6 @@
 # M01 — Authentication & Identity
 
-Status: **ACTIVE — M01.1 activation/design/plan complete**
+Status: **ACTIVE — M01.2 auth configuration/contracts verified**
 
 ## Goal
 
@@ -32,8 +32,8 @@ PR: #2 — `Build M01 authentication and identity` (draft).
 ## Tasks / Iterations
 
 1. **COMPLETE** — M01.1 activation, current LinkedIn OAuth/OIDC investigation, design and implementation plan.
-2. **NEXT** — M01.2 auth configuration + provider-neutral auth contracts.
-3. **PLANNED** — M01.3 OAuth authorization session, callback listener, CSRF state and PKCE URL construction.
+2. **COMPLETE** — M01.2 auth configuration + provider-neutral auth contracts.
+3. **NEXT** — M01.3 OAuth authorization session, callback listener, CSRF state and PKCE URL construction.
 4. **PLANNED** — M01.4 encrypted credential store.
 5. **PLANNED** — M01.5 code exchange + token lifecycle/conditional refresh.
 6. **PLANNED** — M01.6 official OIDC userinfo identity + `linkedin.profile.me`.
@@ -48,24 +48,30 @@ PR: #2 — `Build M01 authentication and identity` (draft).
 
 ## TDD Evidence
 
-Pending M01.2 RED.
+### M01.2 auth configuration/contracts
+
+RED: `a696c10466072fdefbbd0d897a9a4e752fae08bf`, CI `37482043713` — formatting passed; Test failed for the intended missing behavior: core auth module absent, auth configuration not parsed/validated, and OAuth state not redacted.
+
+GREEN: `30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc`, CI `37482919464` — frozen install, format, full tests, lint, typecheck, and build passed.
 
 ## Integration Test Evidence
 
-Pending.
+Existing M00 real stdio/HTTP MCP transport smokes remained green in the M01.2 full suite.
 
 ## Security Review
 
-Required focus: OAuth state/PKCE/CSRF, callback loopback/path safety, token encryption/redaction, minimal scopes, 401 lifecycle, refresh entitlement truth, and local logout vs remote revocation semantics.
+M01.2 adds no token exchange or provider network call. Partial OAuth configuration fails closed; native-PKCE redirects are restricted to HTTP loopback addresses; `openid` is mandatory; OAuth state/verifier/code and token/encryption secret field names are redacted.
+
+Required future focus: OAuth state/PKCE/CSRF, callback loopback/path safety, token encryption/redaction, minimal scopes, 401 lifecycle, refresh entitlement truth, and local logout vs remote revocation semantics.
 
 ## Code Review Findings
 
-Pending.
+No Critical or Important finding is open from M01.2. Full milestone skeptical review remains required in M01.8.
 
 ## Fresh Verification Results
 
 M00 dependency gate: post-merge main CI `37469308840` GREEN on `dde9bde5b136b0c352a864fadce08f02cab32938`.
-M01 branch CI: pending after activation reconciliation.
+M01.2 implementation: CI `37482919464` GREEN on `30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc`.
 
 ## Durable Recovery Sources
 
@@ -76,10 +82,11 @@ Git/PR/CI > source/tests > `project-state.json` > `STATUS.md`/`CURRENT.md`/this 
 - [x] M00 post-merge dependency gate verified.
 - [x] M01 design committed.
 - [x] M01 implementation plan committed/self-reviewed.
+- [x] M01.2 auth config/contracts RED→GREEN verified.
 - [ ] Acceptance criteria verified.
-- [ ] Critical/Important findings resolved.
+- [ ] Critical/Important findings resolved at milestone closeout.
 - [ ] Exact-final-head and post-merge CI green.
 
 ## Exact Next Work
 
-Execute M01.2 auth configuration/contracts RED by adding failing tests on PR #2.
+Execute M01.3 OAuth session and loopback callback RED on PR #2.
