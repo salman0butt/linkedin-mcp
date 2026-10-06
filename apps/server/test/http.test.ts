@@ -59,6 +59,22 @@ describe('createHttpServer', () => {
     }
   });
 
+  it('refuses to bind non-loopback interfaces', async () => {
+    let server: Awaited<ReturnType<typeof createHttpServer>> | undefined;
+
+    try {
+      server = await createHttpServer({ host: '0.0.0.0', port: 0 });
+    } catch (error) {
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toMatch(/loopback/i);
+      return;
+    } finally {
+      if (server !== undefined) await server.close();
+    }
+
+    throw new Error('Expected createHttpServer to reject a non-loopback bind host');
+  });
+
   it('rejects an unapproved Host header before MCP handling', async () => {
     const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
 
