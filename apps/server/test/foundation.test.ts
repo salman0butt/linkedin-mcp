@@ -37,8 +37,11 @@ describe('foundation result factories', () => {
     expect(result.data.capabilities.length).toBeGreaterThan(0);
     expect(
       result.data.capabilities
-        .filter((capability) => capability.id !== 'foundation.health')
-        .every((capability) => capability.status !== 'VERIFIED'),
+        .filter((capability) => capability.milestone !== 'M00')
+        .every(
+          (capability) =>
+            capability.status !== 'VERIFIED' && capability.availability === 'UNAVAILABLE',
+        ),
     ).toBe(true);
   });
 });
