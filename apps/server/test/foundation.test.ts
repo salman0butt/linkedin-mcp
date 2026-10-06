@@ -35,13 +35,11 @@ describe('foundation result factories', () => {
     expect(result.status).toBe('succeeded');
     expect(result.provider).toEqual({ type: 'LOCAL_ONLY', name: 'linkedin-mcp' });
     expect(result.data.capabilities.length).toBeGreaterThan(0);
-    expect(
-      result.data.capabilities
-        .filter((capability) => capability.milestone !== 'M00')
-        .every(
-          (capability) =>
-            capability.status !== 'VERIFIED' && capability.availability === 'UNAVAILABLE',
-        ),
-    ).toBe(true);
+
+    const futureCapabilities = result.data.capabilities.filter(
+      (capability) => capability.milestone !== 'M00',
+    );
+    expect(futureCapabilities.every((capability) => capability.status !== 'VERIFIED')).toBe(true);
+    expect(futureCapabilities.every((capability) => capability.availability === 'UNAVAILABLE')).toBe(true);
   });
 });
