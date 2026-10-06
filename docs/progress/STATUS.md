@@ -10,8 +10,8 @@ Active task: M00.9 final exact-head CI and merge gate.
 
 Active branch: `feat/m00-foundation`.
 Active PR: #1 — `Build LinkedIn MCP foundation` (draft until final-head CI is proven).
-Latest verified SHA: `5302c241d0c50ed487e342769158c56e27479ca4`.
-CI status: GREEN — PR CI run `37424866957` passed frozen install, format, 42/42 tests across 13 files, lint, typecheck and build on that exact SHA.
+Latest verified SHA: `93f5d7ae26ed50d62814ed6f17b412c0e7470157`.
+CI status: GREEN — PR CI run `37425655212` passed frozen install, format, 42/42 tests across 13 files, lint, typecheck and build on that exact SHA.
 Critical findings: 0 unresolved.
 Important findings: 0 unresolved.
 
@@ -37,4 +37,4 @@ One Minor packaging debt remains: the private server package imports the private
 
 No product/repository blocker is known. Interactive container network isolation remains a tooling limitation; GitHub Actions is authoritative for dependency resolution and verification.
 
-Exact next work: verify the M00 closeout reconciliation commit on exact-head CI, then mark PR #1 ready and merge if all gates remain satisfied.
+Exact next work: verify the final durable-state reconciliation head on exact-SHA CI, then mark PR #1 ready and merge if all gates remain satisfied.
