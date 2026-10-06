@@ -42,19 +42,22 @@ function isAllowedHost(hostHeader: string | undefined): boolean {
   }
 }
 
-function isAllowedOrigin(originHeader: string | undefined): boolean {
+function isAllowedOrigin(originHeader: string | undefined, hostHeader: string | undefined): boolean {
   if (originHeader === undefined) return true;
+  if (hostHeader === undefined) return false;
 
   try {
-    const parsed = new URL(originHeader);
+    const origin = new URL(originHeader);
+    const target = new URL(`http://${hostHeader}`);
     return (
-      (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
-      parsed.username === '' &&
-      parsed.password === '' &&
-      parsed.pathname === '/' &&
-      parsed.search === '' &&
-      parsed.hash === '' &&
-      LOOPBACK_HOSTNAMES.has(parsed.hostname)
+      origin.protocol === 'http:' &&
+      origin.username === '' &&
+      origin.password === '' &&
+      origin.pathname === '/' &&
+      origin.search === '' &&
+      origin.hash === '' &&
+      LOOPBACK_HOSTNAMES.has(origin.hostname) &&
+      origin.origin === target.origin
     );
   } catch {
     return false;
@@ -139,7 +142,10 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
   const handler = createMcpHandler(() => createLinkedInMcpServer());
 
   const server = createServer((request, response) => {
-    if (!isAllowedHost(request.headers.host) || !isAllowedOrigin(request.headers.origin)) {
+    if (
+      !isAllowedHost(request.headers.host) ||
+      !isAllowedOrigin(request.headers.origin, request.headers.host)
+    ) {
       response.statusCode = 403;
       response.end();
       return;
