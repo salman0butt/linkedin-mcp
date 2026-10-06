@@ -7,6 +7,7 @@ import { createLinkedInMcpServer } from './create-server.js';
 export interface HttpServerOptions {
   host?: string;
   port?: number;
+  requestBodyLimitBytes?: number;
 }
 
 export interface RunningHttpServer {
@@ -18,6 +19,9 @@ export interface RunningHttpServer {
 }
 
 const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
+const DEFAULT_REQUEST_BODY_LIMIT_BYTES = 1_048_576;
+
+class PayloadTooLargeError extends Error {}
 
 function isAllowedHost(hostHeader: string | undefined): boolean {
   if (hostHeader === undefined) return false;
@@ -68,27 +72,46 @@ function toHeaders(request: IncomingMessage): Headers {
   return headers;
 }
 
-async function readBody(request: IncomingMessage): Promise<Buffer | undefined> {
+async function readBody(
+  request: IncomingMessage,
+  requestBodyLimitBytes: number,
+): Promise<Buffer | undefined> {
   if (request.method === 'GET' || request.method === 'HEAD') return undefined;
 
   const chunks: Buffer[] = [];
+  let totalBytes = 0;
+  let payloadTooLarge = false;
+
   for await (const rawChunk of request) {
     const chunk: unknown = rawChunk;
+    let buffer: Buffer;
     if (typeof chunk === 'string') {
-      chunks.push(Buffer.from(chunk));
+      buffer = Buffer.from(chunk);
     } else if (chunk instanceof Uint8Array) {
-      chunks.push(Buffer.from(chunk));
+      buffer = Buffer.from(chunk);
     } else {
       throw new TypeError('Unexpected HTTP request body chunk');
     }
+
+    totalBytes += buffer.byteLength;
+    if (totalBytes > requestBodyLimitBytes) {
+      payloadTooLarge = true;
+      continue;
+    }
+    if (!payloadTooLarge) chunks.push(buffer);
   }
 
+  if (payloadTooLarge) throw new PayloadTooLargeError('HTTP request body exceeds configured limit');
   if (chunks.length === 0) return undefined;
   return Buffer.concat(chunks);
 }
 
-async function toRequest(request: IncomingMessage, host: string): Promise<Request> {
-  const body = await readBody(request);
+async function toRequest(
+  request: IncomingMessage,
+  host: string,
+  requestBodyLimitBytes: number,
+): Promise<Request> {
+  const body = await readBody(request, requestBodyLimitBytes);
   const init: RequestInit = {
     method: request.method ?? 'GET',
     headers: toHeaders(request),
@@ -107,6 +130,7 @@ async function writeResponse(response: Response, target: ServerResponse): Promis
 export async function createHttpServer(options: HttpServerOptions = {}): Promise<RunningHttpServer> {
   const host = options.host ?? '127.0.0.1';
   const port = options.port ?? 3000;
+  const requestBodyLimitBytes = options.requestBodyLimitBytes ?? DEFAULT_REQUEST_BODY_LIMIT_BYTES;
   const handler = createMcpHandler(() => createLinkedInMcpServer());
 
   const server = createServer((request, response) => {
@@ -117,11 +141,13 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
     }
 
     void (async () => {
-      const webRequest = await toRequest(request, host);
+      const webRequest = await toRequest(request, host, requestBodyLimitBytes);
       const webResponse = await handler.fetch(webRequest);
       await writeResponse(webResponse, response);
-    })().catch(() => {
-      if (!response.headersSent) response.statusCode = 500;
+    })().catch((error: unknown) => {
+      if (!response.headersSent) {
+        response.statusCode = error instanceof PayloadTooLargeError ? 413 : 500;
+      }
       response.end();
     });
   });
