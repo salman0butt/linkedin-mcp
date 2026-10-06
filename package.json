@@ -1,0 +1,32 @@
+{
+  "name": "linkedin-mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Production-grade Model Context Protocol server for LinkedIn workflows.",
+  "type": "module",
+  "packageManager": "pnpm@12.9.1",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint \"**/*.ts\" --no-error-on-unmatched-pattern",
+    "pretypecheck": "pnpm --filter @linkedin-mcp/core build",
+    "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "pretest": "pnpm --filter @linkedin-mcp/server build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "pnpm -r --if-present build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.2",
+    "prettier": "3.6.2",
+    "tsx": "^4.16.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.48.1",
+    "vitest": "^4.0.15"
+  }
+}

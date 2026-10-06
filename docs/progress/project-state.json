@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "currentMilestone": "M00",
+  "currentIteration": "M00.9",
+  "status": "ACTIVE",
+  "activeBranch": "feat/m00-foundation",
+  "activePr": 1,
+  "baseBranch": "main",
+  "latestVerifiedSha": "93f5d7ae26ed50d62814ed6f17b412c0e7470157",
+  "ciStatus": "GREEN",
+  "criticalFindings": 0,
+  "importantFindings": 0,
+  "blockers": [],
+  "exactNextWork": "Mark PR #1 ready and merge if remote head, review threads, mergeability and exact-head CI remain clean; then verify post-merge main."
+}
