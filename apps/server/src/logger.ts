@@ -15,6 +15,9 @@ function isSensitiveKey(key: string): boolean {
     normalized.includes('password') ||
     normalized.includes('secret') ||
     normalized === 'authorization' ||
+    normalized === 'authorizationcode' ||
+    normalized === 'oauthstate' ||
+    normalized === 'codeverifier' ||
     normalized === 'cookie' ||
     normalized === 'setcookie'
   );
