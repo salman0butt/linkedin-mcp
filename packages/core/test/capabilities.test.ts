@@ -13,7 +13,7 @@ function firstDescriptor() {
 }
 
 describe('capability registry', () => {
-  it('contains the required future capability identifiers without claiming availability', () => {
+  it('marks verified M00 local tools available without upgrading future LinkedIn capabilities', () => {
     expect(capabilityIds).toEqual(
       expect.arrayContaining([
         'profile.me',
@@ -30,10 +30,26 @@ describe('capability registry', () => {
         'messages.send',
       ]),
     );
+
+    const m00Capabilities = foundationCapabilityRegistry.filter(
+      (descriptor) => descriptor.milestone === 'M00',
+    );
+    expect(m00Capabilities).toHaveLength(3);
     expect(
-      foundationCapabilityRegistry.every((descriptor) => descriptor.availability === 'UNAVAILABLE'),
+      m00Capabilities.every(
+        (descriptor) =>
+          descriptor.provider === 'LOCAL_ONLY' &&
+          descriptor.availability === 'AVAILABLE' &&
+          descriptor.status === 'VERIFIED' &&
+          Boolean(descriptor.evidence?.trim()),
+      ),
     ).toBe(true);
-    expect(foundationCapabilityRegistry.every((descriptor) => descriptor.status !== 'VERIFIED')).toBe(true);
+
+    const futureCapabilities = foundationCapabilityRegistry.filter(
+      (descriptor) => descriptor.milestone !== 'M00',
+    );
+    expect(futureCapabilities.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);
+    expect(futureCapabilities.every((descriptor) => descriptor.status !== 'VERIFIED')).toBe(true);
   });
 
   it('rejects duplicate capability identifiers', () => {
