@@ -1,6 +1,6 @@
 # M00 — Foundation + Autonomous Control Plane
 
-Status: **IMPLEMENTING — M00.8 hardened Streamable HTTP**
+Status: **IMPLEMENTING — M00.9 final CI/review/closeout**
 
 ## Goal
 
@@ -39,8 +39,8 @@ LinkedIn OAuth/tokens/account data, post mutation, search providers, browser aut
 5. **COMPLETE** — M00.5 foundation result factories.
 6. **COMPLETE** — M00.6 MCP server factory/real-client contract.
 7. **COMPLETE** — M00.7 stdio transport / built-process smoke.
-8. **ACTIVE** — M00.8 hardened Streamable HTTP.
-9. **PLANNED** — M00.9 final CI/review/closeout.
+8. **COMPLETE** — M00.8 hardened Streamable HTTP.
+9. **ACTIVE** — M00.9 final CI/review/closeout.
 
 ## TDD Evidence
 
@@ -52,16 +52,19 @@ LinkedIn OAuth/tokens/account data, post mutation, search providers, browser aut
 - M00.6 capabilities RED `0790a8a9eb0f15206ff759e0b4a5a62fcb2e1869`, run `37351982136`; formatted GREEN `162c2db665d9ecdfafa5e1d9ca7e053dbb02b99c`, run `37352516950`.
 - M00.6 final exact-head GREEN `cdde65df7b8d267646da67684586372421d8c1ff`, run `37353017223` — 34 tests plus format/lint/typecheck/build passed.
 - M00.7 RED `002f25a898fde12ea4fbfd2bd14d6aa89f266ff3`, run `37357906577` — real `StdioClientTransport` failed because the built `dist/stdio.js` entrypoint did not exist; 35 other tests passed.
-- M00.7 implementation candidate `058778765c253bb0a42d61ed6a26fb3de9295c64`, run `37358810748` — formatting-only failure before behavior.
-- M00.7 GREEN `ee0984919bfc90be79a073737cbf800e1eb057be`, push run `37358904283` — built server smoke through real `StdioClientTransport` passed, stdout remained protocol-clean, and 36/36 tests plus format/lint/typecheck/build passed. Duplicate PR run `37358912660` was cancelled after every quality step succeeded and is not used as completion evidence.
+- M00.7 GREEN `ee0984919bfc90be79a073737cbf800e1eb057be`, push run `37358904283` — built server smoke through real `StdioClientTransport` passed, stdout remained protocol-clean, and 36/36 tests plus format/lint/typecheck/build passed.
+- M00.8 Host RED `df544800636afe34552d6d53aaeaeb0726037f6e`; Host GREEN `444476fc50ce2c9a9975d1d928c44ce6f1c159b7`.
+- M00.8 Origin RED `4cf14883e5bcfd9e7164e4a712a64411b05625e6`, run `37384898711` — non-loopback browser Origin reached MCP handling and returned 405 instead of 403; 38 unrelated tests passed. Origin GREEN `6d3838e6e6a00ac3ce08cd37125665221fe5ebd2`, run `37422617115` — loopback Origin validation passed with origin-less clients preserved.
+- M00.8 body-limit RED `8dd0e2c2577c160461ed4ac748baaa90e4058027`, run `37422753874` — a request one byte over 1 MiB returned 406 instead of 413; 39 unrelated tests passed. GREEN `34dd83d3072d7ff03bedeea86e2c7fb4d1511cc8`, run `37422908723` — streaming byte-bound enforcement passed all quality gates.
+- M00.8 HTTP smoke harness `8cafcd09f1a598dbd77ce6b1a5ee72fdbd312038`, run `37423105979`, exposed strict pnpm workspace dependency resolution before behavior executed. Corrected workspace-context smoke `ba54ab6a531743c75c4dc8decb5323365f7936f4`, run `37423240732`, is GREEN with 41/41 tests plus format/lint/typecheck/build.
 
 ## Integration Test Evidence
 
-M00.6 uses the real `@modelcontextprotocol/client` with `StreamableHTTPClientTransport` against an in-process `createMcpHandler` bridge for all three foundation tools. M00.7 adds a built-process integration test: a real `StdioClientTransport` spawns `apps/server/dist/stdio.js`, calls `linkedin.health`, validates truthful `LOCAL_ONLY` health, and separately proves no startup/non-protocol text is emitted on stdout.
+M00.6 uses the real `@modelcontextprotocol/client` with `StreamableHTTPClientTransport` against an in-process `createMcpHandler` bridge for all three foundation tools. M00.7 adds a built-process integration test: a real `StdioClientTransport` spawns `apps/server/dist/stdio.js`, calls `linkedin.health`, validates truthful `LOCAL_ONLY` health, and separately proves no startup/non-protocol text is emitted on stdout. M00.8 adds an actual TCP loopback smoke: a real `StreamableHTTPClientTransport` connects to an ephemeral `createHttpServer` listener and calls `linkedin.health` successfully.
 
 ## Security Review
 
-No LinkedIn credentials, account access, browser automation, or mutation exists in M00. Health remains `linkedinConnected: false` with `LOCAL_ONLY` provenance. stdio reserves stdout for MCP protocol traffic; non-protocol output is prohibited by the M00.7 smoke test. HTTP Host/Origin/body-size hardening remains active work in M00.8.
+No LinkedIn credentials, account access, browser automation, or mutation exists in M00. Health remains `linkedinConnected: false` with `LOCAL_ONLY` provenance. stdio reserves stdout for MCP protocol traffic. HTTP binds to loopback by default, rejects non-loopback Host and browser Origin values, preserves origin-less MCP clients, and enforces a streaming default 1 MiB request-body cap before MCP handling. Final skeptical security/architecture review remains M00.9 work.
 
 ## Code Review Findings
 
@@ -69,7 +72,7 @@ Critical: 0 known. Important: 0 known. Independent closeout review pending. Pack
 
 ## Fresh Verification Results
 
-Exact-head push CI run `37358904283` is GREEN on `ee0984919bfc90be79a073737cbf800e1eb057be`: frozen install, format, 36/36 tests across 11 files, lint, typecheck and build all passed. M00.7 is complete; hardened HTTP acceptance remains pending.
+Exact-head PR CI run `37423240732` is GREEN on `ba54ab6a531743c75c4dc8decb5323365f7936f4`: frozen install, format, 41/41 tests across 13 files, lint, typecheck and build all passed. Both real stdio and real loopback HTTP transport smoke tests pass. M00.8 is complete; M00.9 closeout is active.
 
 ## Durable Recovery Sources
 
@@ -78,7 +81,7 @@ Exact-head push CI run `37358904283` is GREEN on `ee0984919bfc90be79a073737cbf80
 ## Completion Checklist
 
 - [ ] Requirements/iterations accounted for.
-- [ ] TDD/integration evidence complete.
+- [x] TDD/integration evidence complete through M00.8.
 - [ ] Security/protocol review complete.
 - [ ] Critical/Important findings resolved.
 - [ ] Traceability/capability state reconciled.
@@ -87,4 +90,4 @@ Exact-head push CI run `37358904283` is GREEN on `ee0984919bfc90be79a073737cbf80
 
 ## Exact Next Work
 
-Establish the M00.8 HTTP composition RED by requiring a loopback Streamable HTTP server lifecycle from the not-yet-created `apps/server/src/http.ts` module.
+Perform the M00.9 skeptical closeout review, starting with transport security and package-consumer architecture.
