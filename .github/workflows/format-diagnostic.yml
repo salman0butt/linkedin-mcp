@@ -27,15 +27,7 @@ jobs:
           cache: pnpm
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
-      - name: Print pinned-Prettier output
+      - name: Print pinned-Prettier diff
         run: |
           pnpm prettier --write docs/product/CAPABILITY-MATRIX.md docs/requirements/TRACEABILITY.md docs/superpowers/plans/2026-10-06-m01-auth-identity.md
-          echo '=== CAPABILITY-MATRIX BEGIN ==='
-          cat docs/product/CAPABILITY-MATRIX.md
-          echo '=== CAPABILITY-MATRIX END ==='
-          echo '=== TRACEABILITY BEGIN ==='
-          cat docs/requirements/TRACEABILITY.md
-          echo '=== TRACEABILITY END ==='
-          echo '=== PLAN BEGIN ==='
-          cat docs/superpowers/plans/2026-10-06-m01-auth-identity.md
-          echo '=== PLAN END ==='
+          git diff --no-ext-diff --unified=3 -- docs/product/CAPABILITY-MATRIX.md docs/requirements/TRACEABILITY.md docs/superpowers/plans/2026-10-06-m01-auth-identity.md
