@@ -4,7 +4,7 @@
 
 **Goal:** Add truthful LinkedIn OAuth/OIDC authentication, encrypted local credential persistence, identity inspection, auth status/logout tools, and capability projection without exposing secrets or pretending partner-gated features are universally available.
 
-**Architecture:** A server-local auth service coordinates one pending OAuth session, an official LinkedIn OAuth/identity adapter, and an AES-256-GCM file credential store. `packages/core` owns provider-neutral auth types; `apps/server/src/auth/*` owns LinkedIn/local runtime behavior; `create-server.ts` exposes only secret-safe MCP contracts.
+**Architecture:** A server-local auth service coordinates one pending OAuth session, a temporary loopback callback listener, an official LinkedIn OAuth/identity adapter, and an AES-256-GCM file credential store. `packages/core` owns provider-neutral auth types; `apps/server/src/auth/*` owns LinkedIn/local runtime behavior; `create-server.ts` exposes only secret-safe MCP contracts.
 
 **Tech Stack:** Node.js 24 built-in crypto/fetch/http/fs, TypeScript 5.9, Zod v4, MCP TypeScript SDK, Vitest, pnpm 12.
 
@@ -16,8 +16,9 @@
 - `confidential` mode uses the standard LinkedIn authorization-code flow and configured client secret.
 - `native_pkce` uses LinkedIn's native PKCE authorization endpoint, S256, loopback redirect, and no client secret in token exchange.
 - OAuth state is cryptographically random, mandatory, single-use, and compared safely.
+- Native PKCE callbacks bind only to `127.0.0.1` or `[::1]`, validate the exact configured callback path, and close after success, terminal failure, or timeout.
 - Startup remains valid when auth is unconfigured; auth-backed tools report explicit configuration/auth state.
-- No access token, refresh token, client secret, encryption key, authorization code, OAuth state, or PKCE verifier may appear in MCP output/logs/errors/snapshots.
+- No access token, refresh token, client secret, encryption key, authorization code, OAuth state, or PKCE verifier may appear in MCP output, logs, errors, or snapshots.
 - Credential persistence uses AES-256-GCM with a base64-encoded 32-byte external key, fresh 96-bit IV, authenticated ciphertext, restrictive permissions, and atomic replacement.
 - Programmatic refresh support is conditional on an actual refresh token; never claim universal LinkedIn refresh-token availability.
 - Local logout clears local credentials; remote revocation is not claimed without a documented and verified provider operation.
@@ -26,32 +27,19 @@
 
 ## Review Focus
 
-1. Replayed/wrong OAuth state must fail before token exchange and must never leak the supplied state.
-2. Malformed/tampered credential ciphertext or a wrong encryption key must fail closed without destroying the last valid file.
-3. Provider 401 after a previously valid token must transition to `reauth_required` and must not enter a retry loop.
-4. Optional userinfo email fields must remain optional; absence must not make an otherwise valid identity fail.
-5. A configured app without PKCE/refresh entitlement must report the limitation explicitly rather than silently falling back or claiming support.
+1. Replayed, missing, wrong, or expired OAuth state fails before token exchange and never leaks supplied state.
+2. Callback listeners never bind non-loopback interfaces or accept a different callback path.
+3. Malformed or tampered credential ciphertext and wrong encryption keys fail closed without destroying the last valid file.
+4. Provider 401 after a previously valid token transitions to `reauth_required` and never enters a retry loop.
+5. Optional userinfo email fields remain optional.
+6. PKCE and refresh entitlement limits are surfaced explicitly rather than silently falling back or claiming support.
 
 ---
 
-## File map
-
-- `packages/core/src/auth.ts` — provider-neutral auth state, identity, token metadata and OAuth mode types.
-- `packages/core/src/index.ts` — export auth types.
-- `apps/server/src/config.ts` — validated optional LinkedIn auth configuration.
-- `apps/server/src/logger.ts` — extend redaction coverage for M01 secrets.
-- `apps/server/src/auth/oauth-session.ts` — random state/session/PKCE construction and single-use pending session lifecycle.
-- `apps/server/src/auth/linkedin-oauth.ts` — authorization URL, code exchange, optional refresh and provider error normalization.
-- `apps/server/src/auth/credential-store.ts` — encrypted atomic one-account credential persistence.
-- `apps/server/src/auth/linkedin-identity.ts` — official OIDC userinfo request and identity normalization.
-- `apps/server/src/auth/auth-service.ts` — auth state machine, credential lifecycle, logout and identity orchestration.
-- `apps/server/src/create-server.ts` — MCP auth/profile tools and dynamic capability projection dependency.
-- `apps/server/test/*` — focused RED/GREEN behavior tests.
-- `docs/*` state/traceability/capability files — durable activation and verification state.
-
-### Task 1: Activate M01 and define auth configuration/contracts
+### Task 1: Auth configuration, contracts, and redaction
 
 **Files:**
+
 - Create: `packages/core/src/auth.ts`
 - Modify: `packages/core/src/index.ts`
 - Modify: `apps/server/src/config.ts`
@@ -59,329 +47,134 @@
 - Test: `packages/core/test/auth.test.ts`
 - Test: `apps/server/test/config.test.ts`
 - Test: `apps/server/test/logger.test.ts`
-- Modify: `docs/progress/project-state.json`
-- Modify: `docs/progress/STATUS.md`
-- Modify: `docs/milestones/CURRENT.md`
-- Modify: `docs/milestones/M01-auth-identity.md`
-- Modify: `docs/requirements/TRACEABILITY.md`
 
 **Interfaces:**
-- Produces: `OAuthMode = 'confidential' | 'native_pkce'`; `AuthConnectionState`; `AuthenticatedIdentity`; `StoredCredential`; `AuthConfig` on `ServerConfig` as optional validated auth configuration.
-- Consumes: M00 `ProviderType`, `ToolResult`, logger/config patterns.
 
-- [ ] **Step 1: Write failing core/config/logger tests**
+- Produces `OAuthMode`, `AuthConnectionState`, `AuthenticatedIdentity`, `StoredCredential`, and optional `ServerConfig.auth`.
+- Consumes M00 result/provider and config/logger patterns.
 
-Add tests named:
-- `defines secret-free auth domain contracts`;
-- `parses confidential OAuth configuration only when all required fields exist`;
-- `parses native PKCE configuration without requiring a client secret`;
-- `rejects non-loopback redirect URI for native PKCE mode`;
-- `requires openid in configured OAuth scopes`;
-- `redacts M01 OAuth and encryption secret field names`.
+- [ ] Write tests first for both OAuth modes, partial-config rejection, `openid` scope requirement, native-PKCE loopback redirect validation, and M01 secret redaction.
+- [ ] Run exact-head CI and confirm the Test step fails because M01 auth code is missing.
+- [ ] Implement only the minimum auth types/config/redaction needed by those tests.
+- [ ] Re-run exact-head CI; require format, tests, lint, typecheck, and build green before continuing.
+- [ ] Record RED/GREEN SHAs and advance durable state to M01.3.
 
-- [ ] **Step 2: Run focused tests and verify RED**
-
-Run: `pnpm test -- packages/core/test/auth.test.ts apps/server/test/config.test.ts apps/server/test/logger.test.ts`
-
-Expected: FAIL because M01 auth types/config/redaction do not exist.
-
-- [ ] **Step 3: Implement minimal auth types/config/redaction**
-
-Define exact public types in `packages/core/src/auth.ts`:
-
-```ts
-export type OAuthMode = 'confidential' | 'native_pkce';
-export type AuthConnectionState =
-  | 'not_configured'
-  | 'disconnected'
-  | 'authorization_pending'
-  | 'connected'
-  | 'expired'
-  | 'reauth_required'
-  | 'error';
-
-export interface AuthenticatedIdentity {
-  sub: string;
-  name?: string;
-  givenName?: string;
-  familyName?: string;
-  picture?: string;
-  locale?: string;
-  email?: string;
-  emailVerified?: boolean;
-}
-```
-
-`StoredCredential` contains token strings internally plus expiry/scope/subject/provider mode metadata; it is never an MCP output type.
-
-Extend `ServerConfig` with `auth?: LinkedInAuthConfig`, validating the exact environment keys in the spec.
-
-- [ ] **Step 4: Verify GREEN and broader static compatibility**
-
-Run: `pnpm test -- packages/core/test/auth.test.ts apps/server/test/config.test.ts apps/server/test/logger.test.ts`
-
-Expected: PASS.
-
-Run: `pnpm typecheck`
-
-Expected: PASS.
-
-- [ ] **Step 5: Reconcile activation docs and commit**
-
-Set M01/M01.1 active on `feat/m01-auth-identity`, record post-M00 `main` SHA `dde9bde5b136b0c352a864fadce08f02cab32938` and push CI `37469308840`, point traceability to the M01 spec/plan, and set exactly one next action to Task 2.
-
-Commit message: `feat(m01): define auth configuration contracts`
-
-### Task 2: OAuth state and PKCE authorization session
+### Task 2: OAuth session, PKCE, and callback listener
 
 **Files:**
+
 - Create: `apps/server/src/auth/oauth-session.ts`
+- Create: `apps/server/src/auth/callback-listener.ts`
 - Test: `apps/server/test/oauth-session.test.ts`
+- Test: `apps/server/test/callback-listener.test.ts`
 
 **Interfaces:**
-- Consumes: `OAuthMode`, validated auth config.
-- Produces: `createAuthorizationSession(config, deps): AuthorizationSession`; `consumeAuthorizationCallback(sessionId, callback): ConsumedAuthorizationCode`; `buildPkceChallenge(verifier): string`.
 
-- [ ] **Step 1: Write failing session tests**
+- Produces single-use pending authorization sessions, S256 challenges, callback-code consumption, and a bounded temporary loopback listener.
 
-Cover cryptographic state/session generation, 43–128 character verifier, S256 challenge, exact configured scopes, five-minute default expiry, wrong/missing state, replay, expired session, and confidential mode omitting PKCE fields.
-
-- [ ] **Step 2: Verify RED**
-
-Run: `pnpm test -- apps/server/test/oauth-session.test.ts`
-
-Expected: FAIL because OAuth session functions do not exist.
-
-- [ ] **Step 3: Implement the in-memory single-session coordinator**
-
-Use injected randomness/clock in tests. Never persist state/verifier. Constant-time compare equal-length state values before consuming the session.
-
-- [ ] **Step 4: Verify GREEN**
-
-Run: `pnpm test -- apps/server/test/oauth-session.test.ts`
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-Commit message: `feat(m01): add OAuth state and PKCE sessions`
+- [ ] RED tests cover random session/state values, PKCE verifier/challenge, five-minute expiry, wrong/missing/replayed state, and confidential mode omitting PKCE fields.
+- [ ] RED listener tests cover loopback-only bind, exact path validation, provider error callbacks, one terminal result, timeout, and listener close behavior.
+- [ ] Implement with injected randomness/clock where practical and constant-time equal-length state comparison.
+- [ ] Verify focused GREEN plus full suite.
 
 ### Task 3: Encrypted credential store
 
 **Files:**
+
 - Create: `apps/server/src/auth/credential-store.ts`
 - Test: `apps/server/test/credential-store.test.ts`
 
 **Interfaces:**
-- Consumes: `StoredCredential`.
-- Produces: `CredentialStore` interface with `load(): Promise<StoredCredential | null>`, `save(value): Promise<void>`, `clear(): Promise<void>` and `createFileCredentialStore(options): CredentialStore`.
 
-- [ ] **Step 1: Write failing storage tests**
+- `CredentialStore.load(): Promise<StoredCredential | null>`
+- `CredentialStore.save(value): Promise<void>`
+- `CredentialStore.clear(): Promise<void>`
 
-Cover AES-256-GCM roundtrip, random IV changing ciphertext, wrong-key failure, byte tamper detection, mode `0600` where supported, atomic replacement preserving a prior valid file when replacement fails, and idempotent clear.
+- [ ] RED tests cover AES-256-GCM roundtrip, random IV, wrong-key failure, tamper detection, `0600` where supported, atomic replacement, and idempotent clear.
+- [ ] Implement a versioned envelope using Node crypto and atomic same-directory temp-file rename.
+- [ ] Verify focused GREEN plus full suite.
 
-- [ ] **Step 2: Verify RED**
-
-Run: `pnpm test -- apps/server/test/credential-store.test.ts`
-
-Expected: FAIL because the credential store does not exist.
-
-- [ ] **Step 3: Implement versioned encrypted envelope**
-
-Use Node `crypto` and `fs/promises`; validate the decoded key is exactly 32 bytes; write temp file in the same directory then rename atomically.
-
-- [ ] **Step 4: Verify GREEN**
-
-Run: `pnpm test -- apps/server/test/credential-store.test.ts`
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-Commit message: `feat(m01): encrypt local LinkedIn credentials`
-
-### Task 4: Official LinkedIn OAuth exchange and token lifecycle
+### Task 4: Official LinkedIn OAuth adapter
 
 **Files:**
+
 - Create: `apps/server/src/auth/linkedin-oauth.ts`
 - Test: `apps/server/test/linkedin-oauth.test.ts`
 
 **Interfaces:**
-- Consumes: validated auth config and consumed authorization code/session.
-- Produces: `buildAuthorizationUrl(config, session): URL`; `exchangeAuthorizationCode(input, deps): Promise<StoredCredential>`; `refreshAccessToken(credential, config, deps): Promise<StoredCredential>`.
 
-- [ ] **Step 1: Write failing adapter tests**
+- Produces authorization URLs, authorization-code exchange, optional refresh when a real refresh token exists, and sanitized provider-error classification.
 
-Assert confidential authorization URL/token form fields; native-PKCE native endpoint plus `code_challenge_method=S256`; native exchange includes `code_verifier` and excludes `client_secret`; confidential exchange includes `client_secret` and excludes verifier; scopes and expiry normalize correctly; refresh is rejected when no refresh token exists; provider 401/400/429/5xx are classified without echoing request secrets.
+- [ ] RED tests assert confidential and native-PKCE endpoints and exact form fields.
+- [ ] RED tests prove native exchange excludes `client_secret`, confidential exchange excludes `code_verifier`, and missing refresh tokens disable refresh.
+- [ ] RED tests classify 400/401/429/5xx without echoing request secrets.
+- [ ] Implement injected-fetch adapter with `application/x-www-form-urlencoded` bodies.
+- [ ] Verify focused GREEN plus full suite.
 
-- [ ] **Step 2: Verify RED**
-
-Run: `pnpm test -- apps/server/test/linkedin-oauth.test.ts`
-
-Expected: FAIL because LinkedIn OAuth adapter does not exist.
-
-- [ ] **Step 3: Implement minimal injected-fetch adapter**
-
-Use `application/x-www-form-urlencoded`; never log body/credentials. Preserve optional `refresh_token` only when LinkedIn actually returns it.
-
-- [ ] **Step 4: Verify GREEN**
-
-Run: `pnpm test -- apps/server/test/linkedin-oauth.test.ts`
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-Commit message: `feat(m01): add official LinkedIn OAuth adapter`
-
-### Task 5: Official OIDC userinfo identity client
+### Task 5: Official OIDC userinfo identity
 
 **Files:**
+
 - Create: `apps/server/src/auth/linkedin-identity.ts`
 - Test: `apps/server/test/linkedin-identity.test.ts`
 
 **Interfaces:**
-- Consumes: a valid internal access token.
-- Produces: `fetchLinkedInIdentity(accessToken, deps): Promise<AuthenticatedIdentity>`.
 
-- [ ] **Step 1: Write failing identity tests**
+- Produces `fetchLinkedInIdentity(accessToken, deps): Promise<AuthenticatedIdentity>` against `https://api.linkedin.com/v2/userinfo`.
 
-Cover documented userinfo claim mapping, absent email/email_verified, malformed response, 401 classification, 429, and sanitization of provider response errors.
+- [ ] RED tests cover documented claim mapping, missing optional email claims, invalid/missing `sub`, 401, 429, and sanitized provider failures.
+- [ ] Implement bearer-token request with the token only in the Authorization header.
+- [ ] Verify focused GREEN plus full suite.
 
-- [ ] **Step 2: Verify RED**
-
-Run: `pnpm test -- apps/server/test/linkedin-identity.test.ts`
-
-Expected: FAIL because identity client does not exist.
-
-- [ ] **Step 3: Implement `/v2/userinfo` client**
-
-Bearer token exists only in the Authorization header. Parse only documented fields and reject missing/invalid `sub`.
-
-- [ ] **Step 4: Verify GREEN**
-
-Run: `pnpm test -- apps/server/test/linkedin-identity.test.ts`
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-Commit message: `feat(m01): add official LinkedIn identity client`
-
-### Task 6: Auth service state machine and logout
+### Task 6: Auth lifecycle service
 
 **Files:**
+
 - Create: `apps/server/src/auth/auth-service.ts`
 - Test: `apps/server/test/auth-service.test.ts`
 
 **Interfaces:**
-- Consumes: OAuth session coordinator, OAuth adapter, credential store, identity client.
-- Produces: `AuthService` with `startAuthorization()`, `getStatus()`, `completeAuthorization()`, `getProfile()`, `logout()`.
 
-- [ ] **Step 1: Write failing service tests**
+- `startAuthorization()`
+- `getStatus()`
+- `completeAuthorization()`
+- `getProfile()`
+- `logout()`
 
-Cover unconfigured/disconnected/pending/connected/expired/reauth-required states, pre-request expiry handling, optional refresh only when refresh token exists, provider 401 transition to `reauth_required`, no retry loop, local logout clearing pending and persisted state, and secret-free returned objects.
+- [ ] RED tests cover unconfigured, disconnected, pending, connected, expired, and `reauth_required` states.
+- [ ] RED tests prove refresh is attempted only with a legitimate refresh token, 401 triggers reauth without retry loops, and logout clears local/pending state without claiming remote revocation.
+- [ ] Implement dependency-injected state orchestration.
+- [ ] Verify focused GREEN plus full suite.
 
-- [ ] **Step 2: Verify RED**
-
-Run: `pnpm test -- apps/server/test/auth-service.test.ts`
-
-Expected: FAIL because auth service does not exist.
-
-- [ ] **Step 3: Implement minimal state machine**
-
-Inject dependencies; keep provider errors normalized. Logout reports local clear truth and explicitly does not claim remote revocation.
-
-- [ ] **Step 4: Verify GREEN**
-
-Run: `pnpm test -- apps/server/test/auth-service.test.ts`
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-Commit message: `feat(m01): orchestrate auth lifecycle`
-
-### Task 7: MCP auth/profile tools and truthful capability projection
+### Task 7: MCP auth/profile tools and capability projection
 
 **Files:**
+
 - Modify: `apps/server/src/create-server.ts`
-- Modify: `packages/core/src/capabilities.ts`
 - Modify: `apps/server/src/foundation.ts`
+- Modify: `packages/core/src/capabilities.ts`
 - Test: `apps/server/test/mcp-contract.test.ts`
 - Test: `packages/core/test/capabilities.test.ts`
 
 **Interfaces:**
-- Consumes: `AuthService`.
-- Produces MCP tools: `linkedin.auth.start`, `linkedin.auth.status`, `linkedin.profile.me`, `linkedin.auth.logout`; dynamic `profile.me` runtime capability projection.
 
-- [ ] **Step 1: Write failing real-client contract tests**
+- Adds `linkedin.auth.start`, `linkedin.auth.status`, `linkedin.profile.me`, and `linkedin.auth.logout`.
+- Adds dynamic runtime projection for `profile.me` while keeping static/live availability conservative.
 
-Assert tool discovery, strict inputs, secret-free auth-start/status/profile/logout structured output, `profile.me` official provenance, and conservative `UNAVAILABLE` capability when auth is not configured/connected.
+- [ ] RED real-client tests prove tool discovery, strict input validation, secret-free output, official provenance, and conservative unavailable state without configured auth.
+- [ ] Register tools through injected `AuthService` while preserving M00 stdio/HTTP defaults.
+- [ ] Verify GREEN including real stdio and HTTP transport smoke tests.
 
-- [ ] **Step 2: Verify RED**
-
-Run: `pnpm test -- apps/server/test/mcp-contract.test.ts packages/core/test/capabilities.test.ts`
-
-Expected: FAIL because M01 tools/projection are absent.
-
-- [ ] **Step 3: Register tools and capability projection**
-
-Inject `AuthService` through `LinkedInMcpServerDeps`; preserve M00 defaults so existing tests/stdio/http remain valid without auth configuration.
-
-- [ ] **Step 4: Verify GREEN and all transport contracts**
-
-Run: `pnpm test -- apps/server/test/mcp-contract.test.ts packages/core/test/capabilities.test.ts tests/contract/stdio-smoke.test.ts tests/contract/http-smoke.test.ts`
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-Commit message: `feat(m01): expose auth and identity MCP tools`
-
-### Task 8: Full verification, skeptical/security review and durable closeout state
+### Task 8: Security review and closeout
 
 **Files:**
-- Modify: `docs/milestones/M01-auth-identity.md`
-- Modify: `docs/progress/project-state.json`
-- Modify: `docs/progress/STATUS.md`
-- Modify: `docs/progress/KNOWN-ISSUES.md` if new external/access blockers are proven
-- Modify: `docs/requirements/TRACEABILITY.md`
-- Modify: `docs/product/CAPABILITY-MATRIX.md`
-- Create: `docs/superpowers/evidence/2026-10-06-m01-auth-identity-closeout.md` only when evidence exists
 
-**Interfaces:**
-- Consumes: all M01 implementation and test evidence.
-- Produces: exact durable milestone state and one next work action.
+- Modify durable M01 state, traceability, capability matrix, status, and known issues as evidence requires.
+- Create `docs/superpowers/evidence/2026-10-06-m01-auth-identity-closeout.md` only when evidence exists.
 
-- [ ] **Step 1: Run the complete local/CI-equivalent verification commands**
-
-Run in order:
-
-```bash
-pnpm format:check
-pnpm test
-pnpm lint
-pnpm typecheck
-pnpm build
-```
-
-Expected: all exit 0 with no hidden failures.
-
-- [ ] **Step 2: Perform skeptical and security review**
-
-Review specifically for token leakage, callback/state replay, PKCE correctness, credential-file attacks, filesystem permissions, provider error leakage, 401 lifecycle correctness, scope overreach, false refresh/revocation claims, capability provenance, and compatibility with stdio/HTTP transports.
-
-Critical/Important findings must receive a genuine regression RED -> GREEN cycle before closeout.
-
-- [ ] **Step 3: Reconcile durable state**
-
-Record actual branch/PR/head SHA/CI only. Keep `profile.me` static availability conservative unless a live LinkedIn call has actually verified configured access. If live credentials/PKCE entitlement are unavailable, record the exact live-verification blocker rather than marking implementation failure.
-
-- [ ] **Step 4: Verify exact final head CI and merge gates**
-
-Required: exact-head green CI, zero unresolved Critical/Important findings, no blocking review threads, stable remote head, mergeable PR, current traceability/state.
-
-- [ ] **Step 5: Squash merge, verify post-merge `main`, and continue**
-
-After merge, verify push CI on the exact new `main` SHA before activating M02.
+- [ ] Run `pnpm format:check`, `pnpm test`, `pnpm lint`, `pnpm typecheck`, and `pnpm build`.
+- [ ] Perform skeptical/security review for token leakage, callback/state replay, PKCE correctness, callback binding/path safety, credential-file attacks, provider-error leakage, 401 lifecycle, scope overreach, false refresh/revocation claims, provenance, and transport compatibility.
+- [ ] Critical/Important findings receive genuine regression RED -> GREEN cycles.
+- [ ] Reconcile exact branch/PR/SHA/CI state; mocked CI must not mark live LinkedIn access verified.
+- [ ] Require exact-final-head green CI, zero unresolved Critical/Important findings, clean review threads, stable remote head, mergeability, and current traceability before marking PR ready.
+- [ ] Squash merge under repository policy, verify push CI on the exact new `main` SHA, then activate M02 and continue.
