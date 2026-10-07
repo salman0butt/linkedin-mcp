@@ -263,7 +263,9 @@ describe('M01 MCP auth/profile contract', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       });
-      expect(JSON.stringify(result.structuredContent)).not.toMatch(/access-token|refresh-token|provider-private/i);
+      expect(JSON.stringify(result.structuredContent)).not.toMatch(
+        /access-token|refresh-token|provider-private/i,
+      );
     });
   });
 });
