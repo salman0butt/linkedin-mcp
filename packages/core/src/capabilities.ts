@@ -83,9 +83,11 @@ const descriptors: CapabilityDescriptor[] = [
     provider: 'OFFICIAL_API',
     availability: 'UNAVAILABLE',
     milestone: 'M01',
-    status: 'PLANNED',
+    status: 'ACTIVE',
     accessNote: 'Requires LinkedIn OAuth scopes and configured application access.',
     approvalRequired: false,
+    evidence:
+      'Deterministic M01 OAuth/OIDC implementation is CI-verified; live configured-account availability remains unverified.',
   },
   {
     id: 'post.create.text',
