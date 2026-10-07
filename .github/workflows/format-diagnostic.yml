@@ -1,0 +1,28 @@
+name: Format Diagnostic
+
+on:
+  push:
+    branches:
+      - feat/m01-auth-identity
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: |
+          pnpm prettier --write apps/server/test/mcp-auth-contract.test.ts
+          git diff --no-ext-diff --unified=3 -- apps/server/test/mcp-auth-contract.test.ts
