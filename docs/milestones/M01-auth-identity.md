@@ -1,6 +1,6 @@
 # M01 — Authentication & Identity
 
-Status: **ACTIVE — M01.4 encrypted credential store verified**
+Status: **ACTIVE — M01.5 official OAuth adapter verified**
 
 ## Goal
 
@@ -35,8 +35,8 @@ PR: #2 — `Build M01 authentication and identity` (draft).
 2. **COMPLETE** — M01.2 auth configuration + provider-neutral auth contracts.
 3. **COMPLETE** — M01.3 OAuth authorization session, loopback callback listener, CSRF state and PKCE primitives.
 4. **COMPLETE** — M01.4 encrypted credential store.
-5. **NEXT** — M01.5 code exchange + token lifecycle/conditional refresh.
-6. **PLANNED** — M01.6 official OIDC userinfo identity + `linkedin.profile.me`.
+5. **COMPLETE** — M01.5 code exchange + token lifecycle/conditional refresh.
+6. **NEXT** — M01.6 official OIDC userinfo identity + `linkedin.profile.me`.
 7. **PLANNED** — M01.7 MCP auth start/status/logout + dynamic capability projection.
 8. **PLANNED** — M01.8 security/skeptical review, live-access assessment, exact-head CI and closeout.
 
@@ -70,6 +70,12 @@ Initial GREEN: `3b9b4b9f5dc5e85c7e3c8c955ca6045253562ca3`, CI `37587358269` — 
 
 Skeptical/privacy review found one Important data-minimization gap: the store serialized structurally wider values wholesale, allowing unrelated profile fields to survive persistence. Review RED: `f4680c67211ec4c65a22105ddec93b8c21d09afa`, CI `37587657472` — formatting passed; 70 existing tests passed and the regression failed because `email` and `name` survived. Review GREEN: `9fcb2c8cf1e18df72217affe0f854fc798303e65`, CI `37588029054` — format, 71 tests, lint, typecheck, and build passed.
 
+### M01.5 official LinkedIn OAuth adapter
+
+Primary RED: `2b6646cd2fae558d729035b75659373e8fdbaba1`, CI `37592679866` — formatting passed; Test failed for the intended missing behavior because `apps/server/src/auth/linkedin-oauth.ts` did not exist while all 71 existing tests passed.
+
+GREEN: `faedaf2f53b3b7f000bc702650421c2e348b057a`, CI `37593107489` — frozen install, format, full tests, lint, typecheck, and build passed. Confidential exchange sends the documented secret-bearing fields; native PKCE exchange sends the verifier without a client secret; refresh is disabled without an actual refresh token and for native PKCE; provider HTTP failures are classified without echoing provider/request secrets. The temporary pinned-Prettier diagnostic workflow was removed before this GREEN verification.
+
 ## Integration Test Evidence
 
 Existing real stdio and loopback Streamable HTTP MCP transport smokes remain green. M01.3 exercises the callback listener through real loopback HTTP requests. M01.4 exercises real filesystem persistence using temporary directories, authenticated encryption, permission checks, atomic replacement failure, and tamper/wrong-key behavior.
@@ -96,6 +102,7 @@ M00 dependency gate: post-merge main CI `37469308840` GREEN on `dde9bde5b136b0c3
 M01.2 implementation: CI `37482919464` GREEN on `30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc`.
 M01.3 reviewed implementation: CI `37585523117` GREEN on `9035cebcaba485429d77efd0c487de811296051e`.
 M01.4 reviewed implementation: CI `37588029054` GREEN on `9fcb2c8cf1e18df72217affe0f854fc798303e65`.
+M01.5 implementation: CI `37593107489` GREEN on `faedaf2f53b3b7f000bc702650421c2e348b057a`.
 
 ## Durable Recovery Sources
 
@@ -109,10 +116,11 @@ Git/PR/CI > source/tests > `project-state.json` > `STATUS.md`/`CURRENT.md`/this 
 - [x] M01.2 auth config/contracts RED→GREEN verified.
 - [x] M01.3 OAuth session/callback RED→GREEN and review regressions verified.
 - [x] M01.4 encrypted credential store RED→GREEN and privacy regression verified.
+- [x] M01.5 OAuth adapter RED→GREEN verified.
 - [ ] Acceptance criteria verified.
 - [ ] Critical/Important findings resolved at milestone closeout.
 - [ ] Exact-final-head and post-merge CI green.
 
 ## Exact Next Work
 
-Execute M01.5 official LinkedIn OAuth code exchange and conditional refresh RED on PR #2.
+Execute M01.6 official OIDC userinfo identity RED on PR #2.
