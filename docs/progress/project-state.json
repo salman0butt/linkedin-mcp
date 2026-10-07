@@ -6,10 +6,10 @@
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "e9f138d4286dd99eab64bd1170132c4a69b57a1c",
+  "latestVerifiedSha": "aa6e09b141366fe5e6d1804c6013096be2dccbcb",
   "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Execute the M01.7 auth lifecycle service RED on PR #2 as the first M01.7 integration subtask."
+  "exactNextWork": "Execute the M01.7 MCP auth/profile tool and dynamic capability projection RED on PR #2."
 }
