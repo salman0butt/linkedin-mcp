@@ -5,6 +5,11 @@ import type {
   StoredCredential,
 } from '../../../../packages/core/dist/index.js';
 import type { LinkedInAuthConfig } from '../config.js';
+import {
+  startOAuthCallbackListener,
+  type OAuthCallbackListener,
+  type OAuthCallbackListenerOptions,
+} from './callback-listener.js';
 import { createFileCredentialStore, type CredentialStore } from './credential-store.js';
 import { fetchLinkedInIdentity, LinkedInIdentityError } from './linkedin-identity.js';
 import {
@@ -15,6 +20,7 @@ import {
 } from './linkedin-oauth.js';
 import {
   createOAuthSessionCoordinator,
+  type AuthorizationSession,
   type ConsumedAuthorizationCode,
   type OAuthSessionCoordinator,
 } from './oauth-session.js';
@@ -79,6 +85,7 @@ interface AuthServiceDeps {
   oauth?: LinkedInOAuthAdapter;
   store?: CredentialStore;
   fetchIdentity?: (accessToken: string) => Promise<AuthenticatedIdentity>;
+  startCallbackListener?: (options: OAuthCallbackListenerOptions) => Promise<OAuthCallbackListener>;
   now?: () => Date;
 }
 
@@ -88,6 +95,7 @@ interface ConfiguredDeps {
   oauth: LinkedInOAuthAdapter;
   store: CredentialStore;
   fetchIdentity: (accessToken: string) => Promise<AuthenticatedIdentity>;
+  startCallbackListener: (options: OAuthCallbackListenerOptions) => Promise<OAuthCallbackListener>;
 }
 
 function addSeconds(now: Date, seconds: number): string {
@@ -133,6 +141,7 @@ function configuredDeps(deps: AuthServiceDeps): ConfiguredDeps | null {
         encryptionKey: deps.config.tokenEncryptionKey,
       }),
     fetchIdentity: deps.fetchIdentity ?? fetchLinkedInIdentity,
+    startCallbackListener: deps.startCallbackListener ?? startOAuthCallbackListener,
   };
 }
 
@@ -188,6 +197,9 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
   const now = deps.now ?? (() => new Date());
   const configured = configuredDeps(deps);
   let reauthRequired = false;
+  let authorizationError = false;
+  let callbackGeneration = 0;
+  let activeListener: OAuthCallbackListener | null = null;
 
   function requireConfigured(): ConfiguredDeps {
     if (configured === null) throw new AuthServiceError('not_configured', false);
@@ -208,11 +220,108 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
     }
   }
 
+  async function completeAuthorizationWith(
+    current: ConfiguredDeps,
+    code: ConsumedAuthorizationCode,
+  ): Promise<AuthStatus> {
+    let token: LinkedInTokenResult;
+    try {
+      token = await current.oauth.exchangeAuthorizationCode(code);
+    } catch (error: unknown) {
+      throw mapOAuthError(error);
+    }
+
+    let identity: AuthenticatedIdentity;
+    try {
+      identity = await current.fetchIdentity(token.accessToken);
+    } catch (error: unknown) {
+      const mapped = mapIdentityError(error);
+      if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
+      throw mapped;
+    }
+
+    const currentTime = now();
+    const allowRefresh = current.config.mode === 'confidential';
+    const credential: StoredCredential = {
+      accessToken: token.accessToken,
+      ...(allowRefresh && token.refreshToken !== undefined ? { refreshToken: token.refreshToken } : {}),
+      expiresAt: addSeconds(currentTime, token.expiresInSeconds),
+      ...(allowRefresh && token.refreshTokenExpiresInSeconds !== undefined
+        ? { refreshExpiresAt: addSeconds(currentTime, token.refreshTokenExpiresInSeconds) }
+        : {}),
+      scopes: token.scopes.length === 0 ? [...code.scopes] : [...token.scopes],
+      subject: identity.sub,
+      mode: current.config.mode,
+    };
+
+    await current.store.save(credential);
+    reauthRequired = false;
+    authorizationError = false;
+    return statusForCredential(credential, currentTime);
+  }
+
+  function safelyClose(listener: OAuthCallbackListener): void {
+    void listener.close().catch(() => undefined);
+  }
+
+  function armCallbackListener(current: ConfiguredDeps, session: AuthorizationSession): void {
+    const generation = ++callbackGeneration;
+    authorizationError = false;
+
+    const listenerPromise = current.startCallbackListener({
+      redirectUri: session.redirectUri,
+      sessionId: session.id,
+      coordinator: current.coordinator,
+    });
+
+    void listenerPromise.then(
+      (listener) => {
+        if (generation !== callbackGeneration) {
+          safelyClose(listener);
+          return;
+        }
+
+        activeListener = listener;
+        void listener.result.then(
+          (code) => {
+            if (generation === callbackGeneration) activeListener = null;
+            void completeAuthorizationWith(current, code).then(
+              () => {
+                if (generation === callbackGeneration) authorizationError = false;
+              },
+              () => {
+                if (generation === callbackGeneration) authorizationError = true;
+              },
+            );
+          },
+          () => {
+            if (generation === callbackGeneration) {
+              activeListener = null;
+              authorizationError = true;
+            }
+          },
+        );
+      },
+      () => {
+        if (generation === callbackGeneration) {
+          authorizationError = true;
+          current.coordinator.cancel(session.id);
+        }
+      },
+    );
+  }
+
   return {
     startAuthorization() {
       const current = requireConfigured();
+      callbackGeneration += 1;
+      const previousListener = activeListener;
+      activeListener = null;
+      if (previousListener !== null) safelyClose(previousListener);
+
       const session = current.coordinator.start();
       const authorizationUrl = current.oauth.buildAuthorizationUrl(session);
+      armCallbackListener(current, session);
 
       return {
         authorizationUrl,
@@ -271,7 +380,7 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
 
       if (credential === null) {
         return {
-          state: 'disconnected',
+          state: authorizationError ? 'error' : 'disconnected',
           provider,
           mode: configured.config.mode,
           scopes: [],
@@ -282,41 +391,9 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
       return statusForCredential(credential, now());
     },
 
-    async completeAuthorization(code) {
+    completeAuthorization(code) {
       const current = requireConfigured();
-      let token: LinkedInTokenResult;
-      try {
-        token = await current.oauth.exchangeAuthorizationCode(code);
-      } catch (error: unknown) {
-        throw mapOAuthError(error);
-      }
-
-      let identity: AuthenticatedIdentity;
-      try {
-        identity = await current.fetchIdentity(token.accessToken);
-      } catch (error: unknown) {
-        const mapped = mapIdentityError(error);
-        if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
-        throw mapped;
-      }
-
-      const currentTime = now();
-      const allowRefresh = current.config.mode === 'confidential';
-      const credential: StoredCredential = {
-        accessToken: token.accessToken,
-        ...(allowRefresh && token.refreshToken !== undefined ? { refreshToken: token.refreshToken } : {}),
-        expiresAt: addSeconds(currentTime, token.expiresInSeconds),
-        ...(allowRefresh && token.refreshTokenExpiresInSeconds !== undefined
-          ? { refreshExpiresAt: addSeconds(currentTime, token.refreshTokenExpiresInSeconds) }
-          : {}),
-        scopes: token.scopes.length === 0 ? [...code.scopes] : [...token.scopes],
-        subject: identity.sub,
-        mode: current.config.mode,
-      };
-
-      await current.store.save(credential);
-      reauthRequired = false;
-      return statusForCredential(credential, currentTime);
+      return completeAuthorizationWith(current, code);
     },
 
     async getProfile() {
@@ -358,6 +435,12 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
 
     async logout() {
       reauthRequired = false;
+      authorizationError = false;
+      callbackGeneration += 1;
+      const listener = activeListener;
+      activeListener = null;
+      if (listener !== null) safelyClose(listener);
+
       if (configured !== null) {
         configured.coordinator.cancel();
         await configured.store.clear();
