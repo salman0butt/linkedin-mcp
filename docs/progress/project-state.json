@@ -7,9 +7,9 @@
   "activePr": 2,
   "baseBranch": "main",
   "latestVerifiedSha": "faedaf2f53b3b7f000bc702650421c2e348b057a",
-  "ciStatus": "GREEN",
+  "ciStatus": "PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Execute the M01.6 official OIDC userinfo identity RED on PR #2."
+  "exactNextWork": "Verify the M01.6 OIDC userinfo RED on the current PR head, then implement the minimum identity client if the failure is the intended missing-module failure."
 }
