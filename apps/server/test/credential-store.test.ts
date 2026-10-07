@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -11,6 +11,8 @@ const encryptionKey = Buffer.alloc(32, 7).toString('base64');
 const wrongEncryptionKey = Buffer.alloc(32, 9).toString('base64');
 const createdDirectories: string[] = [];
 
+type StoreOptions = Parameters<typeof createFileCredentialStore>[0];
+
 const credential: StoredCredential = {
   accessToken: 'access-secret',
   refreshToken: 'refresh-secret',
@@ -21,9 +23,7 @@ const credential: StoredCredential = {
   mode: 'confidential',
 };
 
-async function createStore(
-  options: Parameters<typeof createFileCredentialStore>[0] = {},
-): Promise<{
+async function createStore(options: Partial<StoreOptions> = {}): Promise<{
   directory: string;
   filePath: string;
   store: ReturnType<typeof createFileCredentialStore>;
@@ -93,7 +93,7 @@ describe('file credential store', () => {
     ciphertext[0] = (ciphertext[0] ?? 0) ^ 1;
     envelope.ciphertext = ciphertext.toString('base64');
     const tampered = `${JSON.stringify(envelope)}\n`;
-    await import('node:fs/promises').then(({ writeFile }) => writeFile(filePath, tampered, 'utf8'));
+    await writeFile(filePath, tampered, 'utf8');
 
     await expect(store.load()).rejects.toThrow(/credential|decrypt|authentic|tamper/i);
     expect(await readFile(filePath, 'utf8')).toBe(tampered);
