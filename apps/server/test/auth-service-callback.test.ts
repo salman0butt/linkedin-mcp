@@ -75,9 +75,7 @@ describe('M01 auth callback orchestration review', () => {
     const store: CredentialStore = {
       load() {
         return Promise.resolve(
-          storedCredential === null
-            ? null
-            : { ...storedCredential, scopes: [...storedCredential.scopes] },
+          storedCredential === null ? null : { ...storedCredential, scopes: [...storedCredential.scopes] },
         );
       },
       save(value) {
