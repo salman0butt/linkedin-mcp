@@ -85,8 +85,11 @@ function parseEncryptionKey(value: string): Buffer {
   return decodeCanonicalBase64(value, 32);
 }
 
-function isStoredCredential(value: unknown): value is StoredCredential {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+function parseStoredCredential(value: unknown): StoredCredential {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('invalid credential payload');
+  }
+
   const candidate = value as Record<string, unknown>;
   if (
     typeof candidate.accessToken !== 'string' ||
@@ -96,15 +99,33 @@ function isStoredCredential(value: unknown): value is StoredCredential {
     !candidate.scopes.every((scope) => typeof scope === 'string') ||
     (candidate.mode !== 'confidential' && candidate.mode !== 'native_pkce')
   ) {
-    return false;
+    throw new Error('invalid credential payload');
   }
 
-  for (const optionalString of ['refreshToken', 'refreshExpiresAt', 'subject'] as const) {
-    if (candidate[optionalString] !== undefined && typeof candidate[optionalString] !== 'string') {
-      return false;
-    }
+  if (candidate.refreshToken !== undefined && typeof candidate.refreshToken !== 'string') {
+    throw new Error('invalid credential payload');
   }
-  return true;
+  if (
+    candidate.refreshExpiresAt !== undefined &&
+    typeof candidate.refreshExpiresAt !== 'string'
+  ) {
+    throw new Error('invalid credential payload');
+  }
+  if (candidate.subject !== undefined && typeof candidate.subject !== 'string') {
+    throw new Error('invalid credential payload');
+  }
+
+  return {
+    accessToken: candidate.accessToken,
+    ...(candidate.refreshToken === undefined ? {} : { refreshToken: candidate.refreshToken }),
+    expiresAt: candidate.expiresAt,
+    ...(candidate.refreshExpiresAt === undefined
+      ? {}
+      : { refreshExpiresAt: candidate.refreshExpiresAt }),
+    scopes: [...candidate.scopes],
+    ...(candidate.subject === undefined ? {} : { subject: candidate.subject }),
+    mode: candidate.mode,
+  };
 }
 
 function parseEnvelope(raw: string): CredentialEnvelope {
@@ -163,11 +184,7 @@ function decryptCredential(envelope: CredentialEnvelope, key: Buffer): StoredCre
     decipher.setAAD(AAD);
     decipher.setAuthTag(authTag);
     const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
-    const parsed: unknown = JSON.parse(plaintext);
-    if (!isStoredCredential(parsed)) {
-      throw new Error('invalid credential payload');
-    }
-    return parsed;
+    return parseStoredCredential(JSON.parse(plaintext) as unknown);
   } catch {
     throw new Error('Stored credential could not be decrypted or authenticated');
   }
@@ -199,7 +216,7 @@ export function createFileCredentialStore(options: FileCredentialStoreOptions): 
     },
 
     async save(value) {
-      const envelope = encryptCredential(value, key);
+      const envelope = encryptCredential(parseStoredCredential(value), key);
       const serialized = `${JSON.stringify(envelope)}\n`;
       const temporaryPath = join(
         directory,
