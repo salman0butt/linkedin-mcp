@@ -51,7 +51,9 @@ describe('official LinkedIn OIDC userinfo identity', () => {
       method: 'GET',
       headers: { authorization: 'Bearer access-token-secret' },
     });
-    expect(String(recorded.calls[0]?.input)).not.toContain('access-token-secret');
+    const requestInput = recorded.calls[0]?.input;
+    if (typeof requestInput !== 'string') throw new Error('Expected userinfo request URL string');
+    expect(requestInput).not.toContain('access-token-secret');
   });
 
   it('keeps optional email claims absent when LinkedIn omits them', async () => {
