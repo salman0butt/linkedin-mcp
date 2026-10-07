@@ -73,13 +73,7 @@ function normalizeTokenResponse(value: unknown): LinkedInTokenResult {
   const refreshToken =
     typeof token.refresh_token === 'string' && token.refresh_token !== '' ? token.refresh_token : undefined;
   const refreshTokenExpiresInSeconds = positiveNumber(token.refresh_token_expires_in);
-  const scopes =
-    typeof token.scope === 'string'
-      ? token.scope
-          .trim()
-          .split(/\s+/)
-          .filter(Boolean)
-      : [];
+  const scopes = typeof token.scope === 'string' ? token.scope.trim().split(/\\s+/).filter(Boolean) : [];
 
   return {
     accessToken,
