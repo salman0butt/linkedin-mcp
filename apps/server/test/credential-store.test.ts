@@ -118,8 +118,8 @@ describe('file credential store', () => {
       filePath,
       encryptionKey,
       filesystem: {
-        async rename() {
-          throw new Error('simulated rename failure');
+        rename() {
+          return Promise.reject(new Error('simulated rename failure'));
         },
       },
     });
