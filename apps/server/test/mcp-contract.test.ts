@@ -131,7 +131,7 @@ describe('LinkedIn MCP server contract', () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: 'profile.me',
-            status: 'PLANNED',
+            status: 'ACTIVE',
             availability: 'UNAVAILABLE',
           }),
         ]),
