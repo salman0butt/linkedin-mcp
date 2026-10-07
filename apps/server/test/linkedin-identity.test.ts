@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { LinkedInIdentityError, fetchLinkedInIdentity } from '../src/auth/linkedin-identity.js';
 
 function recorder(response: Response): {
-  calls: Array<{ input: RequestInfo | URL; init?: RequestInit }>;
+  calls: Array<{ input: RequestInfo | URL; init: RequestInit | undefined }>;
   fetch: typeof fetch;
 } {
-  const calls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
+  const calls: Array<{ input: RequestInfo | URL; init: RequestInit | undefined }> = [];
   return {
     calls,
     fetch: (input, init) => {
