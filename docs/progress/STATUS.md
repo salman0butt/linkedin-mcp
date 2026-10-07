@@ -6,12 +6,12 @@ Last reconciled: 2026-10-07. Actual Git/code/exact-SHA CI outrank these notes.
 
 M01 — Authentication & Identity — **ACTIVE**.
 
-Active task: M01.4 encrypted credential storage complete; next is M01.5 official LinkedIn OAuth code exchange and conditional refresh handling.
+Active task: M01.5 official LinkedIn OAuth adapter complete; next is M01.6 official OIDC userinfo identity.
 
 Active branch: `feat/m01-auth-identity`.
 Active PR: #2 — `Build M01 authentication and identity` (draft).
-Latest verified M01 SHA: `9fcb2c8cf1e18df72217affe0f854fc798303e65`.
-M01 CI: GREEN — PR run `37588029054` passed frozen install, format, all 71 tests, lint, typecheck, and build on that exact SHA.
+Latest verified M01 SHA: `faedaf2f53b3b7f000bc702650421c2e348b057a`.
+M01 CI: GREEN — PR run `37593107489` passed frozen install, format, full tests, lint, typecheck, and build on that exact SHA.
 Verified base `main`: `dde9bde5b136b0c352a864fadce08f02cab32938`; post-M00 push CI `37469308840` GREEN.
 Critical findings: 0 unresolved.
 Important findings: 0 unresolved.
@@ -50,6 +50,12 @@ Implemented M01.4 surface:
 - clear is idempotent;
 - save/load reconstruct only the allowed credential fields, preventing incidental profile-data persistence.
 
+## M01.5 RED→GREEN
+
+Primary RED: `2b6646cd2fae558d729035b75659373e8fdbaba1`, CI `37592679866`. Formatting passed and Test failed for the intended missing OAuth-adapter module while all 71 existing tests passed.
+
+GREEN: `faedaf2f53b3b7f000bc702650421c2e348b057a`, CI `37593107489`. Frozen install, format, full tests, lint, typecheck, and build passed. The implementation keeps confidential and native-PKCE exchange fields distinct, makes refresh conditional on an actual confidential refresh token, and sanitizes provider failures. The temporary formatting diagnostic workflow was removed before GREEN verification.
+
 ## M01 Architecture
 
 - Official LinkedIn OAuth/OIDC only for identity.
@@ -69,4 +75,4 @@ The M00 private package-boundary debt remains Minor and deferred. Interactive lo
 
 No M01 implementation blocker is currently proven. Live LinkedIn verification will eventually require a configured LinkedIn developer application/product access; native PKCE and programmatic refresh are access-dependent and will not be claimed without evidence.
 
-Exact next work: execute the M01.5 official LinkedIn OAuth code exchange and conditional refresh RED on PR #2.
+Exact next work: execute the M01.6 official OIDC userinfo identity RED on PR #2.
