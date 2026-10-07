@@ -3,12 +3,14 @@ import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
+import type { AuthService } from './auth/auth-service.js';
 import { createCapabilitiesResult, createHealthResult, createVersionResult } from './foundation.js';
 
 export interface LinkedInMcpServerDeps {
   createRequestId?: () => string;
   now?: () => Date;
   version?: string;
+  authService?: AuthService;
 }
 
 const emptyInputSchema = z.object({}).strict();
@@ -117,8 +119,13 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
       inputSchema: emptyInputSchema,
       outputSchema: capabilitiesOutputSchema,
     },
-    () => {
-      const result = createCapabilitiesResult({ requestId: createRequestId(), now });
+    async () => {
+      const authStatus = deps.authService === undefined ? undefined : await deps.authService.getStatus();
+      const result = createCapabilitiesResult({
+        requestId: createRequestId(),
+        now,
+        profileAvailable: authStatus?.state === 'connected',
+      });
       return {
         content: [{ type: 'text', text: JSON.stringify(result) }],
         structuredContent: { ...result },
