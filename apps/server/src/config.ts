@@ -62,6 +62,13 @@ function requireOAuthValue(env: Env, key: (typeof AUTH_ENV_KEYS)[number], label:
   return value;
 }
 
+function validateTokenEncryptionKey(value: string): void {
+  const decoded = Buffer.from(value, 'base64');
+  if (decoded.length !== 32 || decoded.toString('base64') !== value) {
+    throw new Error('OAuth token encryption key must be canonical base64 for exactly 32 bytes');
+  }
+}
+
 function parseAuthConfig(env: Env): LinkedInAuthConfig | undefined {
   const authConfigured = AUTH_ENV_KEYS.some((key) => Boolean(env[key]?.trim()));
   if (!authConfigured) return undefined;
@@ -83,6 +90,8 @@ function parseAuthConfig(env: Env): LinkedInAuthConfig | undefined {
     'LINKEDIN_MCP_TOKEN_ENCRYPTION_KEY',
     'token encryption key',
   );
+  validateTokenEncryptionKey(tokenEncryptionKey);
+
   const scopes = (env.LINKEDIN_MCP_OAUTH_SCOPES ?? 'openid profile email')
     .trim()
     .split(/\s+/)

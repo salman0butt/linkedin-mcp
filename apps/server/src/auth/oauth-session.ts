@@ -93,13 +93,17 @@ export function createOAuthSessionCoordinator(
 
   let pending: AuthorizationSession | null = null;
 
+  function isExpired(session: AuthorizationSession): boolean {
+    return now().getTime() >= new Date(session.expiresAt).getTime();
+  }
+
   function consumeSession(sessionId: string, state: string | undefined): AuthorizationSession {
     const current = pending;
     if (current === null || current.id !== sessionId) {
       throw new Error('No matching pending OAuth authorization session');
     }
 
-    if (now().getTime() >= new Date(current.expiresAt).getTime()) {
+    if (isExpired(current)) {
       pending = null;
       throw new Error('OAuth authorization session expired');
     }
@@ -134,6 +138,7 @@ export function createOAuthSessionCoordinator(
     },
 
     peek() {
+      if (pending !== null && isExpired(pending)) pending = null;
       return pending === null ? null : copySession(pending);
     },
 
