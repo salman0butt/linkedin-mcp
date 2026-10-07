@@ -121,6 +121,19 @@ describe('OAuth session coordinator', () => {
     expect(coordinator.peek()).toBeNull();
   });
 
+  it('does not expose an expired pending session through peek', () => {
+    let now = new Date(nowIso);
+    const coordinator = createOAuthSessionCoordinator(config('confidential'), {
+      now: () => now,
+      randomBytes: deterministicRandomBytes(),
+    });
+    coordinator.start();
+    now = new Date('2026-10-06T15:05:00.001Z');
+
+    expect(coordinator.peek()).toBeNull();
+    expect(coordinator.peek()).toBeNull();
+  });
+
   it('rejects expired sessions and clears them', () => {
     let now = new Date(nowIso);
     const coordinator = createOAuthSessionCoordinator(config('confidential'), {
