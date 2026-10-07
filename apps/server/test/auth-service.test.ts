@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AuthenticatedIdentity } from '../../../../packages/core/src/auth.js';
+import type { AuthenticatedIdentity } from '../../../packages/core/src/auth.js';
 import type { CredentialStore } from '../src/auth/credential-store.js';
 import { LinkedInIdentityError } from '../src/auth/linkedin-identity.js';
 import type { LinkedInOAuthAdapter, LinkedInTokenResult } from '../src/auth/linkedin-oauth.js';
