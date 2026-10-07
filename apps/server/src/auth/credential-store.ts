@@ -105,10 +105,7 @@ function parseStoredCredential(value: unknown): StoredCredential {
   if (candidate.refreshToken !== undefined && typeof candidate.refreshToken !== 'string') {
     throw new Error('invalid credential payload');
   }
-  if (
-    candidate.refreshExpiresAt !== undefined &&
-    typeof candidate.refreshExpiresAt !== 'string'
-  ) {
+  if (candidate.refreshExpiresAt !== undefined && typeof candidate.refreshExpiresAt !== 'string') {
     throw new Error('invalid credential payload');
   }
   if (candidate.subject !== undefined && typeof candidate.subject !== 'string') {
@@ -119,9 +116,7 @@ function parseStoredCredential(value: unknown): StoredCredential {
     accessToken: candidate.accessToken,
     ...(candidate.refreshToken === undefined ? {} : { refreshToken: candidate.refreshToken }),
     expiresAt: candidate.expiresAt,
-    ...(candidate.refreshExpiresAt === undefined
-      ? {}
-      : { refreshExpiresAt: candidate.refreshExpiresAt }),
+    ...(candidate.refreshExpiresAt === undefined ? {} : { refreshExpiresAt: candidate.refreshExpiresAt }),
     scopes: [...candidate.scopes],
     ...(candidate.subject === undefined ? {} : { subject: candidate.subject }),
     mode: candidate.mode,
