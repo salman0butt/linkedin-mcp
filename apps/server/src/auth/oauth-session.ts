@@ -115,8 +115,7 @@ export function createOAuthSessionCoordinator(
   return {
     start() {
       const createdAt = now();
-      const codeVerifier =
-        config.mode === 'native_pkce' ? opaqueValue(randomBytes, 32) : undefined;
+      const codeVerifier = config.mode === 'native_pkce' ? opaqueValue(randomBytes, 32) : undefined;
       const session: AuthorizationSession = {
         id: opaqueValue(randomBytes, 24),
         state: opaqueValue(randomBytes, 32),

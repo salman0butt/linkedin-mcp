@@ -1,9 +1,6 @@
 import { createServer, type Server, type ServerResponse } from 'node:http';
 
-import type {
-  ConsumedAuthorizationCode,
-  OAuthSessionCoordinator,
-} from './oauth-session.js';
+import type { ConsumedAuthorizationCode, OAuthSessionCoordinator } from './oauth-session.js';
 
 const DEFAULT_CALLBACK_TIMEOUT_MS = 5 * 60 * 1_000;
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', '::1']);
