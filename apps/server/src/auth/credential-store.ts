@@ -143,10 +143,7 @@ function encryptCredential(value: StoredCredential, key: Buffer): CredentialEnve
   const iv = randomBytes(IV_BYTES);
   const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_BYTES });
   cipher.setAAD(AAD);
-  const ciphertext = Buffer.concat([
-    cipher.update(JSON.stringify(value), 'utf8'),
-    cipher.final(),
-  ]);
+  const ciphertext = Buffer.concat([cipher.update(JSON.stringify(value), 'utf8'), cipher.final()]);
 
   return {
     version: ENVELOPE_VERSION,
