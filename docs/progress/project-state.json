@@ -1,15 +1,17 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M01",
-  "currentIteration": "M01.7",
+  "currentIteration": "M01.8",
   "status": "ACTIVE",
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "bc880dc9fe3435b0bec2f9d9444163d5edbc9695",
-  "ciStatus": "GREEN",
+  "latestVerifiedSha": "917e07a950f7732a4315daebd8d7d9e7af266a12",
+  "ciStatus": "GREEN_PRE_CLOSEOUT_DOCS",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Execute the M01.7 MCP auth/profile tool and dynamic capability projection RED on PR #2."
+  "blockers": [
+    "Live LinkedIn availability verification is externally blocked in CI because no configured LinkedIn developer application/member credentials/product access are present; profile.me therefore remains ACTIVE/UNAVAILABLE rather than VERIFIED."
+  ],
+  "exactNextWork": "Verify exact-final-head CI on the M01 closeout documentation commit, then merge PR #2 if all merge gates remain satisfied."
 }

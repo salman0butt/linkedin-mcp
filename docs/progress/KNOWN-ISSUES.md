@@ -4,22 +4,16 @@
 
 ### Minor — private package boundary is repository-relative
 
-`@linkedin-mcp/server` is private and currently imports the built private core package through `../../../packages/core/dist/index.js`, while its build script explicitly builds core first. The monorepo test/build/real transport smokes verify this arrangement, so it is not an M00 release blocker. When package-consumer boundaries expand, replace it with an explicit `@linkedin-mcp/core` workspace dependency and regenerate the lockfile under the repository supply-chain policy.
+`@linkedin-mcp/server` is private and currently imports the built private core package through `../../../packages/core/dist/index.js`, while its build script explicitly builds core first. Monorepo tests/build/real transport smokes verify this arrangement. When package-consumer boundaries expand, replace it with an explicit `@linkedin-mcp/core` workspace dependency and regenerate the lockfile under the repository supply-chain policy.
 
-### Interactive container network isolation
+### External verification gate — live LinkedIn capability availability
 
-The current interactive container cannot reliably resolve GitHub/package registries. This is not a repository/product defect. GitHub Actions is the authoritative remote execution environment for dependency resolution and CI in this session.
+M01 deterministic implementation is verified, but ordinary CI has no configured LinkedIn developer application/member credentials/product access. Therefore live `profile.me` availability has not been verified; native PKCE enablement and programmatic refresh are also access-dependent. This is not an implementation defect and must not be converted into a VERIFIED capability claim.
 
-## Resolved during M00
+### Interactive connector/container limitations
 
-- Bootstrap lockfile cache ordering failure was fixed; the real registry-generated `pnpm-lock.yaml` is committed.
-- pnpm 12 lifecycle approval explicitly permits the required `esbuild` build.
-- Repository formatting drift was normalized and strict type/lint/build gates are green.
-- M00 autonomous/state/capability/requirements verifier RED→GREEN cycles are complete.
-- The stdio built process is verified through a real MCP client and stdout remains protocol-clean.
-- Streamable HTTP is loopback-only, rejects unapproved Host values and cross-origin browser requests, preserves origin-less MCP clients, bounds request bodies and shuts down cleanly.
-- The M00 capability registry truthfully marks only the three implemented local tools `AVAILABLE`/`VERIFIED` with evidence; future LinkedIn capabilities remain unavailable.
+GitHub Actions is the authoritative exact-head execution environment when interactive package/network execution is unavailable. Repository writes may use the Git data API with an exact-head lease when the Contents API is transiently unavailable; this does not relax concurrency or security policy.
 
 ## Review state
 
-Skeptical M00.9 security/protocol/packaging review is complete. Unresolved Critical findings: 0. Unresolved Important findings: 0. The private package-boundary item above is Minor and explicitly deferred.
+M01.8 skeptical/security self-review completed because no subagent reviewer tool was exposed in this session. Three Important integration findings were resolved through regression RED→GREEN cycles: structured auth result mapping, real transport AuthService wiring, and structured logout cleanup failure. Unresolved Critical findings: 0. Unresolved Important findings: 0.
