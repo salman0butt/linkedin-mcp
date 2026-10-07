@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { LinkedInIdentityError, fetchLinkedInIdentity } from '../src/auth/linkedin-identity.js';
 
-function recorder(response: Response): { calls: Array<{ input: RequestInfo | URL; init?: RequestInit }>; fetch: typeof fetch } {
+function recorder(response: Response): {
+  calls: Array<{ input: RequestInfo | URL; init?: RequestInit }>;
+  fetch: typeof fetch;
+} {
   const calls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
   return {
     calls,
@@ -73,7 +76,9 @@ describe('official LinkedIn OIDC userinfo identity', () => {
           headers: { 'content-type': 'application/json' },
         }),
       );
-      await expect(fetchLinkedInIdentity('access-token-secret', { fetch: recorded.fetch })).rejects.toMatchObject({
+      await expect(
+        fetchLinkedInIdentity('access-token-secret', { fetch: recorded.fetch }),
+      ).rejects.toMatchObject({
         kind: 'provider_failure',
         retryable: false,
       });
@@ -84,27 +89,30 @@ describe('official LinkedIn OIDC userinfo identity', () => {
     [401, 'permission_required', false],
     [429, 'rate_limited', true],
     [500, 'provider_failure', true],
-  ] as const)('classifies HTTP %i without echoing provider or token secrets', async (status, kind, retryable) => {
-    const recorded = recorder(
-      new Response(
-        JSON.stringify({
-          error: 'provider_error',
-          message: 'echo access-token-secret provider-private-detail',
-        }),
-        { status, headers: { 'content-type': 'application/json' } },
-      ),
-    );
+  ] as const)(
+    'classifies HTTP %i without echoing provider or token secrets',
+    async (status, kind, retryable) => {
+      const recorded = recorder(
+        new Response(
+          JSON.stringify({
+            error: 'provider_error',
+            message: 'echo access-token-secret provider-private-detail',
+          }),
+          { status, headers: { 'content-type': 'application/json' } },
+        ),
+      );
 
-    let error: unknown;
-    try {
-      await fetchLinkedInIdentity('access-token-secret', { fetch: recorded.fetch });
-    } catch (caught) {
-      error = caught;
-    }
+      let error: unknown;
+      try {
+        await fetchLinkedInIdentity('access-token-secret', { fetch: recorded.fetch });
+      } catch (caught) {
+        error = caught;
+      }
 
-    expect(error).toBeInstanceOf(LinkedInIdentityError);
-    expect(error).toMatchObject({ kind, retryable });
-    expect((error as Error).message).not.toContain('access-token-secret');
-    expect((error as Error).message).not.toContain('provider-private-detail');
-  });
+      expect(error).toBeInstanceOf(LinkedInIdentityError);
+      expect(error).toMatchObject({ kind, retryable });
+      expect((error as Error).message).not.toContain('access-token-secret');
+      expect((error as Error).message).not.toContain('provider-private-detail');
+    },
+  );
 });
