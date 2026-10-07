@@ -61,6 +61,19 @@ describe('file credential store', () => {
     expect(raw).toContain('aes-256-gcm');
   });
 
+  it('persists only credential fields and drops unrelated profile data', async () => {
+    const { store } = await createStore();
+    const credentialWithProfileData: StoredCredential & { email: string; name: string } = {
+      ...credential,
+      email: 'private@example.test',
+      name: 'Private Profile Name',
+    };
+
+    await store.save(credentialWithProfileData);
+
+    expect(await store.load()).toEqual(credential);
+  });
+
   it('uses fresh authenticated-encryption material for every save', async () => {
     const { filePath, store } = await createStore();
 
