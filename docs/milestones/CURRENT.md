@@ -1,8 +1,8 @@
 # Current Milestone
 
 Milestone: M01 — Authentication & Identity
-Status: ACTIVE — M01.5 official OAuth adapter verified
-Iteration: M01.6
+Status: ACTIVE — M01.6 official OIDC identity verified
+Iteration: M01.7
 Branch: `feat/m01-auth-identity`
 PR: #2 — draft
 Design: `docs/superpowers/specs/2026-10-06-m01-auth-identity-design.md`
@@ -21,6 +21,8 @@ M01.4 primary credential-store RED was `6a5c7a12d2712761e25d4c5805b7c03f43c30199
 
 M01.5 OAuth adapter RED was `2b6646cd2fae558d729035b75659373e8fdbaba1`, CI `37592679866`: formatting passed and Test failed because `apps/server/src/auth/linkedin-oauth.ts` did not exist while all 71 existing tests passed. GREEN is `faedaf2f53b3b7f000bc702650421c2e348b057a`, CI `37593107489`: frozen install, format, all tests, lint, typecheck, and build passed. The temporary format-diagnostic workflow used to obtain pinned Prettier output was removed before GREEN verification.
 
-M01 continues to use official LinkedIn OAuth/OIDC identity only. Standard confidential OAuth, access-dependent native PKCE, and partner-gated programmatic refresh remain explicit capability boundaries. `profile.me` must not be marked live-available from mocked CI alone.
+M01.6 OIDC userinfo RED is `d2b03afb3f57bd3141be9136afe244bace219292`, CI `37593529777`: formatting passed and Test failed because `apps/server/src/auth/linkedin-identity.ts` did not exist while 81 existing tests passed. Initial implementation CI exposed test-fixture lint/type strictness without changing production behavior. GREEN is `e9f138d4286dd99eab64bd1170132c4a69b57a1c`, CI `37612551536`: frozen install, format, all 87 tests, lint, typecheck, and build passed. The identity client calls the official `https://api.linkedin.com/v2/userinfo` endpoint, maps only documented claims, treats email fields as optional, and sanitizes provider/network failures.
 
-Exact next work: execute M01.6 official OIDC userinfo identity RED on PR #2.
+M01 continues to use official LinkedIn OAuth/OIDC identity only. Standard confidential OAuth, access-dependent native PKCE, and partner-gated programmatic refresh remain explicit capability boundaries. `profile.me` implementation is deterministically verified, but it must not be marked live-available/VERIFIED from mocked CI alone.
+
+Exact next work: execute the M01.7 auth lifecycle service RED on PR #2 as the first M01.7 integration subtask.
