@@ -1,6 +1,6 @@
 # M01 — Authentication & Identity
 
-Status: **ACTIVE — M01.5 official OAuth adapter verified**
+Status: **ACTIVE — M01.6 official OIDC identity verified**
 
 ## Goal
 
@@ -36,8 +36,8 @@ PR: #2 — `Build M01 authentication and identity` (draft).
 3. **COMPLETE** — M01.3 OAuth authorization session, loopback callback listener, CSRF state and PKCE primitives.
 4. **COMPLETE** — M01.4 encrypted credential store.
 5. **COMPLETE** — M01.5 code exchange + token lifecycle/conditional refresh.
-6. **NEXT** — M01.6 official OIDC userinfo identity + `linkedin.profile.me`.
-7. **PLANNED** — M01.7 MCP auth start/status/logout + dynamic capability projection.
+6. **COMPLETE** — M01.6 official OIDC userinfo identity client.
+7. **NEXT** — M01.7 auth lifecycle service + MCP auth/profile tools + dynamic capability projection.
 8. **PLANNED** — M01.8 security/skeptical review, live-access assessment, exact-head CI and closeout.
 
 ## Rulings
@@ -76,9 +76,17 @@ Primary RED: `2b6646cd2fae558d729035b75659373e8fdbaba1`, CI `37592679866` — fo
 
 GREEN: `faedaf2f53b3b7f000bc702650421c2e348b057a`, CI `37593107489` — frozen install, format, full tests, lint, typecheck, and build passed. Confidential exchange sends the documented secret-bearing fields; native PKCE exchange sends the verifier without a client secret; refresh is disabled without an actual refresh token and for native PKCE; provider HTTP failures are classified without echoing provider/request secrets. The temporary pinned-Prettier diagnostic workflow was removed before this GREEN verification.
 
+### M01.6 official OIDC userinfo identity
+
+Primary RED: `d2b03afb3f57bd3141be9136afe244bace219292`, CI `37593529777` — formatting passed; Test failed for the intended missing behavior because `apps/server/src/auth/linkedin-identity.ts` did not exist while all 81 existing tests passed.
+
+Initial production implementation at `b512c2edf4dc3af1fa96b64fb047506e0b9bd26e` made all 87 tests pass, then CI correctly exposed lint-only test-fixture typing. The first fixture correction at `aa134c83df9961757ebb849b7fda605fc8f1049b` made formatting/tests/lint green and exposed the stricter `exactOptionalPropertyTypes` fixture mismatch at typecheck. Those failures did not change or weaken production behavior assertions.
+
+GREEN: `e9f138d4286dd99eab64bd1170132c4a69b57a1c`, CI `37612551536` — frozen install, format, all 87 tests, lint, typecheck, and build passed. The official userinfo request uses the access token only in the Authorization header; documented claims are mapped; optional email claims remain optional; missing/invalid `sub`, 401/403, 429, network failures, malformed success payloads, and provider failures are sanitized without provider-body/token leakage.
+
 ## Integration Test Evidence
 
-Existing real stdio and loopback Streamable HTTP MCP transport smokes remain green. M01.3 exercises the callback listener through real loopback HTTP requests. M01.4 exercises real filesystem persistence using temporary directories, authenticated encryption, permission checks, atomic replacement failure, and tamper/wrong-key behavior.
+Existing real stdio and loopback Streamable HTTP MCP transport smokes remain green. M01.3 exercises the callback listener through real loopback HTTP requests. M01.4 exercises real filesystem persistence using temporary directories, authenticated encryption, permission checks, atomic replacement failure, and tamper/wrong-key behavior. M01.5/M01.6 use injected fetch with deterministic provider responses so ordinary CI requires no LinkedIn secret or live account.
 
 ## Security Review
 
@@ -86,7 +94,9 @@ M01.3 uses cryptographically random session IDs/state, constant-time equal-lengt
 
 M01.4 uses a versioned AES-256-GCM envelope, fresh 96-bit IVs, authenticated AAD/tags, canonical 32-byte key validation, owner-only temp-file permissions, and same-directory atomic replacement. Wrong keys and tampering fail closed without destroying the file; failed replacements preserve the prior valid credential and clean temporary residue. Save/load reconstruct only the credential allowlist, so unrelated profile fields are not persisted or returned.
 
-Full milestone security review remains required in M01.8 for provider exchange/errors, 401 lifecycle, refresh entitlement truth, capability provenance, and logout semantics.
+M01.5/M01.6 keep OAuth/token and userinfo provider errors sanitized, keep authorization codes/client secrets/verifiers/access tokens out of error messages, and do not read/echo provider error bodies. M01.6 was checked against current official LinkedIn OIDC documentation: `userinfo` is `https://api.linkedin.com/v2/userinfo`; supported profile claims match the implementation; `email` and `email_verified` are optional. This deterministic implementation verification does not claim live LinkedIn account availability.
+
+Full milestone security review remains required in M01.8 for 401 lifecycle transition, refresh entitlement truth, capability provenance, logout semantics, and integrated transport behavior.
 
 ## Code Review Findings
 
@@ -94,7 +104,7 @@ Two Important M01.3 findings were identified and resolved through genuine RED→
 
 One Important M01.4 finding was identified and resolved through a genuine regression RED→GREEN cycle: credential over-persistence of unrelated profile fields.
 
-Zero Critical or Important findings remain open from M01.2–M01.4.
+No Critical or Important finding was identified in the M01.5 OAuth adapter or M01.6 identity client review. Zero Critical or Important findings remain open through M01.6.
 
 ## Fresh Verification Results
 
@@ -103,6 +113,7 @@ M01.2 implementation: CI `37482919464` GREEN on `30ec5b4ac6d867b7cd50b7f2e2d7e7a
 M01.3 reviewed implementation: CI `37585523117` GREEN on `9035cebcaba485429d77efd0c487de811296051e`.
 M01.4 reviewed implementation: CI `37588029054` GREEN on `9fcb2c8cf1e18df72217affe0f854fc798303e65`.
 M01.5 implementation: CI `37593107489` GREEN on `faedaf2f53b3b7f000bc702650421c2e348b057a`.
+M01.6 implementation: CI `37612551536` GREEN on `e9f138d4286dd99eab64bd1170132c4a69b57a1c`.
 
 ## Durable Recovery Sources
 
@@ -117,10 +128,12 @@ Git/PR/CI > source/tests > `project-state.json` > `STATUS.md`/`CURRENT.md`/this 
 - [x] M01.3 OAuth session/callback RED→GREEN and review regressions verified.
 - [x] M01.4 encrypted credential store RED→GREEN and privacy regression verified.
 - [x] M01.5 OAuth adapter RED→GREEN verified.
+- [x] M01.6 OIDC identity RED→GREEN verified.
+- [ ] M01.7 lifecycle/MCP integration verified.
 - [ ] Acceptance criteria verified.
 - [ ] Critical/Important findings resolved at milestone closeout.
 - [ ] Exact-final-head and post-merge CI green.
 
 ## Exact Next Work
 
-Execute M01.6 official OIDC userinfo identity RED on PR #2.
+Execute the M01.7 auth lifecycle service RED on PR #2 as the first M01.7 integration subtask.
