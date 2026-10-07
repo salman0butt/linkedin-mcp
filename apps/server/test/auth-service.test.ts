@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AuthenticatedIdentity, StoredCredential } from '../../../../packages/core/src/auth.js';
+import type { AuthenticatedIdentity } from '../../../../packages/core/src/auth.js';
 import type { CredentialStore } from '../src/auth/credential-store.js';
 import { LinkedInIdentityError } from '../src/auth/linkedin-identity.js';
 import type { LinkedInOAuthAdapter, LinkedInTokenResult } from '../src/auth/linkedin-oauth.js';
@@ -13,6 +13,16 @@ import { AuthServiceError, createAuthService } from '../src/auth/auth-service.js
 import type { LinkedInAuthConfig } from '../src/config.js';
 
 const NOW = new Date('2026-10-07T12:00:00.000Z');
+
+type CredentialValue = {
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt: string;
+  refreshExpiresAt?: string;
+  scopes: string[];
+  subject?: string;
+  mode: LinkedInAuthConfig['mode'];
+};
 
 function config(): LinkedInAuthConfig {
   return {
@@ -78,33 +88,35 @@ function createCoordinator(): {
   };
 }
 
-function copyCredential(value: StoredCredential): StoredCredential {
+function copyCredential(value: CredentialValue): CredentialValue {
   return { ...value, scopes: [...value.scopes] };
 }
 
-function createStore(initial: StoredCredential | null): {
+function createStore(initial: CredentialValue | null): {
   store: CredentialStore;
-  getValue(): StoredCredential | null;
+  getValue(): CredentialValue | null;
   getClearCount(): number;
 } {
   let value = initial;
   let clearCount = 0;
 
-  return {
-    store: {
-      load() {
-        return Promise.resolve(value === null ? null : copyCredential(value));
-      },
-      save(next) {
-        value = copyCredential(next);
-        return Promise.resolve();
-      },
-      clear() {
-        clearCount += 1;
-        value = null;
-        return Promise.resolve();
-      },
+  const store: CredentialStore = {
+    load() {
+      return Promise.resolve(value === null ? null : copyCredential(value));
     },
+    save(next: CredentialValue) {
+      value = copyCredential(next);
+      return Promise.resolve();
+    },
+    clear() {
+      clearCount += 1;
+      value = null;
+      return Promise.resolve();
+    },
+  };
+
+  return {
+    store,
     getValue: () => (value === null ? null : copyCredential(value)),
     getClearCount: () => clearCount,
   };
