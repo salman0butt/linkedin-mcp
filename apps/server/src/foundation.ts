@@ -1,4 +1,9 @@
-import { foundationCapabilityRegistry, type ToolResult } from '../../../packages/core/dist/index.js';
+import {
+  foundationCapabilityRegistry,
+  type CapabilityDescriptor,
+  type ToolResult,
+  type ToolResultStatus,
+} from '../../../packages/core/dist/index.js';
 
 interface FoundationDeps {
   requestId: string;
@@ -7,6 +12,10 @@ interface FoundationDeps {
 
 interface VersionDeps extends FoundationDeps {
   version: string;
+}
+
+interface CapabilitiesDeps extends FoundationDeps {
+  profileAvailable?: boolean;
 }
 
 interface HealthData {
@@ -21,7 +30,18 @@ interface VersionData {
 }
 
 interface CapabilitiesData {
-  capabilities: typeof foundationCapabilityRegistry;
+  capabilities: readonly Readonly<CapabilityDescriptor>[];
+}
+
+interface OfficialResultOptions<T> extends FoundationDeps {
+  status: ToolResultStatus;
+  data?: T;
+  warnings?: string[];
+  error?: {
+    code: string;
+    message: string;
+    retryable: boolean;
+  };
 }
 
 type SuccessfulResult<T> = ToolResult<T> & {
@@ -30,12 +50,25 @@ type SuccessfulResult<T> = ToolResult<T> & {
 };
 
 const provider = { type: 'LOCAL_ONLY' as const, name: 'linkedin-mcp' };
+const linkedInProvider = { type: 'OFFICIAL_API' as const, name: 'LinkedIn' };
 
 function metadata(deps: FoundationDeps): ToolResult<unknown>['metadata'] {
   return {
     requestId: deps.requestId,
     timestamp: deps.now().toISOString(),
   };
+}
+
+function projectCapabilities(profileAvailable: boolean): readonly Readonly<CapabilityDescriptor>[] {
+  return foundationCapabilityRegistry.map((descriptor) => {
+    if (descriptor.id !== 'profile.me') return descriptor;
+
+    return Object.freeze({
+      ...descriptor,
+      status: 'ACTIVE' as const,
+      availability: profileAvailable ? ('AVAILABLE' as const) : ('UNAVAILABLE' as const),
+    });
+  });
 }
 
 export function createHealthResult(deps: FoundationDeps): SuccessfulResult<HealthData> {
@@ -63,13 +96,24 @@ export function createVersionResult(deps: VersionDeps): SuccessfulResult<Version
   };
 }
 
-export function createCapabilitiesResult(deps: FoundationDeps): SuccessfulResult<CapabilitiesData> {
+export function createCapabilitiesResult(deps: CapabilitiesDeps): SuccessfulResult<CapabilitiesData> {
   return {
     status: 'succeeded',
     data: {
-      capabilities: foundationCapabilityRegistry,
+      capabilities: projectCapabilities(deps.profileAvailable ?? false),
     },
     provider,
     metadata: metadata(deps),
+  };
+}
+
+export function createLinkedInResult<T>(options: OfficialResultOptions<T>): ToolResult<T> {
+  return {
+    status: options.status,
+    ...(options.data === undefined ? {} : { data: options.data }),
+    provider: linkedInProvider,
+    ...(options.warnings === undefined ? {} : { warnings: [...options.warnings] }),
+    ...(options.error === undefined ? {} : { error: { ...options.error } }),
+    metadata: metadata(options),
   };
 }
