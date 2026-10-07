@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AuthenticatedIdentity, StoredCredential } from '../../../../packages/core/dist/index.js';
+import type { AuthenticatedIdentity, StoredCredential } from '../../../../packages/core/src/auth.js';
 import type { CredentialStore } from '../src/auth/credential-store.js';
 import { LinkedInIdentityError } from '../src/auth/linkedin-identity.js';
 import type { LinkedInOAuthAdapter, LinkedInTokenResult } from '../src/auth/linkedin-oauth.js';
@@ -78,6 +78,10 @@ function createCoordinator(): {
   };
 }
 
+function copyCredential(value: StoredCredential): StoredCredential {
+  return { ...value, scopes: [...value.scopes] };
+}
+
 function createStore(initial: StoredCredential | null): {
   store: CredentialStore;
   getValue(): StoredCredential | null;
@@ -88,18 +92,20 @@ function createStore(initial: StoredCredential | null): {
 
   return {
     store: {
-      async load() {
-        return value === null ? null : { ...value, scopes: [...value.scopes] };
+      load() {
+        return Promise.resolve(value === null ? null : copyCredential(value));
       },
-      async save(next) {
-        value = { ...next, scopes: [...next.scopes] };
+      save(next) {
+        value = copyCredential(next);
+        return Promise.resolve();
       },
-      async clear() {
+      clear() {
         clearCount += 1;
         value = null;
+        return Promise.resolve();
       },
     },
-    getValue: () => (value === null ? null : { ...value, scopes: [...value.scopes] }),
+    getValue: () => (value === null ? null : copyCredential(value)),
     getClearCount: () => clearCount,
   };
 }
@@ -107,14 +113,15 @@ function createStore(initial: StoredCredential | null): {
 function createOAuthAdapter(overrides: Partial<LinkedInOAuthAdapter> = {}): LinkedInOAuthAdapter {
   return {
     buildAuthorizationUrl: () => 'https://www.linkedin.com/oauth/v2/authorization?safe=1',
-    exchangeAuthorizationCode: async (): Promise<LinkedInTokenResult> => ({
-      accessToken: 'access-token-secret',
-      expiresInSeconds: 3600,
-      refreshToken: 'refresh-token-secret',
-      refreshTokenExpiresInSeconds: 86_400,
-      scopes: ['openid', 'profile'],
-    }),
-    refreshAccessToken: async () => null,
+    exchangeAuthorizationCode: (): Promise<LinkedInTokenResult> =>
+      Promise.resolve({
+        accessToken: 'access-token-secret',
+        expiresInSeconds: 3600,
+        refreshToken: 'refresh-token-secret',
+        refreshTokenExpiresInSeconds: 86_400,
+        scopes: ['openid', 'profile'],
+      }),
+    refreshAccessToken: () => Promise.resolve(null),
     ...overrides,
   };
 }
@@ -143,7 +150,7 @@ describe('M01 auth lifecycle service', () => {
       coordinator,
       oauth: createOAuthAdapter(),
       store,
-      fetchIdentity: async () => identity(),
+      fetchIdentity: () => Promise.resolve(identity()),
       now: () => NOW,
     });
 
@@ -183,9 +190,9 @@ describe('M01 auth lifecycle service', () => {
       coordinator,
       oauth: createOAuthAdapter(),
       store: stored.store,
-      fetchIdentity: async (accessToken) => {
+      fetchIdentity: (accessToken) => {
         expect(accessToken).toBe('access-token-secret');
-        return identity();
+        return Promise.resolve(identity());
       },
       now: () => NOW,
     });
@@ -224,7 +231,7 @@ describe('M01 auth lifecycle service', () => {
       coordinator,
       oauth: createOAuthAdapter(),
       store: connected.store,
-      fetchIdentity: async () => identity(),
+      fetchIdentity: () => Promise.resolve(identity()),
       now: () => NOW,
     });
 
@@ -250,7 +257,7 @@ describe('M01 auth lifecycle service', () => {
       coordinator: createCoordinator().coordinator,
       oauth: createOAuthAdapter(),
       store: expired.store,
-      fetchIdentity: async () => identity(),
+      fetchIdentity: () => Promise.resolve(identity()),
       now: () => NOW,
     });
 
@@ -273,16 +280,16 @@ describe('M01 auth lifecycle service', () => {
     });
     let refreshCalls = 0;
     const oauth = createOAuthAdapter({
-      async refreshAccessToken(refreshToken) {
+      refreshAccessToken(refreshToken) {
         refreshCalls += 1;
         expect(refreshToken).toBe('refresh-token-secret');
-        return {
+        return Promise.resolve({
           accessToken: 'refreshed-access-token-secret',
           expiresInSeconds: 3600,
           refreshToken: 'rotated-refresh-token-secret',
           refreshTokenExpiresInSeconds: 86_400,
           scopes: ['openid', 'profile'],
-        };
+        });
       },
     });
     const service = createAuthService({
@@ -290,9 +297,9 @@ describe('M01 auth lifecycle service', () => {
       coordinator: createCoordinator().coordinator,
       oauth,
       store: stored.store,
-      fetchIdentity: async (accessToken) => {
+      fetchIdentity: (accessToken) => {
         expect(accessToken).toBe('refreshed-access-token-secret');
-        return identity();
+        return Promise.resolve(identity());
       },
       now: () => NOW,
     });
@@ -318,13 +325,13 @@ describe('M01 auth lifecycle service', () => {
       config: config(),
       coordinator: createCoordinator().coordinator,
       oauth: createOAuthAdapter({
-        async refreshAccessToken() {
+        refreshAccessToken() {
           forbiddenRefreshCalls += 1;
-          return null;
+          return Promise.resolve(null);
         },
       }),
       store: withoutRefresh.store,
-      fetchIdentity: async () => identity(),
+      fetchIdentity: () => Promise.resolve(identity()),
       now: () => NOW,
     });
 
@@ -349,9 +356,9 @@ describe('M01 auth lifecycle service', () => {
       coordinator: createCoordinator().coordinator,
       oauth: createOAuthAdapter(),
       store: stored.store,
-      fetchIdentity: async () => {
+      fetchIdentity: () => {
         identityCalls += 1;
-        throw new LinkedInIdentityError('permission_required', false);
+        return Promise.reject(new LinkedInIdentityError('permission_required', false));
       },
       now: () => NOW,
     });
@@ -371,14 +378,15 @@ describe('M01 auth lifecycle service', () => {
     coordinatorState.coordinator.start();
     let clearCount = 0;
     const failingStore: CredentialStore = {
-      async load() {
-        throw new Error('private filesystem detail');
+      load() {
+        return Promise.reject(new Error('private filesystem detail'));
       },
-      async save() {
-        throw new Error('not used');
+      save() {
+        return Promise.reject(new Error('not used'));
       },
-      async clear() {
+      clear() {
         clearCount += 1;
+        return Promise.resolve();
       },
     };
     const service = createAuthService({
@@ -386,7 +394,7 @@ describe('M01 auth lifecycle service', () => {
       coordinator: coordinatorState.coordinator,
       oauth: createOAuthAdapter(),
       store: failingStore,
-      fetchIdentity: async () => identity(),
+      fetchIdentity: () => Promise.resolve(identity()),
       now: () => NOW,
     });
 
