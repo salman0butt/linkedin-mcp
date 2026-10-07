@@ -358,12 +358,18 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
         outputSchema: logoutOutputSchema,
       },
       async () => {
-        const result = createLinkedInResult({
-          status: 'succeeded',
-          data: await authService.logout(),
-          requestId: createRequestId(),
-          now,
-        });
+        const requestId = createRequestId();
+        let result;
+        try {
+          result = createLinkedInResult({
+            status: 'succeeded',
+            data: await authService.logout(),
+            requestId,
+            now,
+          });
+        } catch (error: unknown) {
+          result = createAuthErrorResult(error, requestId, now);
+        }
         return {
           content: [{ type: 'text', text: JSON.stringify(result) }],
           structuredContent: { ...result },
