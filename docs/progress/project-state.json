@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M01",
-  "currentIteration": "M01.3",
+  "currentIteration": "M01.4",
   "status": "ACTIVE",
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "9035cebcaba485429d77efd0c487de811296051e",
+  "latestVerifiedSha": "9fcb2c8cf1e18df72217affe0f854fc798303e65",
   "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Execute the M01.4 encrypted credential store RED on PR #2."
+  "exactNextWork": "Execute the M01.5 official LinkedIn OAuth code exchange and conditional refresh RED on PR #2."
 }
