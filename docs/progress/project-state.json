@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M01",
-  "currentIteration": "M01.2",
+  "currentIteration": "M01.3",
   "status": "ACTIVE",
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc",
+  "latestVerifiedSha": "9035cebcaba485429d77efd0c487de811296051e",
   "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Execute the M01.3 OAuth session and loopback callback RED on PR #2."
+  "exactNextWork": "Execute the M01.4 encrypted credential store RED on PR #2."
 }

@@ -1,6 +1,6 @@
 # M01 — Authentication & Identity
 
-Status: **ACTIVE — M01.2 auth configuration/contracts verified**
+Status: **ACTIVE — M01.3 OAuth session/callback verified**
 
 ## Goal
 
@@ -33,8 +33,8 @@ PR: #2 — `Build M01 authentication and identity` (draft).
 
 1. **COMPLETE** — M01.1 activation, current LinkedIn OAuth/OIDC investigation, design and implementation plan.
 2. **COMPLETE** — M01.2 auth configuration + provider-neutral auth contracts.
-3. **NEXT** — M01.3 OAuth authorization session, callback listener, CSRF state and PKCE URL construction.
-4. **PLANNED** — M01.4 encrypted credential store.
+3. **COMPLETE** — M01.3 OAuth authorization session, loopback callback listener, CSRF state and PKCE primitives.
+4. **NEXT** — M01.4 encrypted credential store.
 5. **PLANNED** — M01.5 code exchange + token lifecycle/conditional refresh.
 6. **PLANNED** — M01.6 official OIDC userinfo identity + `linkedin.profile.me`.
 7. **PLANNED** — M01.7 MCP auth start/status/logout + dynamic capability projection.
@@ -54,24 +54,33 @@ RED: `a696c10466072fdefbbd0d897a9a4e752fae08bf`, CI `37482043713` — formatting
 
 GREEN: `30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc`, CI `37482919464` — frozen install, format, full tests, lint, typecheck, and build passed.
 
+### M01.3 OAuth session/callback
+
+Primary RED: `b0a08d7a80114a630b8e77452b08548334a554cc`, CI `37584050659` — formatting passed; the OAuth session and callback listener suites failed because the production modules did not yet exist.
+
+Initial GREEN: `8861b4a69de4186468b76da16a6c72ca78cbaabc`, CI `37584942934` — frozen install, format, full tests, lint, typecheck, and build passed.
+
+Skeptical/security review found two Important gaps: expired pending sessions remained visible through `peek()`, and token-encryption keys were not constrained to canonical standard base64 for exactly 32 bytes. Review RED: `65e0e26c518707eec02895556edeefe165dece22`, CI `37585164683` — both regression tests failed as intended. Review GREEN: `9035cebcaba485429d77efd0c487de811296051e`, CI `37585523117` — the full quality pipeline passed.
+
 ## Integration Test Evidence
 
-Existing M00 real stdio/HTTP MCP transport smokes remained green in the M01.2 full suite.
+Existing real stdio and loopback Streamable HTTP MCP transport smokes remained green. M01.3 also exercises the callback listener through real loopback HTTP requests for success, wrong path, wrong state, provider denial, and timeout behavior.
 
 ## Security Review
 
-M01.2 adds no token exchange or provider network call. Partial OAuth configuration fails closed; native-PKCE redirects are restricted to HTTP loopback addresses; `openid` is mandatory; OAuth state/verifier/code and token/encryption secret field names are redacted.
+M01.3 uses cryptographically random session IDs/state, constant-time equal-length state comparison, terminal wrong/missing-state consumption, single-use callback consumption, S256 PKCE for native mode, exact configured callback paths, and loopback-only HTTP listener binding. Provider error descriptions and state values are not echoed. Expired pending sessions are cleared during inspection as well as consumption. Token-encryption configuration requires canonical standard base64 representing exactly 32 bytes.
 
-Required future focus: OAuth state/PKCE/CSRF, callback loopback/path safety, token encryption/redaction, minimal scopes, 401 lifecycle, refresh entitlement truth, and local logout vs remote revocation semantics.
+Full milestone security review remains required in M01.8 for encrypted storage, provider exchange/errors, 401 lifecycle, refresh entitlement truth, capability provenance, and logout semantics.
 
 ## Code Review Findings
 
-No Critical or Important finding is open from M01.2. Full milestone skeptical review remains required in M01.8.
+Two Important M01.3 findings were identified and resolved through genuine RED→GREEN cycles: expired-session visibility and non-canonical/incorrect-length token-encryption keys. Zero Critical or Important findings remain open from M01.3.
 
 ## Fresh Verification Results
 
 M00 dependency gate: post-merge main CI `37469308840` GREEN on `dde9bde5b136b0c352a864fadce08f02cab32938`.
 M01.2 implementation: CI `37482919464` GREEN on `30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc`.
+M01.3 reviewed implementation: CI `37585523117` GREEN on `9035cebcaba485429d77efd0c487de811296051e`.
 
 ## Durable Recovery Sources
 
@@ -83,10 +92,11 @@ Git/PR/CI > source/tests > `project-state.json` > `STATUS.md`/`CURRENT.md`/this 
 - [x] M01 design committed.
 - [x] M01 implementation plan committed/self-reviewed.
 - [x] M01.2 auth config/contracts RED→GREEN verified.
+- [x] M01.3 OAuth session/callback RED→GREEN and review regressions verified.
 - [ ] Acceptance criteria verified.
 - [ ] Critical/Important findings resolved at milestone closeout.
 - [ ] Exact-final-head and post-merge CI green.
 
 ## Exact Next Work
 
-Execute M01.3 OAuth session and loopback callback RED on PR #2.
+Execute M01.4 encrypted credential store RED on PR #2.
