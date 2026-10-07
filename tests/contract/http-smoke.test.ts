@@ -16,8 +16,12 @@ const client = new Client({ name: 'linkedin-mcp-http-smoke', version: '1.0.0' })
 
 try {
   await client.connect(transport);
-  const result = await client.callTool({ name: 'linkedin.health', arguments: {} });
-  process.stdout.write(JSON.stringify(result.structuredContent));
+  const health = await client.callTool({ name: 'linkedin.health', arguments: {} });
+  const authStatus = await client.callTool({ name: 'linkedin.auth.status', arguments: {} });
+  process.stdout.write(JSON.stringify({
+    health: health.structuredContent,
+    authStatus: authStatus.structuredContent,
+  }));
 } finally {
   await client.close();
   await server.close();
@@ -39,15 +43,27 @@ function callBuiltHttpServer(): unknown {
 }
 
 describe('built HTTP server', () => {
-  it('is callable through a real loopback StreamableHTTPClientTransport', () => {
+  it('exposes local health and the M01 auth status contract through real loopback HTTP', () => {
     expect(callBuiltHttpServer()).toMatchObject({
-      status: 'succeeded',
-      data: {
-        ok: true,
-        service: 'linkedin-mcp',
-        linkedinConnected: false,
+      health: {
+        status: 'succeeded',
+        data: {
+          ok: true,
+          service: 'linkedin-mcp',
+          linkedinConnected: false,
+        },
+        provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
       },
-      provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
+      authStatus: {
+        status: 'permission_required',
+        data: {
+          state: 'not_configured',
+          provider: 'OFFICIAL_API',
+          scopes: [],
+          refreshAvailable: false,
+        },
+        provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
+      },
     });
   });
 });

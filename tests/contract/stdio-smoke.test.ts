@@ -19,8 +19,12 @@ const transport = new StdioClientTransport({
 
 try {
   await client.connect(transport);
-  const result = await client.callTool({ name: 'linkedin.health', arguments: {} });
-  process.stdout.write(JSON.stringify(result.structuredContent));
+  const health = await client.callTool({ name: 'linkedin.health', arguments: {} });
+  const authStatus = await client.callTool({ name: 'linkedin.auth.status', arguments: {} });
+  process.stdout.write(JSON.stringify({
+    health: health.structuredContent,
+    authStatus: authStatus.structuredContent,
+  }));
 } finally {
   await client.close();
 }
@@ -41,15 +45,27 @@ function callBuiltServer(): unknown {
 }
 
 describe('built stdio server', () => {
-  it('is callable through the real StdioClientTransport', () => {
+  it('exposes local health and the M01 auth status contract through the real StdioClientTransport', () => {
     expect(callBuiltServer()).toMatchObject({
-      status: 'succeeded',
-      data: {
-        ok: true,
-        service: 'linkedin-mcp',
-        linkedinConnected: false,
+      health: {
+        status: 'succeeded',
+        data: {
+          ok: true,
+          service: 'linkedin-mcp',
+          linkedinConnected: false,
+        },
+        provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
       },
-      provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
+      authStatus: {
+        status: 'permission_required',
+        data: {
+          state: 'not_configured',
+          provider: 'OFFICIAL_API',
+          scopes: [],
+          refreshAvailable: false,
+        },
+        provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
+      },
     });
   });
 
