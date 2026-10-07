@@ -2,7 +2,12 @@ import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/cli
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import { describe, expect, it } from 'vitest';
 
-import type { AuthService } from '../src/auth/auth-service.js';
+import {
+  AuthServiceError,
+  createAuthService,
+  type AuthService,
+  type AuthServiceErrorKind,
+} from '../src/auth/auth-service.js';
 import { createLinkedInMcpServer } from '../src/create-server.js';
 
 function connectedAuthService(): AuthService {
@@ -45,6 +50,15 @@ function connectedAuthService(): AuthService {
         remoteRevocation: 'not_claimed',
         provider: 'OFFICIAL_API',
       });
+    },
+  };
+}
+
+function profileFailureAuthService(kind: AuthServiceErrorKind, retryable: boolean): AuthService {
+  return {
+    ...connectedAuthService(),
+    getProfile() {
+      return Promise.reject(new AuthServiceError(kind, retryable));
     },
   };
 }
@@ -200,6 +214,56 @@ describe('M01 MCP auth/profile contract', () => {
         const result = await client.callTool({ name, arguments: { unexpected: true } });
         expect(result.isError).toBe(true);
       }
+    });
+  });
+
+  it('maps unconfigured auth to explicit permission-required results', async () => {
+    await withClient(createAuthService(), async (client) => {
+      const status = await client.callTool({ name: 'linkedin.auth.status', arguments: {} });
+      expect(status.structuredContent).toMatchObject({
+        status: 'permission_required',
+        data: {
+          state: 'not_configured',
+          provider: 'OFFICIAL_API',
+          scopes: [],
+          refreshAvailable: false,
+        },
+        provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
+      });
+
+      for (const name of ['linkedin.auth.start', 'linkedin.profile.me']) {
+        const result = await client.callTool({ name, arguments: {} });
+        expect(result.structuredContent).toMatchObject({
+          status: 'permission_required',
+          error: {
+            code: 'not_configured',
+            retryable: false,
+          },
+          provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
+        });
+        expect(JSON.stringify(result.structuredContent)).not.toMatch(
+          /access-token|refresh-token|client-secret|codeVerifier/i,
+        );
+      }
+    });
+  });
+
+  it.each([
+    ['reauth_required', 'permission_required', false],
+    ['rate_limited', 'rate_limited', true],
+    ['provider_failure', 'failed', true],
+  ] as const)('maps profile %s to %s without provider detail leakage', async (kind, status, retryable) => {
+    await withClient(profileFailureAuthService(kind, retryable), async (client) => {
+      const result = await client.callTool({ name: 'linkedin.profile.me', arguments: {} });
+      expect(result.structuredContent).toMatchObject({
+        status,
+        error: {
+          code: kind,
+          retryable,
+        },
+        provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
+      });
+      expect(JSON.stringify(result.structuredContent)).not.toMatch(/access-token|refresh-token|provider-private/i);
     });
   });
 });
