@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { LinkedInAuthConfig } from '../src/config.js';
 import type { AuthorizationSession, ConsumedAuthorizationCode } from '../src/auth/oauth-session.js';
-import {
-  LinkedInOAuthError,
-  createLinkedInOAuthAdapter,
-} from '../src/auth/linkedin-oauth.js';
+import { LinkedInOAuthError, createLinkedInOAuthAdapter } from '../src/auth/linkedin-oauth.js';
 
 interface FetchCall {
   url: string;
@@ -60,8 +57,7 @@ function createFetchRecorder(response: () => Response): {
 } {
   const calls: FetchCall[] = [];
   const fetchImpl: typeof globalThis.fetch = (input, init) => {
-    const url =
-      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
     calls.push({ url, init });
     return Promise.resolve(response());
   };
