@@ -49,10 +49,7 @@ function connectedAuthService(): AuthService {
   };
 }
 
-async function withClient(
-  authService: AuthService,
-  run: (client: Client) => Promise<void>,
-): Promise<void> {
+async function withClient(authService: AuthService, run: (client: Client) => Promise<void>): Promise<void> {
   const handler = createMcpHandler(() =>
     createLinkedInMcpServer({
       authService,
@@ -123,7 +120,9 @@ describe('M01 MCP auth/profile contract', () => {
           timestamp: '2026-10-07T12:00:00.000Z',
         },
       });
-      expect(JSON.stringify(start.structuredContent)).not.toMatch(/csrf-state|codeVerifier|access-token|refresh-token/i);
+      expect(JSON.stringify(start.structuredContent)).not.toMatch(
+        /csrf-state|codeVerifier|access-token|refresh-token/i,
+      );
 
       const status = await client.callTool({ name: 'linkedin.auth.status', arguments: {} });
       expect(status.structuredContent).toMatchObject({
