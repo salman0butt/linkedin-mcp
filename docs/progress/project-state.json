@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M01",
-  "currentIteration": "M01.6",
+  "currentIteration": "M01.7",
   "status": "ACTIVE",
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "faedaf2f53b3b7f000bc702650421c2e348b057a",
-  "ciStatus": "PENDING",
+  "latestVerifiedSha": "e9f138d4286dd99eab64bd1170132c4a69b57a1c",
+  "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Verify the M01.6 OIDC userinfo RED on the current PR head, then implement the minimum identity client if the failure is the intended missing-module failure."
+  "exactNextWork": "Execute the M01.7 auth lifecycle service RED on PR #2 as the first M01.7 integration subtask."
 }
