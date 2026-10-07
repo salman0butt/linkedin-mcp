@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
-import type { AuthService } from './auth/auth-service.js';
+import { AuthServiceError, type AuthService, type AuthStatus } from './auth/auth-service.js';
 import {
   createCapabilitiesResult,
   createHealthResult,
@@ -166,6 +166,53 @@ const logoutOutputSchema = z.object({
     .optional(),
 });
 
+function authStatusResultStatus(state: AuthStatus['state']) {
+  if (state === 'authorization_pending') return 'human_action_required' as const;
+  if (state === 'error') return 'failed' as const;
+  if (
+    state === 'not_configured' ||
+    state === 'disconnected' ||
+    state === 'expired' ||
+    state === 'reauth_required'
+  ) {
+    return 'permission_required' as const;
+  }
+  return 'succeeded' as const;
+}
+
+function createAuthErrorResult(error: unknown, requestId: string, now: () => Date) {
+  if (error instanceof AuthServiceError) {
+    const status =
+      error.kind === 'rate_limited'
+        ? ('rate_limited' as const)
+        : error.kind === 'provider_failure'
+          ? ('failed' as const)
+          : ('permission_required' as const);
+
+    return createLinkedInResult({
+      status,
+      error: {
+        code: error.kind,
+        message: 'LinkedIn authentication request did not complete.',
+        retryable: error.retryable,
+      },
+      requestId,
+      now,
+    });
+  }
+
+  return createLinkedInResult({
+    status: 'failed',
+    error: {
+      code: 'provider_failure',
+      message: 'LinkedIn authentication request did not complete.',
+      retryable: false,
+    },
+    requestId,
+    now,
+  });
+}
+
 export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpServer {
   const createRequestId = deps.createRequestId ?? randomUUID;
   const now = deps.now ?? (() => new Date());
@@ -235,12 +282,18 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
         outputSchema: authStartOutputSchema,
       },
       () => {
-        const result = createLinkedInResult({
-          status: 'human_action_required',
-          data: authService.startAuthorization(),
-          requestId: createRequestId(),
-          now,
-        });
+        const requestId = createRequestId();
+        let result;
+        try {
+          result = createLinkedInResult({
+            status: 'human_action_required',
+            data: authService.startAuthorization(),
+            requestId,
+            now,
+          });
+        } catch (error: unknown) {
+          result = createAuthErrorResult(error, requestId, now);
+        }
         return {
           content: [{ type: 'text', text: JSON.stringify(result) }],
           structuredContent: { ...result },
@@ -256,9 +309,10 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
         outputSchema: authStatusOutputSchema,
       },
       async () => {
+        const status = await authService.getStatus();
         const result = createLinkedInResult({
-          status: 'succeeded',
-          data: await authService.getStatus(),
+          status: authStatusResultStatus(status.state),
+          data: status,
           requestId: createRequestId(),
           now,
         });
@@ -277,12 +331,18 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
         outputSchema: profileOutputSchema,
       },
       async () => {
-        const result = createLinkedInResult({
-          status: 'succeeded',
-          data: await authService.getProfile(),
-          requestId: createRequestId(),
-          now,
-        });
+        const requestId = createRequestId();
+        let result;
+        try {
+          result = createLinkedInResult({
+            status: 'succeeded',
+            data: await authService.getProfile(),
+            requestId,
+            now,
+          });
+        } catch (error: unknown) {
+          result = createAuthErrorResult(error, requestId, now);
+        }
         return {
           content: [{ type: 'text', text: JSON.stringify(result) }],
           structuredContent: { ...result },
