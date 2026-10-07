@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M01",
-  "currentIteration": "M01.4",
+  "currentIteration": "M01.6",
   "status": "ACTIVE",
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "9fcb2c8cf1e18df72217affe0f854fc798303e65",
+  "latestVerifiedSha": "faedaf2f53b3b7f000bc702650421c2e348b057a",
   "ciStatus": "GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Execute the M01.5 official LinkedIn OAuth code exchange and conditional refresh RED on PR #2."
+  "exactNextWork": "Execute the M01.6 official OIDC userinfo identity RED on PR #2."
 }
