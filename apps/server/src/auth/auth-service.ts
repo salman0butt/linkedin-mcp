@@ -6,10 +6,7 @@ import type {
 } from '../../../../packages/core/dist/index.js';
 import type { LinkedInAuthConfig } from '../config.js';
 import { createFileCredentialStore, type CredentialStore } from './credential-store.js';
-import {
-  fetchLinkedInIdentity,
-  LinkedInIdentityError,
-} from './linkedin-identity.js';
+import { fetchLinkedInIdentity, LinkedInIdentityError } from './linkedin-identity.js';
 import {
   createLinkedInOAuthAdapter,
   LinkedInOAuthError,
@@ -307,9 +304,7 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
       const allowRefresh = current.config.mode === 'confidential';
       const credential: StoredCredential = {
         accessToken: token.accessToken,
-        ...(allowRefresh && token.refreshToken !== undefined
-          ? { refreshToken: token.refreshToken }
-          : {}),
+        ...(allowRefresh && token.refreshToken !== undefined ? { refreshToken: token.refreshToken } : {}),
         expiresAt: addSeconds(currentTime, token.expiresInSeconds),
         ...(allowRefresh && token.refreshTokenExpiresInSeconds !== undefined
           ? { refreshExpiresAt: addSeconds(currentTime, token.refreshTokenExpiresInSeconds) }
