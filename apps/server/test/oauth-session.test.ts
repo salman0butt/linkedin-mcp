@@ -3,10 +3,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 import type { LinkedInAuthConfig } from '../src/config.js';
-import {
-  buildPkceChallenge,
-  createOAuthSessionCoordinator,
-} from '../src/auth/oauth-session.js';
+import { buildPkceChallenge, createOAuthSessionCoordinator } from '../src/auth/oauth-session.js';
 
 const nowIso = '2026-10-06T15:00:00.000Z';
 
@@ -43,7 +40,9 @@ describe('OAuth session coordinator', () => {
     expect(session.expiresAt).toBe('2026-10-06T15:05:00.000Z');
     expect(session.codeVerifier).toHaveLength(43);
     expect(session.codeChallenge).toBe(
-      createHash('sha256').update(session.codeVerifier ?? '').digest('base64url'),
+      createHash('sha256')
+        .update(session.codeVerifier ?? '')
+        .digest('base64url'),
     );
     expect(buildPkceChallenge(session.codeVerifier ?? '')).toBe(session.codeChallenge);
     expect(coordinator.peek()?.id).toBe(session.id);
@@ -98,9 +97,9 @@ describe('OAuth session coordinator', () => {
     });
     const first = coordinator.start();
 
-    expect(() =>
-      coordinator.consumeCallback({ sessionId: first.id, code: 'authorization-code' }),
-    ).toThrow(/state/i);
+    expect(() => coordinator.consumeCallback({ sessionId: first.id, code: 'authorization-code' })).toThrow(
+      /state/i,
+    );
     expect(coordinator.peek()).toBeNull();
 
     const second = coordinator.start();
