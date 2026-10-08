@@ -35,6 +35,11 @@ jobs:
           cache: pnpm
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
+      - name: Diagnose M02 durable-doc formatting
+        run: |
+          pnpm exec prettier --write docs/product/CAPABILITY-MATRIX.md docs/requirements/TRACEABILITY.md
+          git diff -- docs/product/CAPABILITY-MATRIX.md docs/requirements/TRACEABILITY.md
+          git checkout -- docs/product/CAPABILITY-MATRIX.md docs/requirements/TRACEABILITY.md
       - name: Format check
         run: pnpm format:check
       - name: Test
