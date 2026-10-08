@@ -7,7 +7,7 @@ Last reconciled: 2026-10-08. Actual Git/code/exact-SHA CI outrank these notes.
 M02 — Text Publishing — **ACTIVE, M02.1 contracts**.
 
 Active branch: `feat/m02-text-publishing`.
-Active PR: pending draft creation.
+Active PR: #3 — draft.
 Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`.
 Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`.
 
