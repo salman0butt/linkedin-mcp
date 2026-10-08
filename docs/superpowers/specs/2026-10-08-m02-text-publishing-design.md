@@ -18,7 +18,7 @@ Success means:
 - drafting and preview are local-only and never publish;
 - publishing requires an explicit approval artifact bound to the exact payload;
 - the same idempotency key cannot create a second LinkedIn post;
-- the provider is always `OFFICIAL_API`;
+- publication uses `OFFICIAL_API`; local preview and approval use `LOCAL_ONLY` provenance;
 - member publishing is attempted only when authenticated access includes the required write permission;
 - provider failures and uncertain outcomes never become fake success;
 - post-creation verification is explicit and conservative when read permission is unavailable.
@@ -73,57 +73,35 @@ MCP tool
 
 The provider never receives approval tokens, idempotency metadata, encryption keys or other local control-plane values.
 
-## 6. Public MCP surface
+## 6. Public MCP surface — Task 7 contracts
+
+Always discover all three M02 tools, including unconfigured/bare construction. Discovery is not live availability. Bare server lists three M00 plus three M02 tools; built runtimes with AuthService list ten including four M01 tools. Every outer input and canonical payload/distribution object rejects unknown keys. Caller author/subject/credentials/provider/read flag/version/path/TTL are prohibited.
 
 ### `linkedin.post.preview.text`
 
-Input:
-
-- `text`: non-empty post commentary;
-- optional `visibility`, initially bounded to supported member-post visibility values;
-- optional `disableReshare`, default false.
-
-Output:
-
-- canonical preview;
-- deterministic payload hash;
-- provider target `OFFICIAL_API`;
-- required permission `w_member_social`;
-- no mutation.
+Input exactly `{ text: string, visibility?: 'PUBLIC' | 'CONNECTIONS', disableReshare?: boolean }`; nonblank text <=3000 characters; core PUBLIC/false defaults. Call only the local canonical builder: no auth, approval issuance/consumption, ledger, provider, network or persistent files. Return succeeded with outer LOCAL_ONLY/linkedin-mcp and exact core preview data `{ payload, canonicalJson, payloadHash, provider: 'OFFICIAL_API', requiredScope: 'w_member_social' }`. Target provenance does not describe an actual network request.
 
 ### `linkedin.post.approve.text`
 
-Input:
+Input exactly `{ payload: CanonicalTextPostPayload, payloadHash: lowercase64Hex, approved: true }`. Rebuild/hash canonical content before issuance; reject mismatch. The true literal is explicit caller approval intent, not proof of an independently identified human.
 
-- exact preview payload/hash.
-
-Output:
-
-- opaque approval receipt;
-- payload hash;
-- bounded expiry;
-- `LOCAL_ONLY` provenance.
-
-Approval is not publication and has no LinkedIn side effect.
+Use only local `AuthService.getStatus()`: require connected state, nonblank persisted subject and `w_member_social`. Pending authorization maps human_action_required; unavailable auth/subject/scope maps permission_required; local status error maps failed. Do not call provider context/profile/refresh/identity/OAuth/Posts to issue approval or repair missing subject. Issue the runtime's shared receipt against recomputed preview hash and persisted subject. Return succeeded with outer LOCAL_ONLY/linkedin-mcp and `{ receiptId, payloadHash, expiresAt, provider: 'LOCAL_ONLY' }`. Preview never issues; approval never consumes/reserves/publishes/verifies; publish never auto-approves.
 
 ### `linkedin.post.create.text`
 
-Input:
+Strict root input `{ payload: CanonicalTextPostPayload, approvalReceiptId?: unknown, idempotencyKey: nonblank string }`. The optional unknown receipt is a deliberate narrow registration-schema exception enabling structured requires_approval for missing/malformed receipts instead of only SDK validation errors. Before any dependencies require a nonblank string, else return static approval_required/retryable false. Never coerce/echo invalid receipt values. Payload/key types and all unknown root/nested keys still receive normal strict MCP input errors.
 
-- canonical payload;
-- approval receipt;
-- caller-supplied idempotency key.
+Delegate valid inputs only to the shared Task 6 service; no adapter-side receipt consumption, ledger/provider access or retries. Preserve its payload snapshot, usable-auth/write-scope gates, subject/hash-bound approval, durable member-bound reservation, single POST, authoritative completion and optional legitimate GET. Missing publisher configuration yields safe permission_required/publishing_not_configured without direct-provider fallback.
 
-Behavior:
+### Result, audit and runtime contracts
 
-1. validate the complete canonical payload and take an owned snapshot before any asynchronous gate;
-2. validate authenticated usable credential context and `w_member_social`, then consume the receipt bound to the preview hash and authenticated subject;
-3. reserve idempotency key before remote mutation;
-4. perform exactly one official Posts API create attempt;
-5. capture HTTP outcome and `x-restli-id` when present;
-6. persist terminal or uncertain mutation state before returning;
-7. optionally verify created post when legitimate read access exists;
-8. return structured status and audit metadata without tokens.
+Text JSON and structuredContent contain the same precise result envelope. Preview/approval and their local failures use LOCAL_ONLY/linkedin-mcp; publish/domain failures use OFFICIAL_API/LinkedIn. Success preserves all Task 6 data/verification/replay, envelope succeeded, and static read-unavailable/read-failed warnings when needed; no constructed post URL or duplicate error for successful replay. Reuse Task 5's validated numeric share/ugcPost identifier helper.
+
+Missing/malformed/not-found/expired/mismatched/consumed approval maps requires_approval; auth/write/config failures map permission_required; rate limit maps rate_limited; invalid payload/idempotency conflict/provider conflict/storage failure maps failed. Mutation uncertainty maps partial with data `{ state: 'outcome_unknown' }`, static error outcome_unknown/retryable false; never flatten it into success/generic failure or infer a duplicate post from ambiguous conflict. Unexpected errors use safe allowlisted messages.
+
+Preserve requestId/timestamp and add bounded M02-only metadata audit `{ operation: 'post.preview.text' | 'post.approve.text' | 'post.create.text', payloadHash?: lowercase64Hex, replay?: boolean }`. Hash is validated preview hash, replay only from successful service return. Receipt/raw key/credential/author/contact/profile/commentary/private provider or storage details/administrative paths never enter audit/logs/errors. Explicit preview text and intentional receipt data are the defined exceptions in data only. Exact output schemas cover success/error/partial variants without unrestricted data or core-wide metadata breakage.
+
+Export a small `createLinkedInRuntime(config, overrides?)` returning `{ version, authService, publishing: { approvals, textPostService? } }`. Trusted constructor/test overrides may supply authService/approvals/ledger/posts/clock, never tool inputs. Construct one coherent dependency graph per runtime outside stdio/HTTP per-connection callbacks so all connections share auth, receipt and ledger/service state. Optional trusted HTTP runtime injection supports deterministic real-client tests. Missing API version or ledger path leaves the publisher unconstructed; preview/auth/local approval remain functional, and valid-receipt publication reports publishing_not_configured. No default ledger/provider, store creation merely for unconfigured startup/preview, network during construction, or direct-POST fallback. Preserve loopback/Host/Origin/body bounds and protocol-only stdio stdout.
 
 ## 7. Canonical payload
 
@@ -216,6 +194,8 @@ A successful official OAuth token response can legitimately omit scope when it i
 
 Extend the official Posts adapter with `getTextPost({ accessToken, postUrn })`, returning only `{ postUrn, author, commentary, lifecycleState }` from a correctly shaped HTTP 200 object. GET targets `https://api.linkedin.com/rest/posts/${encodeURIComponent(postUrn)}` with the existing explicit version/Rest.li headers and bearer token only in Authorization. Perform at most one GET; validate input, parse only required successful fields and never read non-200 error bodies. Preserve provider error sanitization and add `not_found`/`malformed_response` read classifications as needed.
 
+GET author shape accepts documented valid `urn:li:person:<member-id>` or `urn:li:organization:<organization-id>` forms. A valid organization author is well-formed provider data and reaches the service's exact authenticated-member comparison, resulting in `verification_failed/post_mismatch`; it is not `malformed_response` merely because it is an organization. Missing, wrongly typed, blank or malformed author values remain malformed responses. This read normalization does not authorize organization publishing: POST author validation remains person-only, and read confirmation still requires exact equality with the authenticated member author.
+
 Task 6 intentionally extends the Task 5 successful result with a required nested `verification` field while preserving outer `{ state: 'succeeded', provider: 'OFFICIAL_API', postUrn, replay }`:
 
 - `{ state: 'verified' }`: this invocation's GET confirms matching post identifier, authenticated author, exact approved commentary and `PUBLISHED` lifecycle;
@@ -228,15 +208,15 @@ Successful idempotency replay may perform one fresh gated GET with the already b
 
 No post URL is constructed or represented as verified. Read confirmation does not upgrade live capability availability without legitimate live evidence. M02 must not require restricted read permission to use legitimate member publishing.
 
-## 12. Configuration
+## 12. Configuration — trusted Task 7 runtime inputs
 
-Add non-secret Posts API configuration:
+Keep optional LINKEDIN_MCP_API_VERSION/`linkedinApiVersion` in YYYYMM form. Add nonsecret ServerConfig fields `publishingLedgerPath?: string`, `publishingApprovalTtlMs: number`, `memberPostReadEnabled: boolean`:
 
-- `LINKEDIN_MCP_API_VERSION` in YYYYMM format;
-- bounded approval TTL;
-- idempotency-ledger path when file persistence is selected.
+- LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: optional explicit nonblank path, resolved to an absolute lexical path; reject equality with resolved credential-store path. No default global/shared ledger, hidden filesystem/network validation, or caller override.
+- LINKEDIN_MCP_APPROVAL_TTL_MS: integer >0 and <=600000, default 300000, matching approval bounds.
+- LINKEDIN_MCP_MEMBER_POST_READ_ENABLED: exact true/false strings only, default false; legitimate read capability still requires normalized granted r_member_social under Task 6.
 
-Existing M01 credential encryption/token handling remains the only credential boundary.
+Both API version and explicit ledger path are required to construct the real publisher. Partial config preserves M00/M01 startup defaults and reports structured publishing_not_configured on valid-receipt publication. TTL/read settings do not activate OAuth or establish live access. Administrative settings never enter tool schemas/results. M01 encryption and Task 5 ledger/lock policy remain authoritative.
 
 ## 13. Capability truth
 

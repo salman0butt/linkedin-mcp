@@ -9,6 +9,8 @@ export type LinkedInPostsErrorKind =
   | 'rate_limited'
   | 'provider_failure'
   | 'malformed_success'
+  | 'not_found'
+  | 'malformed_response'
   | 'outcome_unknown';
 
 export class LinkedInPostsError extends Error {
@@ -37,8 +39,21 @@ export interface LinkedInPostCreateResult {
   postUrn: string;
 }
 
+export interface GetTextPostInput {
+  accessToken: string;
+  postUrn: string;
+}
+
+export interface LinkedInPostReadResult {
+  postUrn: string;
+  author: string;
+  commentary: string;
+  lifecycleState: string;
+}
+
 export interface LinkedInPostsAdapter {
   createTextPost(input: CreateTextPostInput): Promise<LinkedInPostCreateResult>;
+  getTextPost(input: GetTextPostInput): Promise<LinkedInPostReadResult>;
 }
 
 interface LinkedInPostsAdapterDeps {
@@ -56,6 +71,13 @@ function validateCreateInput(input: CreateTextPostInput): void {
   if (!/^urn:li:person:[^\s]+$/.test(input.author)) {
     throw new Error('LinkedIn member author must be a person URN');
   }
+}
+
+function validateGetInput(input: GetTextPostInput): void {
+  if (typeof input.accessToken !== 'string' || input.accessToken.trim() === '') {
+    throw new Error('LinkedIn access token is required');
+  }
+  if (!isValidLinkedInPostUrn(input.postUrn)) throw new Error('LinkedIn post URN is invalid');
 }
 
 function classifyHttpError(status: number): LinkedInPostsError {
@@ -110,6 +132,61 @@ export function createLinkedInPostsAdapter(
       if (!isValidLinkedInPostUrn(postUrn)) throw new LinkedInPostsError('malformed_success');
 
       return { postUrn };
+    },
+
+    async getTextPost(input) {
+      validateGetInput(input);
+
+      let response: Response;
+      try {
+        response = await fetchImpl(`${POSTS_ENDPOINT}/${encodeURIComponent(input.postUrn)}`, {
+          method: 'GET',
+          headers: {
+            authorization: `Bearer ${input.accessToken}`,
+            'linkedin-version': config.apiVersion,
+            'x-restli-protocol-version': '2.0.0',
+          },
+        });
+      } catch {
+        throw new LinkedInPostsError('provider_failure');
+      }
+
+      if (response.status !== 200) {
+        if (response.status === 401) throw new LinkedInPostsError('reauthentication_required');
+        if (response.status === 403) throw new LinkedInPostsError('permission_required');
+        if (response.status === 404) throw new LinkedInPostsError('not_found');
+        if (response.status === 429) throw new LinkedInPostsError('rate_limited');
+        throw new LinkedInPostsError('provider_failure');
+      }
+
+      let value: unknown;
+      try {
+        value = await response.json();
+      } catch {
+        throw new LinkedInPostsError('malformed_response');
+      }
+      if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+        throw new LinkedInPostsError('malformed_response');
+      }
+      const post = value as Record<string, unknown>;
+      if (
+        !isValidLinkedInPostUrn(post.id) ||
+        typeof post.author !== 'string' ||
+        !/^(?:urn:li:person:[^\s]+|urn:li:organization:\d+)$/.test(post.author) ||
+        typeof post.commentary !== 'string' ||
+        post.commentary.trim() === '' ||
+        typeof post.lifecycleState !== 'string' ||
+        post.lifecycleState.trim() === ''
+      ) {
+        throw new LinkedInPostsError('malformed_response');
+      }
+
+      return {
+        postUrn: post.id,
+        author: post.author,
+        commentary: post.commentary,
+        lifecycleState: post.lifecycleState,
+      };
     },
   };
 }

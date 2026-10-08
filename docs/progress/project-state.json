@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M02",
-  "currentIteration": "M02.5",
+  "currentIteration": "M02.6",
   "status": "ACTIVE",
   "activeBranch": "feat/m02-text-publishing",
   "activePr": 3,
   "baseBranch": "main",
-  "latestVerifiedSha": "90267d9e27bbef705e93b9ec8250548ae815b7ce",
-  "ciStatus": "LOCAL_GREEN_204_TESTS_EXACT_HEAD_CI_PENDING",
+  "latestVerifiedSha": "84b36492da74961965ba3ae2cfb6e9c8a4c239e6",
+  "ciStatus": "GREEN_FORMAT_204_TESTS_LINT_TYPECHECK_BUILD",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Verify the pushed M02.5 publish-orchestration checkpoint CI before starting Task 6 downstream verification."
+  "exactNextWork": "Verify Task 6 pushed-head CI."
 }

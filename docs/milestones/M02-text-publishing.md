@@ -1,6 +1,6 @@
 # M02 — Text Publishing
 
-Status: **ACTIVE — M02.5 text-post publish orchestration**
+Status: **ACTIVE — M02.6 MCP tools/runtime**
 
 ## Goal
 
@@ -29,8 +29,8 @@ No duplicate retry; approval policy enforced; final post identifier/URL verified
 3. **COMPLETE** — M02.2 approval receipt service.
 4. **COMPLETE** — M02.3 persistent idempotency ledger.
 5. **COMPLETE** — M02.4 official LinkedIn Posts adapter.
-6. **ACTIVE** — M02.5 publish orchestration and downstream verification boundary.
-7. **PLANNED** — M02.6 downstream verification and MCP tools/real transport wiring.
+6. **COMPLETE** — M02.5 publish orchestration and downstream verification boundary.
+7. **ACTIVE** — M02.6 MCP tools/real transport wiring; downstream verification is complete.
 8. **PLANNED** — M02.7 skeptical/security review and closeout.
 
 ## TDD Evidence
@@ -89,6 +89,12 @@ PRD, capability matrix, `docs/superpowers/specs/2026-10-08-m02-text-publishing-d
 
 ## M02.5 local checkpoint
 
-Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. Exact pushed-head CI remains pending; no live LinkedIn write was performed.
+Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. The subsequent exact pushed-head CI result is recorded below; no live LinkedIn write was performed.
 
-Exact next work: verify the pushed M02.5 checkpoint CI before Task 6 downstream verification.
+M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6`, CI `37793478842`, is GREEN. Format, tests, lint, typecheck and build completed; local suite at this checkpoint passed 204 tests. All scoped review findings are addressed. GitHub API access recovered later in this run; fresh API reads confirm PR #3 remains the sole open milestone PR, with no reviews or review threads and a mergeable head. All final merge gates still require fresh checks.
+
+## M02.6 downstream verification checkpoint
+
+Task 6 is implemented and independently re-reviewed: optional official GET, explicit legitimate read gate, exact comparison and fresh replay evidence preserve durably succeeded creation. Final local verification passed 265 tests across 29 files plus format/lint/typecheck/build. All scoped findings are resolved; whole-milestone review remains pending. See `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md` for qualified RED/GREEN and security evidence. New pushed-head CI is pending; the last verified checkpoint remains `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842`.
+
+Exact next work: verify Task 6 pushed-head CI.

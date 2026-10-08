@@ -73,7 +73,14 @@ function normalizeTokenResponse(value: unknown): LinkedInTokenResult {
   const refreshToken =
     typeof token.refresh_token === 'string' && token.refresh_token !== '' ? token.refresh_token : undefined;
   const refreshTokenExpiresInSeconds = positiveNumber(token.refresh_token_expires_in);
-  const scopes = typeof token.scope === 'string' ? token.scope.trim().split(/\s+/).filter(Boolean) : [];
+  let scopes: string[];
+  if (!Object.hasOwn(token, 'scope')) {
+    scopes = [];
+  } else if (typeof token.scope === 'string' && token.scope.trim() !== '') {
+    scopes = token.scope.trim().split(/\s+/);
+  } else {
+    throw new LinkedInOAuthError('provider_failure', false);
+  }
 
   return {
     accessToken,

@@ -27,3 +27,7 @@ GPT-6.1 Sol reviewed specification and security/correctness; GPT-6 Luna implemen
 Final local commands passed: `pnpm format:check`, `pnpm test` (204/204 tests across 29 files), `pnpm lint`, `pnpm typecheck`, `pnpm build`, and `git diff --check`. These results cover the reviewed working tree. Exact pushed-head CI is still pending at the time of this evidence commit; local checks are not a claim of new green CI.
 
 No live LinkedIn request or post was performed. Downstream verification and MCP publishing tools remain Tasks 6 and 7. Static live publication availability remains UNAVAILABLE.
+
+## Subsequent exact-head CI
+
+Pushed checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` passed CI `37793478842` (37s). GitHub run success and its linked full commit SHA were checked through supported web reads. Its quality job contains frozen install, format, test, lint, typecheck and build. The local suite at that checkpoint had 204 passing tests; Actions log access was not available through the blocked API. Task 6 downstream verification is now active.

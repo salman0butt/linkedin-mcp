@@ -4,7 +4,7 @@ Last reconciled: 2026-10-08. Actual Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M02 — Text Publishing — **ACTIVE, M02.5 text-post publish orchestration**.
+M02 — Text Publishing — **ACTIVE, M02.6 MCP tools/runtime**.
 
 Active branch: `feat/m02-text-publishing`.
 Active PR: #3 — draft.
@@ -43,6 +43,12 @@ The M00 private package-boundary debt remains Minor and deferred. Live LinkedIn 
 
 ## M02.5 local checkpoint
 
-Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. Exact pushed-head CI remains pending; no live LinkedIn write was performed.
+Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. The subsequent exact pushed-head CI result is recorded below; no live LinkedIn write was performed.
 
-Exact next work: verify the pushed M02.5 checkpoint CI before Task 6 downstream verification.
+M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6`, CI `37793478842`, is GREEN. Format, tests, lint, typecheck and build completed; local suite at this checkpoint passed 204 tests. All scoped review findings are addressed. GitHub API access recovered later in this run; fresh API reads confirm PR #3 remains the sole open milestone PR, with no reviews or review threads and a mergeable head. All final merge gates still require fresh checks.
+
+## M02.6 downstream verification checkpoint
+
+Task 6 is implemented and independently re-reviewed: optional official GET, explicit legitimate read gate, exact comparison and fresh replay evidence preserve durably succeeded creation. Final local verification passed 265 tests across 29 files plus format/lint/typecheck/build. All scoped findings are resolved; whole-milestone review remains pending. See `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md` for qualified RED/GREEN and security evidence. New pushed-head CI is pending; the last verified checkpoint remains `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842`.
+
+Exact next work: verify Task 6 pushed-head CI.

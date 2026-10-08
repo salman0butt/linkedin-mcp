@@ -151,6 +151,7 @@ Task 5 checkpoint: local implementation, coverage and scoped review pass with 20
 - Add required `LinkedInPostsAdapter.getTextPost({ accessToken: string, postUrn: string }): Promise<{ postUrn: string, author: string, commentary: string, lifecycleState: string }>`; update typed provider test fakes intentionally.
 - Add trusted optional service dependency `memberPostReadEnabled?: boolean`, default false; require it plus normalized granted `r_member_social` before GET. This is never a caller/tool input.
 - Preserve Task 5 outer successful fields; intentionally add required `verification` union: `verified`; `created_unverified` with reason `read_permission_unavailable`; or `verification_failed` with allowlisted reason `post_mismatch | reauth_required | read_not_found | rate_limited | malformed_response | provider_failure`.
+- GET normalizes documented valid person or organization author URNs; exact authenticated-member comparison rejects valid organization authors as post_mismatch. Malformed author values remain malformed_response, and POST author validation remains person-only.
 - No credential/core/store schema expansion, new proof field, verification persistence or constructed post URL.
 
 - [ ] Recover actual Task 5 final head/interfaces, read `/tmp/linkedin-m02-sdd/task-6-brief.md`, and record genuine RED before implementation; do not weaken mutation safety assertions.
@@ -158,6 +159,7 @@ Task 5 checkpoint: local implementation, coverage and scoped review pass with 20
 - [ ] RED proves the capability flag defaults false; write/openid/profile/configuration hints never enable read; enabled legitimate capability plus normalized `r_member_social` is required.
 - [ ] RED distinguishes legitimate omitted OAuth scope from explicitly present empty/whitespace/non-string scope; preserve RFC 6749 omission fallback and reject malformed-present scope without credential migration.
 - [ ] RED proves authoritative mutation persistence precedes GET and exact ID/author/commentary/lifecycle comparisons; each mismatch is verification failure with creation still succeeded.
+- [ ] Regression RED proves valid organization-author GET normalization reaches service post_mismatch, while missing/wrong-type/blank/malformed author values reject independently; preserve person-only POST tests and creation success.
 - [ ] RED covers 403 as created_unverified, 401 expected-context invalidation and failed cleanup without creation failure, and 404/429/5xx/network/invalid JSON as allowlisted nested verification failures without another POST.
 - [ ] RED proves successful restart/idempotency replay performs no POST/complete and at most one fresh gated GET; unknown/reserved/terminal-failed/member-conflicting records never GET.
 - [ ] Extend adapter with one injected-fetch GET; parse only required successful fields, never non-200 bodies; no retry loop.
@@ -166,22 +168,43 @@ Task 5 checkpoint: local implementation, coverage and scoped review pass with 20
 
 Controller owns integration/configuration policy. Task 7 may wire the trusted member-read capability option only when legitimate account product access is configured; its default remains false. Ordinary CI uses injected responses and never performs live LinkedIn reads or writes. Complete execution evidence belongs in `/tmp/linkedin-m02-sdd/task-6-report.md` when dispatched.
 
+Task6 implementation and scoped review are complete: local 265 tests and all checks passed; pushed-head CI is next. Initial behavioral RED and later first-GREEN coverage are separately qualified in `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md`. Do not infer historical RED for every expanded coverage assertion from the checklist above.
+
 ### Task 7: MCP preview/approve/publish tools and real transports
 
 **Files:**
 
-- Modify: `apps/server/src/create-server.ts`
-- Modify: `apps/server/src/stdio.ts`
-- Modify: `apps/server/src/http.ts`
-- Test: `apps/server/test/mcp-text-post-contract.test.ts`
-- Test: `tests/contract/stdio-smoke.test.ts`
-- Test: `tests/contract/http-smoke.test.ts`
+- Modify: `apps/server/src/create-server.ts`, `foundation.ts`, `stdio.ts`, `http.ts`, `config.ts`.
+- Create: `apps/server/src/runtime.ts`.
+- Create: `apps/server/test/mcp-text-post-contract.test.ts`, `runtime.test.ts`.
+- Test: `apps/server/test/config.test.ts`, `mcp-contract.test.ts`, `http.test.ts` as affected.
+- Test: `tests/contract/stdio-smoke.test.ts`, `http-smoke.test.ts`.
 
-**Produces:** `linkedin.post.preview.text`, `linkedin.post.approve.text`, `linkedin.post.create.text`.
+**Interfaces:**
 
-- [ ] RED real-client tests prove discovery, strict schemas, local-only preview/approval, explicit OFFICIAL_API mutation provenance, no token leakage and approval-required behavior.
-- [ ] Wire one publishing service through built stdio/HTTP entrypoints.
-- [ ] Verify GREEN including real transport smokes.
+- Preview `{ text, visibility?, disableReshare? }` calls only core builder; LOCAL_ONLY envelope, exact core OFFICIAL_API-target preview data.
+- Approval `{ payload, payloadHash, approved: true }` uses local getStatus connected/persisted-subject/write-scope gates and shared receipt issue; LOCAL_ONLY, no refresh/identity/provider calls.
+- Publish strict root `{ payload, approvalReceiptId?: unknown, idempotencyKey }`: the narrow receipt exception enables structured requires_approval before dependencies unless nonblank string; all payload/key/unknown-field constraints stay strict. Delegate solely to Task 6 publishing service.
+- Add `LinkedInMcpServerDeps.publishing?: { approvals: ApprovalService, textPostService?: TextPostService }`; always register M02 tools, six bare/ten built with auth.
+- Export `createLinkedInRuntime(config: ServerConfig, overrides?: { authService?, approvals?, ledger?, posts?, now? })` returning `{ version, authService, publishing: { approvals, textPostService? } }`; trusted constructor/test inputs only. Optional HTTP runtime injection is similarly trusted.
+- Preserve Task 6 successful verification data. Add bounded M02 metadata audit operation/validated preview hash/successful replay, leaving M00/M01 exact metadata unchanged. Precise status/provenance/error/partial variants, no unrestricted output data.
+- Add config fields publishingLedgerPath/publishingApprovalTtlMs/memberPostReadEnabled for explicit normalized path, TTL 300000 default in 1..600000, exact true/false default false. Existing YYYYMM API version plus path are required for real publisher construction.
+
+- [ ] Recover reviewed Task 6 exact head/interfaces and `/tmp/linkedin-m02-sdd/task-7-brief.md`; preserve Task 5/6 boundaries and validated numeric share/ugcPost identifier helper.
+- [ ] Establish actual behavioral RED through real MCP clients before source changes; retain logs and distinguish collection/build/schema noise from intended RED.
+- [ ] RED unconfigured discovery and strict schemas; preview has zero auth/receipt/ledger/provider/network calls or files and exact LOCAL_ONLY/official-target output.
+- [ ] RED approval uses only local status: explicit confirmation/hash/connected/persisted-subject/write-scope gates issue receipt; all failures issue none and never refresh/fetch identity/publish.
+- [ ] RED missing/null/nonstring/object/blank receipt returns structured requires_approval before dependencies; not-found/expired/mismatch/consumed service errors preserve approval-required semantics.
+- [ ] RED strict nested payload/key/extra control fields prohibit caller author/token/provider/read/path/version/TTL injection.
+- [ ] RED two clients sharing one runtime approve on one connection and publish/replay on another with one POST; preserve subject/hash/key conflicts and Task 6 fresh verification.
+- [ ] RED success/read-unavailable/read-failed/replay/partial-unknown/auth/rate/conflict/storage variants have exact provider/status/data, safe audit and identical text JSON/structuredContent; no raw errors/receipt/key/text/tokens in audit/logs.
+- [ ] RED config/factory tests cover version+ledger requirements, TTL/boolean/path validation, credential-path collision, partial defaults and coherent sharing without construction/preview/approval network or unconfigured store files.
+- [ ] Implement pure local result helpers and strict schemas, keeping all mutation decisions in Task 6 service; return safe publishing_not_configured if no real publisher exists.
+- [ ] Build one shared runtime outside stdio/HTTP callbacks; preserve loopback security/body limits and protocol stdout.
+- [ ] RED built stdio and real loopback HTTP clients discover ten tools unconfigured, call preview/approval/missing-receipt publication and retain existing health/auth/capability/security/stdout assertions. Sanitize inherited LINKEDIN*MCP*\* environment without exposing values.
+- [ ] Verify focused GREEN and full format/test/lint/typecheck/build; record actual logs/counts/failure reasons/self-review in `/tmp/linkedin-m02-sdd/task-7-report.md`.
+
+No mock/config/runtime-success projection upgrades post.create.text live availability. No constructed verified URL, new dependency, credential migration, general container/event framework or live LinkedIn call. Controller owns exact-SHA CI/durable docs/integration. Source execution starts only after Task 6 review passes.
 
 ### Task 8: Skeptical/security review and closeout
 

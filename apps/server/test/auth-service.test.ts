@@ -227,6 +227,51 @@ describe('M01 auth lifecycle service', () => {
     });
   });
 
+  it('retains the already authorized scope snapshot when a valid token response omits scope', async () => {
+    const { coordinator } = createCoordinator();
+    const stored = createStore(null);
+    const requestedScopes = ['openid', 'profile', 'r_member_social'];
+    const service = createAuthService({
+      config: config(),
+      coordinator,
+      oauth: createOAuthAdapter({
+        exchangeAuthorizationCode: () =>
+          Promise.resolve({ accessToken: 'access-token-secret', expiresInSeconds: 3600, scopes: [] }),
+      }),
+      store: stored.store,
+      fetchIdentity: () => Promise.resolve(identity()),
+      now: () => NOW,
+    });
+
+    await expect(
+      service.completeAuthorization({ ...consumedCode(), scopes: requestedScopes }),
+    ).resolves.toMatchObject({
+      scopes: requestedScopes,
+    });
+    expect(stored.getValue()?.scopes).toEqual(requestedScopes);
+  });
+
+  it('uses explicit narrower token grants and does not infer omitted read permission', async () => {
+    const { coordinator } = createCoordinator();
+    const stored = createStore(null);
+    const service = createAuthService({
+      config: config(),
+      coordinator,
+      oauth: createOAuthAdapter({
+        exchangeAuthorizationCode: () =>
+          Promise.resolve({ accessToken: 'access-token-secret', expiresInSeconds: 3600, scopes: ['openid'] }),
+      }),
+      store: stored.store,
+      fetchIdentity: () => Promise.resolve(identity()),
+      now: () => NOW,
+    });
+
+    await expect(
+      service.completeAuthorization({ ...consumedCode(), scopes: ['openid', 'profile', 'r_member_social'] }),
+    ).resolves.toMatchObject({ scopes: ['openid'] });
+    expect(stored.getValue()?.scopes).toEqual(['openid']);
+  });
+
   it('reports connected and expired states from persisted credential truth', async () => {
     const connected = createStore({
       accessToken: 'access-token-secret',

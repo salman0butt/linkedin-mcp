@@ -4,7 +4,12 @@ import { createTextPostPreview, type TextPostPayload } from '../../../../package
 import { AuthServiceError, type AuthService } from '../auth/auth-service.js';
 import { ApprovalServiceError, type ApprovalService } from './approval-service.js';
 import { IdempotencyLedgerError, type IdempotencyLedger, type MutationRecord } from './idempotency-ledger.js';
-import { isValidLinkedInPostUrn, LinkedInPostsError, type LinkedInPostsAdapter } from './linkedin-posts.js';
+import {
+  isValidLinkedInPostUrn,
+  LinkedInPostsError,
+  type LinkedInPostsAdapter,
+  type LinkedInPostReadResult,
+} from './linkedin-posts.js';
 
 export type TextPostServiceErrorKind =
   | 'invalid_payload'
@@ -40,12 +45,29 @@ export interface PublishTextPostInput {
 }
 
 export interface TextPostService {
-  publish(input: PublishTextPostInput): Promise<{
-    state: 'succeeded';
-    provider: 'OFFICIAL_API';
-    postUrn: string;
-    replay: boolean;
-  }>;
+  publish(input: PublishTextPostInput): Promise<TextPostPublishResult>;
+}
+
+export type TextPostVerification =
+  | { state: 'verified' }
+  | { state: 'created_unverified'; reason: 'read_permission_unavailable' }
+  | {
+      state: 'verification_failed';
+      reason:
+        | 'post_mismatch'
+        | 'reauth_required'
+        | 'read_not_found'
+        | 'rate_limited'
+        | 'malformed_response'
+        | 'provider_failure';
+    };
+
+export interface TextPostPublishResult {
+  state: 'succeeded';
+  provider: 'OFFICIAL_API';
+  postUrn: string;
+  replay: boolean;
+  verification: TextPostVerification;
 }
 
 interface TextPostServiceDeps {
@@ -53,6 +75,7 @@ interface TextPostServiceDeps {
   approvals: ApprovalService;
   ledger: IdempotencyLedger;
   posts: LinkedInPostsAdapter;
+  memberPostReadEnabled?: boolean;
 }
 
 interface ProviderContext {
@@ -213,6 +236,65 @@ function errorForTerminal(record: MutationRecord): TextPostServiceError {
   }
 }
 
+function matchesReadResult(
+  result: LinkedInPostReadResult,
+  postUrn: string,
+  author: string,
+  payload: TextPostPayload,
+): boolean {
+  return (
+    result.postUrn === postUrn &&
+    result.author === author &&
+    result.commentary === payload.commentary &&
+    result.lifecycleState === payload.lifecycleState
+  );
+}
+
+async function verifyCreatedPost(
+  deps: TextPostServiceDeps,
+  context: ProviderContext,
+  postUrn: string,
+  author: string,
+  payload: TextPostPayload,
+): Promise<TextPostVerification> {
+  if (deps.memberPostReadEnabled !== true || !context.scopes.includes('r_member_social')) {
+    return { state: 'created_unverified', reason: 'read_permission_unavailable' };
+  }
+
+  try {
+    const read = await deps.posts.getTextPost({ accessToken: context.accessToken, postUrn });
+    return matchesReadResult(read, postUrn, author, payload)
+      ? { state: 'verified' }
+      : { state: 'verification_failed', reason: 'post_mismatch' };
+  } catch (error: unknown) {
+    if (error instanceof LinkedInPostsError) {
+      switch (error.kind) {
+        case 'permission_required':
+          return { state: 'created_unverified', reason: 'read_permission_unavailable' };
+        case 'reauthentication_required':
+          try {
+            await deps.auth.markReauthRequired({
+              accessToken: context.accessToken,
+              subject: context.subject,
+            });
+          } catch {
+            // Credential cleanup is best-effort after the successful mutation is durable.
+          }
+          return { state: 'verification_failed', reason: 'reauth_required' };
+        case 'not_found':
+          return { state: 'verification_failed', reason: 'read_not_found' };
+        case 'rate_limited':
+          return { state: 'verification_failed', reason: 'rate_limited' };
+        case 'malformed_response':
+          return { state: 'verification_failed', reason: 'malformed_response' };
+        default:
+          return { state: 'verification_failed', reason: 'provider_failure' };
+      }
+    }
+    return { state: 'verification_failed', reason: 'provider_failure' };
+  }
+}
+
 function serializeByLedger<T>(ledger: IdempotencyLedger, action: () => Promise<T>): Promise<T> {
   const previous = publishQueues.get(ledger) ?? Promise.resolve();
   const result = previous.then(action, action);
@@ -301,11 +383,19 @@ export function createTextPostService(deps: TextPostServiceDeps): TextPostServic
             if (!isValidLinkedInPostUrn(record.result?.postUrn)) {
               throw new TextPostServiceError('outcome_unknown');
             }
+            const verification = await verifyCreatedPost(
+              deps,
+              context,
+              record.result.postUrn,
+              author,
+              snapshot.payload,
+            );
             return {
               state: 'succeeded',
               provider: 'OFFICIAL_API',
               postUrn: record.result.postUrn,
               replay: true,
+              verification,
             };
           }
           if (record.state === 'failed_terminal') throw errorForTerminal(record);
@@ -401,11 +491,19 @@ export function createTextPostService(deps: TextPostServiceDeps): TextPostServic
           throw new TextPostServiceError('outcome_unknown');
         }
 
+        const verification = await verifyCreatedPost(
+          deps,
+          context,
+          completed.result.postUrn,
+          author,
+          snapshot.payload,
+        );
         return {
           state: 'succeeded',
           provider: 'OFFICIAL_API',
           postUrn: completed.result.postUrn,
           replay: false,
+          verification,
         };
       });
     },
