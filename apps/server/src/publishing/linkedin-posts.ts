@@ -66,8 +66,8 @@ function classifyHttpError(status: number): LinkedInPostsError {
   return new LinkedInPostsError('provider_failure');
 }
 
-function validPostUrn(value: string | null): value is string {
-  return value !== null && /^urn:li:[^:\s]+:.+$/.test(value);
+export function isValidLinkedInPostUrn(value: unknown): value is string {
+  return typeof value === 'string' && /^urn:li:(?:share|ugcPost):[0-9]+$/.test(value);
 }
 
 export function createLinkedInPostsAdapter(
@@ -107,7 +107,7 @@ export function createLinkedInPostsAdapter(
       if (response.status !== 201) throw classifyHttpError(response.status);
 
       const postUrn = response.headers.get('x-restli-id');
-      if (!validPostUrn(postUrn)) throw new LinkedInPostsError('malformed_success');
+      if (!isValidLinkedInPostUrn(postUrn)) throw new LinkedInPostsError('malformed_success');
 
       return { postUrn };
     },

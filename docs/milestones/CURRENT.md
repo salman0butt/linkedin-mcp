@@ -23,4 +23,8 @@ M02.4 valid RED `7817938bb2efcdc577d04c00b5b8625216ad6d29` / CI `37762083892`; G
 
 M02 uses the official LinkedIn Posts API for member text publishing, requires explicit approval plus idempotency before mutation, and treats downstream read verification as access-dependent. `post.create.text` remains live `UNAVAILABLE` until legitimate configured provider access is verified. Ordinary CI must never publish a real LinkedIn post.
 
-Exact next work: establish M02.5 text-post publish orchestration RED tests for auth/scope gating, approval binding, idempotency replay/conflict, exactly one provider POST, terminal persistence and `outcome_unknown` handling.
+## M02.5 local checkpoint
+
+Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. Exact pushed-head CI remains pending; no live LinkedIn write was performed.
+
+Exact next work: verify the pushed M02.5 checkpoint CI before Task 6 downstream verification.

@@ -27,6 +27,16 @@ function logoutFailureAuthService(): AuthService {
     getProfile() {
       return Promise.reject(new Error('unused'));
     },
+    getProviderContext() {
+      return Promise.resolve({
+        accessToken: 'internal-test-access-token',
+        subject: 'member-123',
+        scopes: ['openid', 'profile'],
+      });
+    },
+    markReauthRequired() {
+      return Promise.resolve();
+    },
     logout() {
       return Promise.reject(new Error('Credential clear failed provider-private-detail'));
     },

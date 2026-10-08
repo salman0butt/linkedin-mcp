@@ -87,6 +87,8 @@ PRD, capability matrix, `docs/superpowers/specs/2026-10-08-m02-text-publishing-d
 - [ ] Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-## Exact Next Work
+## M02.5 local checkpoint
 
-Establish M02.5 text-post publish orchestration RED tests for disconnected/reauth states, missing `w_member_social`, approval mismatch/expiry, idempotency replay/conflict, one POST only, 401 auth transition, success persistence and durable `outcome_unknown` handling.
+Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. Exact pushed-head CI remains pending; no live LinkedIn write was performed.
+
+Exact next work: verify the pushed M02.5 checkpoint CI before Task 6 downstream verification.

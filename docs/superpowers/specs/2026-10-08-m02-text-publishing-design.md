@@ -116,8 +116,8 @@ Input:
 
 Behavior:
 
-1. validate exact approval receipt/payload binding and expiry;
-2. validate authenticated connected state and `w_member_social` grant;
+1. validate the complete canonical payload and take an owned snapshot before any asynchronous gate;
+2. validate authenticated usable credential context and `w_member_social`, then consume the receipt bound to the preview hash and authenticated subject;
 3. reserve idempotency key before remote mutation;
 4. perform exactly one official Posts API create attempt;
 5. capture HTTP outcome and `x-restli-id` when present;
@@ -137,7 +137,7 @@ M02 text-only member payload is intentionally narrow:
 - reshare-disable flag is explicit/default false;
 - no media/content block.
 
-Canonical JSON serialization is stable and hashed with SHA-256. Approval and idempotency records bind to that hash.
+Canonical JSON serialization is stable and hashed with SHA-256. Approval receipts bind to this author-independent preview hash plus the authenticated subject. Idempotency records bind to the distinct member-bound mutation fingerprint defined below.
 
 ## 8. Approval model
 
@@ -147,7 +147,7 @@ Approval receipts are cryptographically random opaque identifiers stored server-
 - creation/expiry time;
 - consumed state.
 
-Receipts are single-use for initiating a mutation. Reusing a consumed receipt with the same idempotency key returns the recorded result; reusing it with a different key is rejected.
+Receipts are bound to the authenticated member subject and single-use for initiating a mutation. Reusing a consumed receipt with the same idempotency key may replay an already initiated operation, even after receipt expiry; reusing it with a different key is rejected. A consumed receipt must never initiate a newly reserved operation, including after an earlier reservation write failed. A fresh reservation requires an unexpired receipt whose consumption status is `initiated`.
 
 The approval lifetime is short and bounded. Raw payload text is not embedded in the receipt.
 
@@ -169,6 +169,22 @@ Rules:
 - a network failure after the request may have reached LinkedIn becomes `outcome_unknown`, not retryable success/failure;
 - automatic retry is forbidden for `outcome_unknown`;
 - only failures proven to occur before a remote mutation may release/reserve safely for another explicit attempt.
+
+### Task 5 approved safety decisions
+
+Approval identity and mutation identity are distinct. Approval receipts bind to the canonical author-independent preview payload hash and the authenticated member subject. The idempotency ledger binds each raw caller idempotency key to a SHA-256 mutation fingerprint of the canonical provider request including the authenticated member author. Compute this fingerprint from `JSON.stringify({ author: authenticatedMemberAuthor, ...canonicalPayload })`, using the owned canonical payload with its established field order. The ledger's existing `payloadHash` field stores this member-bound mutation fingerprint. Same key with a different payload or authenticated member is a conflict. Raw keys remain global rather than member-namespaced. Legacy author-independent records fail closed through fingerprint mismatch and are never discarded automatically.
+
+Publishing serializes the complete auth/approval/reservation/provider/completion lifecycle for all services sharing one ledger object, using a shared process-local queue keyed by that ledger object. The file ledger additionally holds an exclusive sibling lock file around each complete load/check/persist operation in `reserve` and `complete`, preventing separate ledger instances/processes from both returning a new reservation. Lock creation uses exclusive creation and restrictive permissions. Existing or stale locks fail closed; automatic timeout-based lock stealing is forbidden. Manual recovery must establish that the prior owner stopped and must preserve all mutation records. No orchestration-lock API or lease framework is introduced.
+
+Another process may conservatively convert a replayed reservation to `outcome_unknown`; it cannot issue another POST. The record returned by terminal completion is authoritative. A requested success may be returned as success only when the persisted record is `succeeded` with a valid post identifier. Existing `outcome_unknown` or terminal failure records never become a fabricated success.
+
+The service validates the entire payload and creates an owned canonical snapshot before its first asynchronous gate. The approved hash, mutation fingerprint and provider request must all derive from this snapshot, preventing later caller mutation from changing approved content.
+
+The AuthService exposes internal `getProviderContext()` returning one usable access-token/subject/granted-scope snapshot and `markReauthRequired()` for provider rejection. These internal credentials never enter status, MCP output, logs, receipts or ledger metadata. Missing subjects are resolved through official identity and persisted before context return; expiry/refresh remains within the M01 credential boundary. A delayed rejection must not clear a newer replacement credential; invalidation accepts the expected rejected context internally.
+
+Known 401/403/409/429 provider rejections are terminal and non-retryable for the reserved key. Transport uncertainty, malformed 201 success, generic provider failure without proof of non-acceptance, and unexpected exceptions after the provider attempt become `outcome_unknown`. Failure to persist after a provider attempt also returns non-retryable `outcome_unknown` and preserves the durable reservation. No automatic retry or record deletion occurs.
+
+Approval state remains in memory. Restart replay therefore requires a fresh approval bound to the same canonical payload and authenticated subject. An existing ledger record does not bypass approval, and fresh approval cannot cause another POST for an existing key.
 
 ## 10. Official Posts provider
 
@@ -194,15 +210,23 @@ Response handling:
 
 ## 11. Verification
 
-Creation success requires a returned post URN. Downstream GET verification is attempted only when the configured account legitimately has the required read capability.
+Creation success requires a returned post URN and authoritative durable `succeeded` mutation state. Downstream GET verification occurs only when trusted service dependencies explicitly set `memberPostReadEnabled: true` and the normalized authenticated credential scopes include `r_member_social`. The optional capability flag defaults false and represents legitimately configured member-read product access; it is never a tool input. Do not infer read access from `w_member_social`, `openid`, profile availability, static capability state or arbitrary requested configuration scopes.
 
-Verification state is separate from creation state:
+A successful official OAuth token response can legitimately omit scope when it is identical to the authorized request (RFC 6749 section 5.1); unchanged refresh scope may likewise be omitted (section 6). Preserve these established omission fallbacks. Reject explicitly present non-string, empty or whitespace-only token scope as a sanitized malformed provider response rather than treating it as omission. No `grantedScopes` field or credential migration is introduced.
 
-- `verified`: GET confirms matching author/commentary/lifecycle;
-- `created_unverified`: creation returned a valid post URN but read verification is unavailable;
-- `verification_failed`: read was permitted but the returned object did not confirm the expected post.
+Extend the official Posts adapter with `getTextPost({ accessToken, postUrn })`, returning only `{ postUrn, author, commentary, lifecycleState }` from a correctly shaped HTTP 200 object. GET targets `https://api.linkedin.com/rest/posts/${encodeURIComponent(postUrn)}` with the existing explicit version/Rest.li headers and bearer token only in Authorization. Perform at most one GET; validate input, parse only required successful fields and never read non-200 error bodies. Preserve provider error sanitization and add `not_found`/`malformed_response` read classifications as needed.
 
-M02 must not require restricted read permission merely to use legitimate member publishing.
+Task 6 intentionally extends the Task 5 successful result with a required nested `verification` field while preserving outer `{ state: 'succeeded', provider: 'OFFICIAL_API', postUrn, replay }`:
+
+- `{ state: 'verified' }`: this invocation's GET confirms matching post identifier, authenticated author, exact approved commentary and `PUBLISHED` lifecycle;
+- `{ state: 'created_unverified', reason: 'read_permission_unavailable' }`: the capability flag is disabled, read scope is unavailable, or GET returns 403;
+- `{ state: 'verification_failed', reason }`: reason is one of `post_mismatch`, `reauth_required`, `read_not_found`, `rate_limited`, `malformed_response` or `provider_failure`.
+
+Creation state and verification state remain separate. Persist mutation success before GET. Missing read permission, mismatches, read failures or failed auth cleanup never downgrade the successful mutation, reopen/delete records or retry POST. A GET 401 attempts expected-context credential invalidation but still returns successful creation with verification failure. A GET 404 may mean delayed visibility and does not establish publication failure. Comparison is exact; no trimming, identity inference or missing-field confirmation.
+
+Successful idempotency replay may perform one fresh gated GET with the already bound canonical payload and current legitimate auth context, but performs no POST or ledger completion. Verification is invocation-specific and is not persisted in the mutation ledger; no stale confirmation is claimed. Reserved, unknown and terminal-failed operations never trigger GET. Existing approval/member-binding policy remains in force, including fresh subject-bound approval after restart. The existing shared-ledger queue includes the single GET; file locks remain limited to ledger operations.
+
+No post URL is constructed or represented as verified. Read confirmation does not upgrade live capability availability without legitimate live evidence. M02 must not require restricted read permission to use legitimate member publishing.
 
 ## 12. Configuration
 

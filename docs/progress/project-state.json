@@ -7,9 +7,9 @@
   "activePr": 3,
   "baseBranch": "main",
   "latestVerifiedSha": "90267d9e27bbef705e93b9ec8250548ae815b7ce",
-  "ciStatus": "GREEN_FORMAT_140_TESTS_LINT_TYPECHECK_BUILD",
+  "ciStatus": "LOCAL_GREEN_204_TESTS_EXACT_HEAD_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish M02.5 text-post publish orchestration RED tests for auth/scope gates, approval binding, idempotency replay/conflict, one POST only, success persistence, auth transition and durable outcome_unknown handling."
+  "exactNextWork": "Verify the pushed M02.5 publish-orchestration checkpoint CI before starting Task 6 downstream verification."
 }

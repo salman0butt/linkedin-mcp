@@ -228,7 +228,40 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
     ...options.filesystem,
   };
   const directory = dirname(options.filePath);
+  const lockPath = join(directory, `.${basename(options.filePath)}.lock`);
   let queue: Promise<void> = Promise.resolve();
+
+  async function withFileLock<T>(action: () => Promise<T>): Promise<T> {
+    try {
+      await filesystem.mkdir(directory, { recursive: true, mode: 0o700 });
+      await filesystem.writeFile(lockPath, '', {
+        encoding: 'utf8',
+        mode: 0o600,
+        flag: 'wx',
+      });
+    } catch {
+      throw new IdempotencyLedgerError('store_unavailable');
+    }
+
+    let result: T;
+    try {
+      result = await action();
+    } catch (error: unknown) {
+      try {
+        await filesystem.unlink(lockPath);
+      } catch {
+        // Leave an unremovable lock in place so later writers fail closed.
+      }
+      throw error;
+    }
+
+    try {
+      await filesystem.unlink(lockPath);
+    } catch {
+      throw new IdempotencyLedgerError('store_unavailable');
+    }
+    return result;
+  }
 
   async function load(): Promise<PersistedStore> {
     try {
@@ -247,8 +280,8 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
     );
     const serialized = `${JSON.stringify(store)}\n`;
 
-    await filesystem.mkdir(directory, { recursive: true, mode: 0o700 });
     try {
+      await filesystem.mkdir(directory, { recursive: true, mode: 0o700 });
       await filesystem.writeFile(temporaryPath, serialized, {
         encoding: 'utf8',
         mode: 0o600,
@@ -278,52 +311,56 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
 
   return {
     reserve(input) {
-      return serialize(async () => {
-        assertNonEmpty(input.idempotencyKey, 'idempotencyKey');
-        assertPayloadHash(input.payloadHash);
+      return serialize(() =>
+        withFileLock(async () => {
+          assertNonEmpty(input.idempotencyKey, 'idempotencyKey');
+          assertPayloadHash(input.payloadHash);
 
-        const store = await load();
-        const existing = store.records.find((record) => record.idempotencyKey === input.idempotencyKey);
-        if (existing !== undefined) {
-          if (existing.payloadHash !== input.payloadHash) {
-            throw new IdempotencyLedgerError('conflict');
+          const store = await load();
+          const existing = store.records.find((record) => record.idempotencyKey === input.idempotencyKey);
+          if (existing !== undefined) {
+            if (existing.payloadHash !== input.payloadHash) {
+              throw new IdempotencyLedgerError('conflict');
+            }
+            return { status: 'replay' as const, record: cloneRecord(existing) };
           }
-          return { status: 'replay' as const, record: cloneRecord(existing) };
-        }
 
-        const timestamp = now().toISOString();
-        const record: MutationRecord = {
-          idempotencyKey: input.idempotencyKey,
-          payloadHash: input.payloadHash,
-          state: 'reserved',
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        };
-        store.records.push(record);
-        await persist(store);
-        return { status: 'reserved' as const, record: cloneRecord(record) };
-      });
+          const timestamp = now().toISOString();
+          const record: MutationRecord = {
+            idempotencyKey: input.idempotencyKey,
+            payloadHash: input.payloadHash,
+            state: 'reserved',
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          };
+          store.records.push(record);
+          await persist(store);
+          return { status: 'reserved' as const, record: cloneRecord(record) };
+        }),
+      );
     },
 
     complete(input) {
-      return serialize(async () => {
-        assertNonEmpty(input.idempotencyKey, 'idempotencyKey');
-        assertPayloadHash(input.payloadHash);
-        if (!terminalStates.includes(input.state)) throw new Error('Completion state must be terminal');
-        const result = validateResult(input.result);
+      return serialize(() =>
+        withFileLock(async () => {
+          assertNonEmpty(input.idempotencyKey, 'idempotencyKey');
+          assertPayloadHash(input.payloadHash);
+          if (!terminalStates.includes(input.state)) throw new Error('Completion state must be terminal');
+          const result = validateResult(input.result);
 
-        const store = await load();
-        const existing = store.records.find((record) => record.idempotencyKey === input.idempotencyKey);
-        if (existing === undefined) throw new IdempotencyLedgerError('not_reserved');
-        if (existing.payloadHash !== input.payloadHash) throw new IdempotencyLedgerError('conflict');
-        if (existing.state !== 'reserved') return cloneRecord(existing);
+          const store = await load();
+          const existing = store.records.find((record) => record.idempotencyKey === input.idempotencyKey);
+          if (existing === undefined) throw new IdempotencyLedgerError('not_reserved');
+          if (existing.payloadHash !== input.payloadHash) throw new IdempotencyLedgerError('conflict');
+          if (existing.state !== 'reserved') return cloneRecord(existing);
 
-        existing.state = input.state;
-        existing.updatedAt = now().toISOString();
-        if (result !== undefined) existing.result = result;
-        await persist(store);
-        return cloneRecord(existing);
-      });
+          existing.state = input.state;
+          existing.updatedAt = now().toISOString();
+          if (result !== undefined) existing.result = result;
+          await persist(store);
+          return cloneRecord(existing);
+        }),
+      );
     },
   };
 }

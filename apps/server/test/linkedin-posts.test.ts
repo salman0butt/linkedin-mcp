@@ -89,26 +89,67 @@ describe('official LinkedIn Posts adapter', () => {
     expect(requestInput).not.toContain('access-token-secret');
   });
 
-  it.each([undefined, '', 'not-a-post-urn'])(
-    'rejects HTTP 201 with invalid x-restli-id %s as malformed success',
-    async (postUrn) => {
-      const recorded = recorder(
-        new Response(null, {
-          status: 201,
-          ...(postUrn === undefined ? {} : { headers: { 'x-restli-id': postUrn } }),
-        }),
-      );
-      const adapter = createLinkedInPostsAdapter({ apiVersion: '202510' }, { fetch: recorded.fetch });
+  it.each([
+    undefined,
+    '',
+    'not-a-post-urn',
+    'urn:li:share:123 456',
+    'urn:li:organization:123',
+    'urn:li:share:abc',
+  ])('rejects HTTP 201 with invalid x-restli-id %s as malformed success', async (postUrn) => {
+    const recorded = recorder(
+      new Response(null, {
+        status: 201,
+        ...(postUrn === undefined ? {} : { headers: { 'x-restli-id': postUrn } }),
+      }),
+    );
+    const adapter = createLinkedInPostsAdapter({ apiVersion: '202510' }, { fetch: recorded.fetch });
 
-      await expect(
-        adapter.createTextPost({
-          accessToken: 'access-token-secret',
-          author: 'urn:li:person:member-123',
-          payload,
-        }),
-      ).rejects.toMatchObject({ kind: 'malformed_success', retryable: false });
-    },
-  );
+    await expect(
+      adapter.createTextPost({
+        accessToken: 'access-token-secret',
+        author: 'urn:li:person:member-123',
+        payload,
+      }),
+    ).rejects.toMatchObject({ kind: 'malformed_success', retryable: false });
+  });
+
+  it('rejects a malformed post identifier with internal whitespace instead of accepting the header', async () => {
+    const recorded = recorder(
+      new Response(null, {
+        status: 201,
+        headers: { 'x-restli-id': 'urn:li:share:123 456' },
+      }),
+    );
+    const adapter = createLinkedInPostsAdapter({ apiVersion: '202510' }, { fetch: recorded.fetch });
+
+    await expect(
+      adapter.createTextPost({
+        accessToken: 'access-token-secret',
+        author: 'urn:li:person:member-123',
+        payload,
+      }),
+    ).rejects.toMatchObject({ kind: 'malformed_success', retryable: false });
+    expect(recorded.calls).toHaveLength(1);
+  });
+
+  it('accepts a documented ugcPost identifier with a decimal identifier', async () => {
+    const recorded = recorder(
+      new Response(null, {
+        status: 201,
+        headers: { 'x-restli-id': 'urn:li:ugcPost:987654321' },
+      }),
+    );
+    const adapter = createLinkedInPostsAdapter({ apiVersion: '202510' }, { fetch: recorded.fetch });
+
+    await expect(
+      adapter.createTextPost({
+        accessToken: 'access-token-secret',
+        author: 'urn:li:person:member-123',
+        payload,
+      }),
+    ).resolves.toEqual({ postUrn: 'urn:li:ugcPost:987654321' });
+  });
 
   it.each([
     [401, 'reauthentication_required'],

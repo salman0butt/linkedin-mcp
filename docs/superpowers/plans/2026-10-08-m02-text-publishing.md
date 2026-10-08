@@ -15,10 +15,10 @@
 - Use `POST https://api.linkedin.com/rest/posts`; do not add a UGC API fallback.
 - Require `w_member_social` before member publication.
 - Never accept arbitrary author URNs from MCP callers; derive the member author from authenticated identity.
-- Every publish requires an unexpired approval receipt bound to the exact canonical payload hash.
+- Every new publish initiation requires an unexpired approval receipt bound to the exact canonical preview hash and authenticated subject; consumed receipts may only replay an existing operation.
 - Every publish requires a non-empty caller idempotency key.
 - Same key + same successful payload returns the prior result without another POST.
-- Same key + different payload is a conflict.
+- Same raw key + different payload or authenticated member is a conflict; ledger `payloadHash` stores the author-inclusive mutation fingerprint.
 - Network/transport uncertainty after a request may have been sent becomes `outcome_unknown`; never automatically retry it.
 - 201 without a valid `x-restli-id` is not a verified success.
 - Downstream read verification is optional/access-dependent and may not be required for legitimate write-only access.
@@ -90,7 +90,7 @@
 - Modify: `apps/server/src/config.ts`
 - Test: `apps/server/test/config.test.ts`
 
-**Produces:** injected-fetch create/get adapter with explicit API version configuration and sanitized provider errors.
+**Produces:** injected-fetch create adapter with explicit API version configuration and sanitized provider errors. GET support belongs to Task 6.
 
 - [ ] RED asserts exact POST URL, required headers, member text-only JSON body, 201/`x-restli-id`, malformed success, 401/403/429/5xx and transport failure classification.
 - [ ] RED config tests require YYYYMM LinkedIn API version.
@@ -102,14 +102,37 @@
 **Files:**
 
 - Create: `apps/server/src/publishing/text-post-service.ts`
+- Modify: `apps/server/src/auth/auth-service.ts`
+- Modify: `apps/server/src/publishing/idempotency-ledger.ts`
 - Test: `apps/server/test/text-post-service.test.ts`
+- Test: `apps/server/test/auth-provider-context.test.ts`
+- Test: `apps/server/test/idempotency-ledger.test.ts`
+- Test: existing AuthService tests if shared credential handling changes.
 
-**Consumes:** M01 AuthService, approval service, idempotency ledger, Posts adapter.
+**Interfaces:**
 
-- [ ] RED covers disconnected/reauth states, missing `w_member_social`, approval mismatch/expiry, idempotency replay/conflict, one POST only, 401 auth transition, success persistence and `outcome_unknown`.
-- [ ] Derive member author from authenticated identity.
-- [ ] Persist reservation before POST and terminal/unknown state before return.
-- [ ] Verify focused GREEN and full suite.
+- Consumes: canonical `createTextPostPreview`, `ApprovalService.consume`, `IdempotencyLedger.reserve/complete`, and `LinkedInPostsAdapter.createTextPost`.
+- Produces: `createTextPostService({ auth, approvals, ledger, posts }).publish({ payload, approvalReceiptId, idempotencyKey })`.
+- Adds internal `AuthService.getProviderContext(): Promise<{ accessToken: string; subject: string; scopes: string[] }>` and `markReauthRequired(expected?: { accessToken: string; subject: string }): Promise<void>`.
+- Success: `{ state: 'succeeded', provider: 'OFFICIAL_API', postUrn: string, replay: boolean }`; errors are sanitized `TextPostServiceError` with `kind` and non-retryable policy.
+- Ledger API remains `reserve/complete`; service passes the author-inclusive mutation fingerprint through their existing `payloadHash` field.
+
+- [ ] Preserve RED evidence at `1917e72fa6b52606592926131ac6dcef1c4786d5` / CI `37764485697`; add regression RED coverage before source changes and record exact commands, output and failure reasons.
+- [ ] RED covers existing gates plus payload hash mismatch/expiry/unknown/single-use, missing key, strict nested validation and caller mutation during asynchronous auth.
+- [ ] RED proves same raw key/text under another member conflicts, restart replay needs fresh subject-bound approval, and consumed receipt after failed reservation cannot initiate a new POST.
+- [ ] RED proves full-lifecycle shared-ledger serialization, exclusive file locking across separate instances/processes, fail-closed stale locks, and authoritative completion when requested success returns unknown/failure.
+- [ ] RED covers context expiry/eligible refresh/missing-subject persistence failure, pending authorization, safe delayed credential invalidation, malformed 201/generic provider uncertainty and storage/auth cleanup failures without secret leakage.
+- [ ] Validate and snapshot payload before async work; gate usable auth and granted `w_member_social` before consuming approval; derive author solely from that context.
+- [ ] Compute preview hash for approval and SHA-256 of `JSON.stringify({ author, ...canonicalPayload })` for the ledger; preserve the raw caller key globally and fail closed on legacy fingerprint mismatch.
+- [ ] Serialize the whole publish lifecycle through a shared WeakMap queue keyed by ledger object; add exclusive sibling lock-file protection around each ledger load/check/persist operation, with no automatic stale-lock stealing.
+- [ ] Reserve before one provider POST; only approval status `initiated` may start a new reservation; replay terminal records without POST and conservatively terminalize orphaned reservations as unknown.
+- [ ] Persist terminal/unknown state before return; use the record returned by `complete` as authoritative and never return fabricated success.
+- [ ] Keep 401/403/409/429 terminal; transport/malformed-success/generic uncertain provider failures become non-retryable unknown; persistence failure after provider attempt preserves reservation and reports unknown.
+- [ ] Verify focused GREEN, then format/full tests/lint/typecheck/build; record actual outputs and any remaining failure without weakening assertions.
+
+Manual stale-lock recovery requires establishing that the previous owner stopped, then removing only its lock file. Never delete or reset mutation records to recover. No live LinkedIn writes, GET verification, MCP wiring, commits or pushes belong to this implementation handoff; the controller owns integration.
+
+Task 5 checkpoint: local implementation, coverage and scoped review pass with 204 tests. Historical pre-implementation service RED is not fully satisfied: the original service suite could not collect, and some safety cases first ran GREEN. Do not mark that history as completed RED. The malformed-identifier and storage-sanitization fixes have observed regression RED→GREEN evidence. See `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`.
 
 ### Task 6: Downstream verification
 
@@ -117,14 +140,31 @@
 
 - Modify: `apps/server/src/publishing/linkedin-posts.ts`
 - Modify: `apps/server/src/publishing/text-post-service.ts`
-- Test: corresponding provider/service tests.
+- Modify: `apps/server/src/auth/linkedin-oauth.ts` only for malformed-present scope normalization.
+- Test: `apps/server/test/linkedin-posts.test.ts`
+- Test: `apps/server/test/text-post-service.test.ts`
+- Test: `apps/server/test/linkedin-oauth.test.ts`
+- Test: existing auth tests for normalized grant/omission behavior as needed.
 
-**Produces:** `verified | created_unverified | verification_failed` separate from creation state.
+**Interfaces:**
 
-- [ ] RED proves read verification occurs only when legitimate read capability is available.
-- [ ] RED covers matching/mismatching author, commentary and lifecycle.
-- [ ] Implement no-read-permission path as `created_unverified`, not failure.
-- [ ] Verify focused GREEN and full suite.
+- Add required `LinkedInPostsAdapter.getTextPost({ accessToken: string, postUrn: string }): Promise<{ postUrn: string, author: string, commentary: string, lifecycleState: string }>`; update typed provider test fakes intentionally.
+- Add trusted optional service dependency `memberPostReadEnabled?: boolean`, default false; require it plus normalized granted `r_member_social` before GET. This is never a caller/tool input.
+- Preserve Task 5 outer successful fields; intentionally add required `verification` union: `verified`; `created_unverified` with reason `read_permission_unavailable`; or `verification_failed` with allowlisted reason `post_mismatch | reauth_required | read_not_found | rate_limited | malformed_response | provider_failure`.
+- No credential/core/store schema expansion, new proof field, verification persistence or constructed post URL.
+
+- [ ] Recover actual Task 5 final head/interfaces, read `/tmp/linkedin-m02-sdd/task-6-brief.md`, and record genuine RED before implementation; do not weaken mutation safety assertions.
+- [ ] RED adapter tests assert one encoded official GET, version/Rest.li/auth headers, no body/local controls/token in URL, strict successful normalization and sanitized 401/403/404/429/5xx/transport/malformed response handling.
+- [ ] RED proves the capability flag defaults false; write/openid/profile/configuration hints never enable read; enabled legitimate capability plus normalized `r_member_social` is required.
+- [ ] RED distinguishes legitimate omitted OAuth scope from explicitly present empty/whitespace/non-string scope; preserve RFC 6749 omission fallback and reject malformed-present scope without credential migration.
+- [ ] RED proves authoritative mutation persistence precedes GET and exact ID/author/commentary/lifecycle comparisons; each mismatch is verification failure with creation still succeeded.
+- [ ] RED covers 403 as created_unverified, 401 expected-context invalidation and failed cleanup without creation failure, and 404/429/5xx/network/invalid JSON as allowlisted nested verification failures without another POST.
+- [ ] RED proves successful restart/idempotency replay performs no POST/complete and at most one fresh gated GET; unknown/reserved/terminal-failed/member-conflicting records never GET.
+- [ ] Extend adapter with one injected-fetch GET; parse only required successful fields, never non-200 bodies; no retry loop.
+- [ ] Verify only authoritative succeeded records using the owned canonical snapshot/auth context; keep verification invocation-specific, leave mutation ledger unchanged and retain the existing shared-ledger queue.
+- [ ] Verify focused GREEN and full format/test/lint/typecheck/build, recording exact command results and any remaining limitation.
+
+Controller owns integration/configuration policy. Task 7 may wire the trusted member-read capability option only when legitimate account product access is configured; its default remains false. Ordinary CI uses injected responses and never performs live LinkedIn reads or writes. Complete execution evidence belongs in `/tmp/linkedin-m02-sdd/task-6-report.md` when dispatched.
 
 ### Task 7: MCP preview/approve/publish tools and real transports
 

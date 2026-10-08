@@ -1,4 +1,13 @@
-import { mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import {
+  mkdir as fsMkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rename as fsRename,
+  stat,
+  unlink as fsUnlink,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -161,9 +170,10 @@ describe('M02 persistent idempotency ledger', () => {
     });
 
     await ledger.reserve({ idempotencyKey: 'operation-atomic', payloadHash: hashA });
-    expect(operations).toHaveLength(2);
-    expect(operations[0]).toMatch(/^write:/);
-    expect(operations[1]).toMatch(/^rename:/);
+    expect(operations).toHaveLength(3);
+    expect(operations[0]).toMatch(/^write:.+\.lock$/);
+    expect(operations[1]).toMatch(/^write:/);
+    expect(operations[2]).toMatch(/^rename:/);
   });
 
   it('fails closed on corrupt persisted state without overwriting it', async () => {
@@ -195,5 +205,150 @@ describe('M02 persistent idempotency ledger', () => {
         }),
       'not_reserved',
     );
+  });
+
+  it('fails closed on an occupied sibling lock without changing mutation records', async () => {
+    const root = await createRoot();
+    const filePath = join(root, 'idempotency.json');
+    const lockPath = join(root, '.idempotency.json.lock');
+    const original = JSON.stringify({
+      version: 1,
+      records: [
+        {
+          idempotencyKey: 'existing',
+          payloadHash: hashA,
+          state: 'reserved',
+          createdAt: '2026-10-08T09:20:00.000Z',
+          updatedAt: '2026-10-08T09:20:00.000Z',
+        },
+      ],
+    });
+    await writeFile(filePath, original, { encoding: 'utf8', mode: 0o600 });
+    await writeFile(lockPath, 'owned by another writer\n', { encoding: 'utf8', mode: 0o600 });
+    const ledger = createFileIdempotencyLedger({ filePath });
+
+    await expectLedgerError(
+      () => ledger.reserve({ idempotencyKey: 'new', payloadHash: hashB }),
+      'store_unavailable',
+    );
+
+    expect(await readFile(filePath, 'utf8')).toBe(original);
+    expect(await readFile(lockPath, 'utf8')).toBe('owned by another writer\n');
+  });
+
+  it('blocks a second ledger instance while the first owns its load-check-persist lock', async () => {
+    const root = await createRoot();
+    const filePath = join(root, 'idempotency.json');
+    const lockPath = join(root, '.idempotency.json.lock');
+    let notifyLocked!: () => void;
+    const firstLocked = new Promise<void>((resolve) => {
+      notifyLocked = resolve;
+    });
+    let releaseFirst!: () => void;
+    const releaseGate = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    let holdFirstLock = true;
+    const filesystem = {
+      readFile: (path: string, encoding: 'utf8') => readFile(path, encoding),
+      async writeFile(path: string, data: string, options: { encoding: 'utf8'; mode: number; flag: 'wx' }) {
+        await writeFile(path, data, options);
+        if (path === lockPath && holdFirstLock) {
+          holdFirstLock = false;
+          notifyLocked();
+          await releaseGate;
+        }
+      },
+      rename: (from: string, to: string) => fsRename(from, to),
+      mkdir: (path: string, options: { recursive: true; mode: number }) => fsMkdir(path, options),
+      unlink: (path: string) => fsUnlink(path),
+    };
+    const first = createFileIdempotencyLedger({ filePath, filesystem });
+    const second = createFileIdempotencyLedger({ filePath, filesystem });
+    const firstReservation = first.reserve({ idempotencyKey: 'shared-key', payloadHash: hashA });
+    await firstLocked;
+
+    await expectLedgerError(
+      () => second.reserve({ idempotencyKey: 'shared-key', payloadHash: hashA }),
+      'store_unavailable',
+    );
+    releaseFirst();
+
+    await expect(firstReservation).resolves.toMatchObject({ status: 'reserved' });
+    await expect(second.reserve({ idempotencyKey: 'shared-key', payloadHash: hashA })).resolves.toMatchObject(
+      {
+        status: 'replay',
+      },
+    );
+  });
+
+  it('sanitizes a second mkdir failure during reserve and releases its owned lock', async () => {
+    const root = await createRoot();
+    const filePath = join(root, 'idempotency.json');
+    const lockPath = join(root, '.idempotency.json.lock');
+    let mkdirCalls = 0;
+    const ledger = createFileIdempotencyLedger({
+      filePath,
+      filesystem: {
+        mkdir(path, options) {
+          mkdirCalls += 1;
+          if (mkdirCalls === 2) return Promise.reject(new Error('private directory sentinel'));
+          return fsMkdir(path, options);
+        },
+      },
+    });
+
+    let caught: unknown;
+    try {
+      await ledger.reserve({ idempotencyKey: 'mkdir-reserve', payloadHash: hashA });
+    } catch (error: unknown) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(IdempotencyLedgerError);
+    expect(caught).toMatchObject({ kind: 'write_failed' });
+    expect((caught as Error).message).not.toContain('private directory sentinel');
+    expect(mkdirCalls).toBe(2);
+    await expect(readFile(filePath, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(readFile(lockPath, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  it('sanitizes a second mkdir failure during completion and preserves the reservation', async () => {
+    const root = await createRoot();
+    const filePath = join(root, 'idempotency.json');
+    const lockPath = join(root, '.idempotency.json.lock');
+    const seed = createFileIdempotencyLedger({ filePath });
+    await seed.reserve({ idempotencyKey: 'mkdir-complete', payloadHash: hashA });
+    const before = await readFile(filePath, 'utf8');
+    let mkdirCalls = 0;
+    const ledger = createFileIdempotencyLedger({
+      filePath,
+      filesystem: {
+        mkdir(path, options) {
+          mkdirCalls += 1;
+          if (mkdirCalls === 2) return Promise.reject(new Error('private directory sentinel'));
+          return fsMkdir(path, options);
+        },
+      },
+    });
+
+    let caught: unknown;
+    try {
+      await ledger.complete({
+        idempotencyKey: 'mkdir-complete',
+        payloadHash: hashA,
+        state: 'succeeded',
+        result: { postUrn: 'urn:li:share:123' },
+      });
+    } catch (error: unknown) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(IdempotencyLedgerError);
+    expect(caught).toMatchObject({ kind: 'write_failed' });
+    expect((caught as Error).message).not.toContain('private directory sentinel');
+    expect(mkdirCalls).toBe(2);
+    expect(await readFile(filePath, 'utf8')).toBe(before);
+    await expect(readFile(lockPath, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
   });
 });

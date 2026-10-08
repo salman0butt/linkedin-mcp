@@ -41,4 +41,8 @@ Downstream read verification remains access-dependent and must not turn legitima
 
 The M00 private package-boundary debt remains Minor and deferred. Live LinkedIn capability availability remains dependent on legitimate configured developer/member access.
 
-Exact next work: establish M02.5 text-post publish orchestration RED tests for disconnected/reauth and `w_member_social` gates, exact approval binding, idempotency replay/conflict, exactly one provider POST, persisted success/auth transitions, and durable `outcome_unknown` handling.
+## M02.5 local checkpoint
+
+Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. Exact pushed-head CI remains pending; no live LinkedIn write was performed.
+
+Exact next work: verify the pushed M02.5 checkpoint CI before Task 6 downstream verification.
