@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { TextPostPayload } from '../../../packages/core/dist/index.js';
-import {
-  LinkedInPostsError,
-  createLinkedInPostsAdapter,
-} from '../src/publishing/linkedin-posts.js';
+import { LinkedInPostsError, createLinkedInPostsAdapter } from '../src/publishing/linkedin-posts.js';
 
 const payload: TextPostPayload = {
   commentary: 'Ship safely',
