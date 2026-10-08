@@ -65,4 +65,4 @@ PRD, capability matrix, `docs/superpowers/specs/2026-10-08-m02-text-publishing-d
 
 ## Exact Next Work
 
-Verify the M02 activation/spec/plan head, create the milestone draft PR, then establish the M02.1 canonical text-post contract RED.
+Verify exact-head CI for M02 activation, then establish the M02.1 canonical text-post contract RED.
