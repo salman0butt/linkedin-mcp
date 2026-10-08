@@ -4,7 +4,7 @@ Milestone: M02 — Text Publishing
 Status: ACTIVE — M02.1 contracts
 Iteration: M02.1
 Branch: `feat/m02-text-publishing`
-PR: pending draft creation
+PR: #3 — draft
 Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`
 Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`
 Ledger: `docs/milestones/M02-text-publishing.md`
