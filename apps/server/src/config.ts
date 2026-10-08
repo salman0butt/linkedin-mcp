@@ -21,6 +21,7 @@ export interface ServerConfig {
   serverName: string;
   serverVersion: string;
   requestBodyLimitBytes: number;
+  linkedinApiVersion?: string;
   auth?: LinkedInAuthConfig;
 }
 
@@ -54,6 +55,14 @@ function parsePositiveInteger(
     );
   }
   return parsed;
+}
+
+function parseLinkedInApiVersion(value: string | undefined): string | undefined {
+  if (value === undefined || value === '') return undefined;
+  if (!/^\d{4}(0[1-9]|1[0-2])$/.test(value)) {
+    throw new Error('LinkedIn API version must use YYYYMM format');
+  }
+  return value;
 }
 
 function requireOAuthValue(env: Env, key: (typeof AUTH_ENV_KEYS)[number], label: string): string {
@@ -152,6 +161,7 @@ export function parseConfig(env: Env = process.env): ServerConfig {
   }
 
   const auth = parseAuthConfig(env);
+  const linkedinApiVersion = parseLinkedInApiVersion(env.LINKEDIN_MCP_API_VERSION);
 
   return {
     transport,
@@ -165,6 +175,7 @@ export function parseConfig(env: Env = process.env): ServerConfig {
       1_048_576,
       'Request body limit',
     ),
+    ...(linkedinApiVersion === undefined ? {} : { linkedinApiVersion }),
     ...(auth === undefined ? {} : { auth }),
   };
 }
