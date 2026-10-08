@@ -283,9 +283,7 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
         assertPayloadHash(input.payloadHash);
 
         const store = await load();
-        const existing = store.records.find(
-          (record) => record.idempotencyKey === input.idempotencyKey,
-        );
+        const existing = store.records.find((record) => record.idempotencyKey === input.idempotencyKey);
         if (existing !== undefined) {
           if (existing.payloadHash !== input.payloadHash) {
             throw new IdempotencyLedgerError('conflict');
@@ -315,9 +313,7 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
         const result = validateResult(input.result);
 
         const store = await load();
-        const existing = store.records.find(
-          (record) => record.idempotencyKey === input.idempotencyKey,
-        );
+        const existing = store.records.find((record) => record.idempotencyKey === input.idempotencyKey);
         if (existing === undefined) throw new IdempotencyLedgerError('not_reserved');
         if (existing.payloadHash !== input.payloadHash) throw new IdempotencyLedgerError('conflict');
         if (existing.state !== 'reserved') return cloneRecord(existing);
