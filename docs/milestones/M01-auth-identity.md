@@ -6,6 +6,18 @@ Status: **ACTIVE — M01.8 closeout pending exact-final-head CI**
 
 Implement LinkedIn OAuth identity, scope/capability inspection, encrypted credential persistence, auth health and logout semantics without overstating provider access.
 
+## Dependencies
+
+M00 foundation/control-plane merged at `dde9bde5b136b0c352a864fadce08f02cab32938` with post-merge CI `37469308840` GREEN. M01 also depends on the committed M01 design/plan and supported Node.js/pnpm toolchain.
+
+## In Scope
+
+Official LinkedIn OAuth/OIDC authentication, explicit confidential and access-dependent native-PKCE modes, single-use state, loopback callbacks, encrypted local credential persistence, conditional refresh behavior, authenticated identity, auth status/logout MCP tools, real stdio/HTTP runtime wiring, dynamic capability projection, and truthful provenance/availability reporting.
+
+## Out of Scope
+
+LinkedIn publishing, media, comments/reactions, post/job search, organization operations, messaging/networking, browser automation, CAPTCHA/security-challenge bypass, bulk behavior, and any claim that partner-gated refresh/native-PKCE or live profile availability is universally available.
+
 ## Acceptance Criteria
 
 - Authenticated identity flow is implemented with minimal configured OIDC scopes.
@@ -58,7 +70,14 @@ Closeout: `docs/superpowers/evidence/2026-10-06-m01-auth-identity-closeout.md`.
 
 Formatting-only or fixture-only failed runs are not counted as RED evidence.
 
-## Security / Skeptical Review
+## Integration Test Evidence
+
+- Verified checkpoint `917e07a950f7732a4315daebd8d7d9e7af266a12`, CI `37658914319`, passed 105/105 tests across 23 files plus format, lint, typecheck and build.
+- Real built stdio and loopback HTTP smoke tests inject AuthService and expose the M01 auth-status contract.
+- Real MCP client contract tests cover auth/profile tool discovery, strict inputs, structured statuses, secret-safe outputs and conservative capability projection.
+- The current closeout head must pass the same complete CI gate before merge; documentation-only closeout failures are not treated as behavioral TDD evidence.
+
+## Security Review
 
 Final review: **self-review (no subagent tool available)**.
 
@@ -78,13 +97,24 @@ Review focus checked:
 
 Resolved during M01.8: three Important findings. Unresolved Critical: **0**. Unresolved Important: **0**.
 
+## Code Review Findings
+
+Unresolved Critical: **0**.
+Unresolved Important: **0**.
+
+Three Important integration findings were resolved through the regression RED→GREEN cycles recorded above: structured auth-result mapping, real transport AuthService wiring, and structured logout-cleanup failure. No remaining review thread or submitted review blocks PR #2.
+
 ## Live-Access Assessment
 
 No live LinkedIn credentials or developer-product access are configured in ordinary CI. Therefore live `profile.me` availability, native-PKCE enablement and partner-gated programmatic refresh were not verified. This is an external verification gate, not an implementation failure. Static `profile.me` remains `ACTIVE/UNAVAILABLE` and must not become VERIFIED until a real configured account call succeeds.
 
-## Fresh Verification
+## Fresh Verification Results
 
 Latest pre-closeout-doc verification: `917e07a950f7732a4315daebd8d7d9e7af266a12`, CI `37658914319` — frozen install, format, 105/105 tests across 23 files, lint, typecheck and build GREEN; real built stdio/HTTP auth smokes GREEN.
+
+## Durable Recovery Sources
+
+Recovery precedence for M01 closeout is: actual Git graph > source/tests > exact-SHA CI > current PR/reviews > `docs/progress/project-state.json` > `docs/progress/STATUS.md` / `docs/progress/KNOWN-ISSUES.md` / `docs/milestones/CURRENT.md` > this milestone ledger > requirements traceability/capability matrix > active Superpowers spec/plan > older handoffs/chat memory.
 
 ## Completion Checklist
 
