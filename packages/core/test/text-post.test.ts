@@ -41,12 +41,12 @@ describe('M02 canonical text-post preview', () => {
   });
 
   it('rejects unsupported visibility and invalid reshare flags instead of coercing them', () => {
-    expect(() => createTextPostPreview({ text: 'hello', visibility: 'PRIVATE' as never })).toThrow(
-      /visibility/i,
-    );
-    expect(() => createTextPostPreview({ text: 'hello', disableReshare: 'false' as never })).toThrow(
-      /reshare/i,
-    );
+    expect(() =>
+      createTextPostPreview({ text: 'hello', visibility: 'PRIVATE' as never }),
+    ).toThrow(/visibility/i);
+    expect(() =>
+      createTextPostPreview({ text: 'hello', disableReshare: 'false' as never }),
+    ).toThrow(/reshare/i);
   });
 
   it('produces stable hashes independent of input key order and changes hashes for mutations', () => {
