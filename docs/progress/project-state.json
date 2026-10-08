@@ -1,17 +1,15 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M01",
-  "currentIteration": "M01.8",
+  "currentMilestone": "M02",
+  "currentIteration": "M02.1",
   "status": "ACTIVE",
-  "activeBranch": "feat/m01-auth-identity",
-  "activePr": 2,
+  "activeBranch": "feat/m02-text-publishing",
+  "activePr": null,
   "baseBranch": "main",
-  "latestVerifiedSha": "aa1c81397aeb67361afec8fa353dbe62be6fe3ed",
-  "ciStatus": "GREEN_PRE_FINAL_STATE_RECONCILIATION",
+  "latestVerifiedSha": "3dbf3e2ced5303b52fc27303de9c086a998835c7",
+  "ciStatus": "POST_M01_MAIN_GREEN_M02_ACTIVATING",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [
-    "Live LinkedIn availability verification is externally blocked in CI because no configured LinkedIn developer application/member credentials/product access are present; profile.me therefore remains ACTIVE/UNAVAILABLE rather than VERIFIED."
-  ],
-  "exactNextWork": "Verify exact-final-head CI on the durable-state reconciliation commit, then merge PR #2 if all merge gates remain satisfied."
+  "blockers": [],
+  "exactNextWork": "Verify the M02 activation/spec/plan head, create the milestone draft PR, then establish the M02.1 canonical text-post contract RED."
 }
