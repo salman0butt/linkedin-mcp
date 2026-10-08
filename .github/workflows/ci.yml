@@ -35,11 +35,6 @@ jobs:
           cache: pnpm
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
-      - name: Diagnose M02 idempotency implementation formatting
-        run: |
-          pnpm exec prettier --write apps/server/src/publishing/idempotency-ledger.ts
-          git diff -- apps/server/src/publishing/idempotency-ledger.ts
-          git checkout -- apps/server/src/publishing/idempotency-ledger.ts
       - name: Format check
         run: pnpm format:check
       - name: Test
