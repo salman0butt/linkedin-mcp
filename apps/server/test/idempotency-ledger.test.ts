@@ -4,10 +4,7 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-  IdempotencyLedgerError,
-  createFileIdempotencyLedger,
-} from '../src/publishing/idempotency-ledger.js';
+import { IdempotencyLedgerError, createFileIdempotencyLedger } from '../src/publishing/idempotency-ledger.js';
 
 const roots: string[] = [];
 const hashA = 'a'.repeat(64);
