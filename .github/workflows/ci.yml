@@ -35,6 +35,11 @@ jobs:
           cache: pnpm
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
+      - name: Diagnose M02 text-post formatting
+        run: |
+          pnpm exec prettier --write packages/core/test/text-post.test.ts
+          git diff -- packages/core/test/text-post.test.ts
+          git checkout -- packages/core/test/text-post.test.ts
       - name: Format check
         run: pnpm format:check
       - name: Test
