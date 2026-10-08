@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createTextPostPreview, type TextPostPayload } from '../../../packages/core/dist/index.js';
 import { AuthServiceError, type AuthService } from '../src/auth/auth-service.js';
-import {
-  createApprovalService,
-  type ApprovalService,
-} from '../src/publishing/approval-service.js';
+import { createApprovalService, type ApprovalService } from '../src/publishing/approval-service.js';
 import {
   IdempotencyLedgerError,
   type CompleteMutationInput,
@@ -24,10 +21,7 @@ import { TextPostServiceError, createTextPostService } from '../src/publishing/t
 const NOW = new Date('2026-10-08T10:35:00.000Z');
 const preview = createTextPostPreview({ text: 'Ship safely' });
 
-function mutationRecord(
-  state: MutationRecord['state'],
-  result?: MutationRecord['result'],
-): MutationRecord {
+function mutationRecord(state: MutationRecord['state'], result?: MutationRecord['result']): MutationRecord {
   return {
     idempotencyKey: 'idem-1',
     payloadHash: preview.payloadHash,
@@ -38,11 +32,13 @@ function mutationRecord(
   };
 }
 
-function fakeAuth(options: {
-  scopes?: string[];
-  subject?: string;
-  contextError?: AuthServiceError;
-} = {}): {
+function fakeAuth(
+  options: {
+    scopes?: string[];
+    subject?: string;
+    contextError?: AuthServiceError;
+  } = {},
+): {
   auth: AuthService;
   markCount(): number;
   contextCount(): number;
@@ -71,7 +67,10 @@ function fakeAuth(options: {
   return { auth, markCount: () => marked, contextCount: () => contexts };
 }
 
-function approval(subject = 'member-123', events?: string[]): {
+function approval(
+  subject = 'member-123',
+  events?: string[],
+): {
   approvals: ApprovalService;
   receiptId: string;
 } {
@@ -93,12 +92,14 @@ function approval(subject = 'member-123', events?: string[]): {
   };
 }
 
-function fakeLedger(options: {
-  reserveResult?: ReserveMutationResult;
-  reserveError?: Error;
-  completeError?: Error;
-  events?: string[];
-} = {}): {
+function fakeLedger(
+  options: {
+    reserveResult?: ReserveMutationResult;
+    reserveError?: Error;
+    completeError?: Error;
+    events?: string[];
+  } = {},
+): {
   ledger: IdempotencyLedger;
   reserveInputs: ReserveMutationInput[];
   completeInputs: CompleteMutationInput[];
@@ -134,10 +135,12 @@ function fakeLedger(options: {
   };
 }
 
-function fakePosts(options: {
-  error?: LinkedInPostsError;
-  events?: string[];
-} = {}): {
+function fakePosts(
+  options: {
+    error?: LinkedInPostsError;
+    events?: string[];
+  } = {},
+): {
   posts: LinkedInPostsAdapter;
   calls: CreateTextPostInput[];
 } {
@@ -211,25 +214,28 @@ describe('text-post publish orchestration', () => {
   it.each([
     ['disconnected', 'not_connected'],
     ['reauth_required', 'reauth_required'],
-  ] as const)('rejects auth state %s before approval, reservation, or provider mutation', async (authKind, expected) => {
-    const authState = fakeAuth({ contextError: new AuthServiceError(authKind, false) });
-    const approvalState = approval();
-    const ledgerState = fakeLedger();
-    const postsState = fakePosts();
-    const service = createTextPostService({
-      auth: authState.auth,
-      approvals: approvalState.approvals,
-      ledger: ledgerState.ledger,
-      posts: postsState.posts,
-    });
+  ] as const)(
+    'rejects auth state %s before approval, reservation, or provider mutation',
+    async (authKind, expected) => {
+      const authState = fakeAuth({ contextError: new AuthServiceError(authKind, false) });
+      const approvalState = approval();
+      const ledgerState = fakeLedger();
+      const postsState = fakePosts();
+      const service = createTextPostService({
+        auth: authState.auth,
+        approvals: approvalState.approvals,
+        ledger: ledgerState.ledger,
+        posts: postsState.posts,
+      });
 
-    await expect(service.publish(publishInput(approvalState.receiptId))).rejects.toMatchObject({
-      kind: expected,
-      retryable: false,
-    });
-    expect(ledgerState.reserveInputs).toHaveLength(0);
-    expect(postsState.calls).toHaveLength(0);
-  });
+      await expect(service.publish(publishInput(approvalState.receiptId))).rejects.toMatchObject({
+        kind: expected,
+        retryable: false,
+      });
+      expect(ledgerState.reserveInputs).toHaveLength(0);
+      expect(postsState.calls).toHaveLength(0);
+    },
+  );
 
   it('requires w_member_social before consuming approval or reserving mutation state', async () => {
     const events: string[] = [];

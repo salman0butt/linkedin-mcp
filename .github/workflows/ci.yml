@@ -35,11 +35,6 @@ jobs:
           cache: pnpm
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
-      - name: Diagnose M02.5 RED formatting
-        run: |
-          pnpm exec prettier --write apps/server/test/text-post-service.test.ts
-          git diff -- apps/server/test/text-post-service.test.ts
-          git checkout -- apps/server/test/text-post-service.test.ts
       - name: Format check
         run: pnpm format:check
       - name: Test
