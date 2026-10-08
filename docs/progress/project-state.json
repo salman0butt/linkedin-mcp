@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M02",
-  "currentIteration": "M02.3",
+  "currentIteration": "M02.4",
   "status": "ACTIVE",
   "activeBranch": "feat/m02-text-publishing",
   "activePr": 3,
   "baseBranch": "main",
-  "latestVerifiedSha": "5f1870106988c6b5ab365df275a8b3a314c60aa5",
-  "ciStatus": "GREEN_FORMAT_116_TESTS_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "c88ae5b909888e796880f0193299cd21e1246648",
+  "ciStatus": "GREEN_FORMAT_123_TESTS_LINT_TYPECHECK_BUILD",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish M02.3 persistent idempotency-ledger RED tests covering reservation, same-key replay, hash conflicts, restart persistence, atomic writes, corrupt-state fail-closed behavior and terminal-result replay."
+  "exactNextWork": "Establish M02.4 official LinkedIn Posts adapter RED tests for exact endpoint/headers/body, YYYYMM API-version configuration, 201 x-restli-id success, sanitized HTTP classifications and transport outcome_unknown without retries."
 }
