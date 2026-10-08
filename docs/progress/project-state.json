@@ -1,17 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M02",
-  "currentIteration": "M02.1",
+  "currentIteration": "M02.2",
   "status": "ACTIVE",
   "activeBranch": "feat/m02-text-publishing",
   "activePr": 3,
   "baseBranch": "main",
-  "latestVerifiedSha": "37c8b4de4d6340b1434a57cbe716361ad00910da",
-  "ciStatus": "GREEN_FORMAT_TEST_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "c1dab02097f0e7c816ab0d80b6485024d4cbea07",
+  "ciStatus": "GREEN_FORMAT_111_TESTS_LINT_TYPECHECK_BUILD",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [
-    "GitHub create_file for packages/core/test/text-post.test.ts was blocked by the connector safety layer during M02.1 RED setup; no test file was created."
-  ],
-  "exactNextWork": "Establish M02.1 canonical text-post RED tests on the existing milestone branch using a policy-permitted write, then inspect exact-head CI for the expected missing-contract failure."
+  "blockers": [],
+  "exactNextWork": "Establish M02.2 approval-receipt service RED tests binding approval to payload hash, authenticated subject and expiry without authorizing publication."
 }

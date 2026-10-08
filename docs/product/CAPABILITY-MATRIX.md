@@ -8,7 +8,7 @@ State values: `PLANNED`, `ACTIVE`, `BLOCKED`, `VERIFIED`, `DEFERRED`, `REJECTED`
 | `linkedin.version`         | Local version/protocol metadata   | LOCAL_ONLY              | None                               | M00       | VERIFIED | real MCP client contract                         | Read-only                                   |
 | `linkedin.capabilities`    | Truthful capability registry      | LOCAL_ONLY              | None                               | M00       | VERIFIED | real MCP client contract                         | Read-only                                   |
 | `profile.me`               | Authenticated identity            | OFFICIAL_API            | OAuth/scopes                       | M01       | ACTIVE   | M01 closeout evidence; live availability pending | Read-only; live availability needs evidence |
-| `post.create.text`         | Publish text post                 | OFFICIAL_API            | LinkedIn write access              | M02       | PLANNED  | None                                             | Preview/approval/idempotency                |
+| `post.create.text`         | Publish text post                 | OFFICIAL_API            | LinkedIn write access              | M02       | ACTIVE   | M02.1 preview/hash CI; live publication pending  | Preview/approval/idempotency                |
 | `post.create.image`        | Publish image post                | OFFICIAL_API            | Media + write access               | M03       | PLANNED  | None                                             | Preview/approval/idempotency                |
 | `post.create.multi_image`  | Publish multi-image post          | OFFICIAL_API            | Media + write access               | M03       | PLANNED  | None                                             | Preview/approval/idempotency                |
 | `comments.list`            | Read comments                     | OFFICIAL_API            | Read permissions may be restricted | M04       | PLANNED  | None                                             | Capability-aware                            |
@@ -27,3 +27,5 @@ State values: `PLANNED`, `ACTIVE`, `BLOCKED`, `VERIFIED`, `DEFERRED`, `REJECTED`
 | `messages.send`            | Send LinkedIn message             | UNAVAILABLE             | Provider/access to be established  | M15       | PLANNED  | None                                             | Explicit approval, no bulk outreach         |
 
 M01 deterministic implementation verification does not upgrade `profile.me` to VERIFIED. A real configured LinkedIn application/member request with the required product/scopes is still required for live availability evidence.
+
+M02.1 deterministic preview/payload verification does not make `post.create.text` live-available. Legitimate configured `w_member_social` access and real provider evidence are still required before live publication can be represented as available or verified.

@@ -1,6 +1,6 @@
 # M02 — Text Publishing
 
-Status: **ACTIVE — M02.1 contracts**
+Status: **ACTIVE — M02.2 approval receipts**
 
 ## Goal
 
@@ -25,8 +25,8 @@ No duplicate retry; approval policy enforced; final post identifier/URL verified
 ## Tasks / Iterations
 
 1. **COMPLETE** — M02 activation, design and implementation plan.
-2. **ACTIVE** — M02.1 canonical text-post contracts and capability implementation state.
-3. **PLANNED** — approval receipt service.
+2. **COMPLETE** — M02.1 canonical text-post contracts and capability implementation state.
+3. **ACTIVE** — M02.2 approval receipt service.
 4. **PLANNED** — persistent idempotency ledger.
 5. **PLANNED** — official LinkedIn Posts adapter.
 6. **PLANNED** — publish orchestration and downstream verification.
@@ -35,23 +35,25 @@ No duplicate retry; approval policy enforced; final post identifier/URL verified
 
 ## TDD Evidence
 
-Pending.
+M02.1 RED: `7c193f9adb8049a5849c603a5c5e29bea69ef59d`, CI `37753499633` — formatting passed; six new canonical text-post tests failed because `textPostVisibilities` and `createTextPostPreview` were absent; 105 pre-existing tests remained green.
+
+M02.1 GREEN: `c1dab02097f0e7c816ab0d80b6485024d4cbea07`, CI `37753956032` — format, 111/111 tests across 24 files, lint, typecheck and build passed.
 
 ## Integration Test Evidence
 
-Pending.
+M02.1 is local deterministic contract work only; no live LinkedIn publication was attempted or claimed.
 
 ## Security Review
 
-No token leakage; mutation authorization and idempotency mandatory.
+M02.1 rejects caller-controlled author and unknown provider payload fields. The canonical payload excludes author identity; M02.2 must bind approval to the authenticated subject as well as exact payload hash and expiry so an approval cannot be replayed after an account switch.
 
 ## Code Review Findings
 
-Pending.
+No Critical or Important M02.1 findings remain open. Subject binding is a required M02.2 design constraint, not deferred debt.
 
 ## Fresh Verification Results
 
-Pending.
+M02.1 exact GREEN head `c1dab02097f0e7c816ab0d80b6485024d4cbea07`, CI `37753956032`: format, 111/111 tests, lint, typecheck and build green.
 
 ## Durable Recovery Sources
 
@@ -65,4 +67,4 @@ PRD, capability matrix, `docs/superpowers/specs/2026-10-08-m02-text-publishing-d
 
 ## Exact Next Work
 
-Verify exact-head CI for M02 activation, then establish the M02.1 canonical text-post contract RED.
+Establish M02.2 approval-receipt service RED tests binding approval to payload hash, authenticated subject and expiry without authorizing publication.
