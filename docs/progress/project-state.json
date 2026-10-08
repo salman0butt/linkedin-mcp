@@ -4,12 +4,12 @@
   "currentIteration": "M02.1",
   "status": "ACTIVE",
   "activeBranch": "feat/m02-text-publishing",
-  "activePr": null,
+  "activePr": 3,
   "baseBranch": "main",
   "latestVerifiedSha": "3dbf3e2ced5303b52fc27303de9c086a998835c7",
   "ciStatus": "POST_M01_MAIN_GREEN_M02_ACTIVATING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Verify the M02 activation/spec/plan head, create the milestone draft PR, then establish the M02.1 canonical text-post contract RED."
+  "exactNextWork": "Verify exact-head CI for M02 activation, then establish the M02.1 canonical text-post contract RED."
 }
