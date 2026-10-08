@@ -4,7 +4,7 @@ Last reconciled: 2026-10-08. Actual Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M02 — Text Publishing — **ACTIVE, M02.2 approval receipts**.
+M02 — Text Publishing — **ACTIVE, M02.3 persistent idempotency ledger**.
 
 Active branch: `feat/m02-text-publishing`.
 Active PR: #3 — draft.
@@ -13,9 +13,13 @@ Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`.
 
 ## M02 Progress
 
-M02.1 canonical text-post contracts are complete. RED head `7c193f9adb8049a5849c603a5c5e29bea69ef59d`, CI `37753499633`, passed formatting and failed all six new tests because the preview contract was absent while the prior 105 tests passed. GREEN head `c1dab02097f0e7c816ab0d80b6485024d4cbea07`, CI `37753956032`, passed format, 111/111 tests across 24 files, lint, typecheck and build.
+M02.1 canonical text-post contracts are complete. RED `7c193f9adb8049a5849c603a5c5e29bea69ef59d` / CI `37753499633` passed formatting and failed the six new tests because the canonical preview contract was absent while the prior 105 tests passed. GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07` / CI `37753956032` passed format, 111/111 tests across 24 files, lint, typecheck and build.
 
-`post.create.text` is now ACTIVE as deterministic implementation work, remains `OFFICIAL_API`, and remains live `UNAVAILABLE` until legitimate configured LinkedIn write access is actually verified.
+M02.2 approval receipts are complete. RED `7b55eb7a09f7010acffd6ba5a6c928b99099f472` / CI `37754698723` passed formatting, kept all 111 existing tests green and failed only because the approval service module did not exist. GREEN `5f1870106988c6b5ab365df275a8b3a314c60aa5` / CI `37754858404` passed format, 116/116 tests across 25 files, lint, typecheck and build.
+
+The approval service is LOCAL_ONLY and has no LinkedIn side effect. Opaque receipts bind the exact payload hash to the authenticated subject and bounded expiry. First consumption binds one idempotency key; same-key replay is safe and different-key reuse is rejected.
+
+`post.create.text` remains `OFFICIAL_API`, ACTIVE for deterministic implementation work, and live `UNAVAILABLE` until legitimate configured LinkedIn write access is actually verified.
 
 ## Completed Milestones
 
@@ -37,4 +41,4 @@ Downstream read verification remains access-dependent and must not turn legitima
 The M00 private package-boundary debt remains Minor and deferred.
 Live LinkedIn capability availability remains dependent on legitimate configured developer/member access.
 
-Exact next work: establish M02.2 approval-receipt service RED tests binding approval to payload hash, authenticated subject and expiry without authorizing publication.
+Exact next work: establish M02.3 persistent idempotency-ledger RED tests covering reservation, same-key replay, hash conflicts, restart persistence, atomic writes, corrupt-state fail-closed behavior and terminal-result replay.

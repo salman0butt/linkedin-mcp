@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M02",
-  "currentIteration": "M02.2",
+  "currentIteration": "M02.3",
   "status": "ACTIVE",
   "activeBranch": "feat/m02-text-publishing",
   "activePr": 3,
   "baseBranch": "main",
-  "latestVerifiedSha": "c1dab02097f0e7c816ab0d80b6485024d4cbea07",
-  "ciStatus": "GREEN_FORMAT_111_TESTS_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "5f1870106988c6b5ab365df275a8b3a314c60aa5",
+  "ciStatus": "GREEN_FORMAT_116_TESTS_LINT_TYPECHECK_BUILD",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish M02.2 approval-receipt service RED tests binding approval to payload hash, authenticated subject and expiry without authorizing publication."
+  "exactNextWork": "Establish M02.3 persistent idempotency-ledger RED tests covering reservation, same-key replay, hash conflicts, restart persistence, atomic writes, corrupt-state fail-closed behavior and terminal-result replay."
 }
