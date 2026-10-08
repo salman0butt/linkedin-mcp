@@ -43,18 +43,18 @@ Closeout: `docs/superpowers/evidence/2026-10-06-m01-auth-identity-closeout.md`.
 
 ## TDD Evidence
 
-| Unit | RED / review RED | GREEN |
-| --- | --- | --- |
-| M01.2 config/contracts | `a696c104`, CI `37482043713` | `30ec5b4a`, CI `37482919464` |
-| M01.3 session/callback | `b0a08d7a`, CI `37584050659` | reviewed `9035cebc`, CI `37585523117` |
-| M01.4 credential store | `6a5c7a12`, CI `37586614199` | reviewed `9fcb2c8c`, CI `37588029054` |
-| M01.5 OAuth adapter | `2b6646cd`, CI `37592679866` | `faedaf2f`, CI `37593107489` |
-| M01.6 OIDC identity | `d2b03afb`, CI `37593529777` | `e9f138d4`, CI `37612551536` |
-| M01.7 lifecycle | lifecycle TDD + callback review RED `8a044af9`, CI `37615537027` | `aa6e09b1`, CI `37615170527`; callback reviewed `bc880dc9`, CI `37616331784` |
-| M01.7 MCP integration | `e0309110`, CI `37623309357` | `5d2aea64`, CI `37656151910` |
-| M01.8 structured auth results | `01ff034b`, CI `37657296785` | `40f770e8`, CI `37657621857` |
-| M01.8 built transport wiring | `2bf25ed0`, CI `37657889533` | `80f5d33e`, CI `37658194001` |
-| M01.8 logout cleanup error | `4a978e6f`, CI `37658686972` | `917e07a9`, CI `37658914319` |
+| Unit                          | RED / review RED                                                 | GREEN                                                                        |
+| ----------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| M01.2 config/contracts        | `a696c104`, CI `37482043713`                                     | `30ec5b4a`, CI `37482919464`                                                 |
+| M01.3 session/callback        | `b0a08d7a`, CI `37584050659`                                     | reviewed `9035cebc`, CI `37585523117`                                        |
+| M01.4 credential store        | `6a5c7a12`, CI `37586614199`                                     | reviewed `9fcb2c8c`, CI `37588029054`                                        |
+| M01.5 OAuth adapter           | `2b6646cd`, CI `37592679866`                                     | `faedaf2f`, CI `37593107489`                                                 |
+| M01.6 OIDC identity           | `d2b03afb`, CI `37593529777`                                     | `e9f138d4`, CI `37612551536`                                                 |
+| M01.7 lifecycle               | lifecycle TDD + callback review RED `8a044af9`, CI `37615537027` | `aa6e09b1`, CI `37615170527`; callback reviewed `bc880dc9`, CI `37616331784` |
+| M01.7 MCP integration         | `e0309110`, CI `37623309357`                                     | `5d2aea64`, CI `37656151910`                                                 |
+| M01.8 structured auth results | `01ff034b`, CI `37657296785`                                     | `40f770e8`, CI `37657621857`                                                 |
+| M01.8 built transport wiring  | `2bf25ed0`, CI `37657889533`                                     | `80f5d33e`, CI `37658194001`                                                 |
+| M01.8 logout cleanup error    | `4a978e6f`, CI `37658686972`                                     | `917e07a9`, CI `37658914319`                                                 |
 
 Formatting-only or fixture-only failed runs are not counted as RED evidence.
 
