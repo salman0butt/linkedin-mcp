@@ -141,20 +141,22 @@ describe('M02 persistent idempotency ledger', () => {
     const ledger = createFileIdempotencyLedger({
       filePath,
       filesystem: {
-        readFile: async () => Promise.reject(missing),
-        mkdir: async () => undefined,
-        writeFile: async (path, _data, options) => {
+        readFile: () => Promise.reject(missing),
+        mkdir: () => Promise.resolve(undefined),
+        writeFile: (path, _data, options) => {
           operations.push(`write:${path}`);
           expect(dirname(path)).toBe(dirname(filePath));
           expect(path).not.toBe(filePath);
           expect(options).toMatchObject({ mode: 0o600, flag: 'wx' });
+          return Promise.resolve();
         },
-        rename: async (from, to) => {
+        rename: (from, to) => {
           operations.push(`rename:${from}->${to}`);
           expect(dirname(from)).toBe(dirname(filePath));
           expect(to).toBe(filePath);
+          return Promise.resolve();
         },
-        unlink: async () => undefined,
+        unlink: () => Promise.resolve(),
       },
     });
 
