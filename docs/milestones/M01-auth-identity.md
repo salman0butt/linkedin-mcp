@@ -110,7 +110,7 @@ No live LinkedIn credentials or developer-product access are configured in ordin
 
 ## Fresh Verification Results
 
-Latest pre-closeout-doc verification: `917e07a950f7732a4315daebd8d7d9e7af266a12`, CI `37658914319` — frozen install, format, 105/105 tests across 23 files, lint, typecheck and build GREEN; real built stdio/HTTP auth smokes GREEN.
+Latest verified closeout checkpoint before this durable-state reconciliation: `aa1c81397aeb67361afec8fa353dbe62be6fe3ed`, CI `37739092014` — frozen install, format, 105/105 tests across 23 files, lint, typecheck and build GREEN; real built stdio/HTTP auth smokes and autonomous-framework ledger verification GREEN.
 
 ## Durable Recovery Sources
 
@@ -130,4 +130,4 @@ Recovery precedence for M01 closeout is: actual Git graph > source/tests > exact
 
 ## Exact Next Work
 
-Verify exact-final-head CI on the M01 closeout documentation commit, then merge PR #2 if all merge gates remain satisfied.
+Verify exact-final-head CI on the durable-state reconciliation commit, then merge PR #2 if all merge gates remain satisfied.
