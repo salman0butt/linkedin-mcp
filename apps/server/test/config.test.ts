@@ -25,6 +25,8 @@ describe('parseConfig', () => {
       serverName: 'linkedin-mcp',
       serverVersion: '0.0.0',
       requestBodyLimitBytes: 1_048_576,
+      publishingApprovalTtlMs: 300_000,
+      memberPostReadEnabled: false,
     });
   });
 
@@ -40,6 +42,41 @@ describe('parseConfig', () => {
       expect(() => parseConfig({ LINKEDIN_MCP_API_VERSION: apiVersion })).toThrow(/api version.*yyyymm/i);
     },
   );
+
+  it('normalizes the explicit publishing ledger path and accepts bounded trusted options', () => {
+    const config = parseConfig({
+      LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: 'var/posts.json',
+      LINKEDIN_MCP_APPROVAL_TTL_MS: '600000',
+      LINKEDIN_MCP_MEMBER_POST_READ_ENABLED: 'true',
+    });
+
+    expect(config.publishingLedgerPath?.startsWith('/')).toBe(true);
+    expect(config.publishingApprovalTtlMs).toBe(600_000);
+    expect(config.memberPostReadEnabled).toBe(true);
+  });
+
+  it.each(['0', '-1', '1.5', '600001', 'bad'])('rejects invalid approval TTL %s', (ttl) => {
+    expect(() => parseConfig({ LINKEDIN_MCP_APPROVAL_TTL_MS: ttl })).toThrow(/approval ttl/i);
+  });
+
+  it('rejects a blank explicit publishing ledger path without touching the filesystem', () => {
+    expect(() => parseConfig({ LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: '  ' })).toThrow(
+      /publishing ledger path/i,
+    );
+  });
+
+  it.each(['yes', '1', 'TRUE', ' false ', ''])('rejects non-exact read flag %j', (readFlag) => {
+    expect(() => parseConfig({ LINKEDIN_MCP_MEMBER_POST_READ_ENABLED: readFlag })).toThrow(/true or false/i);
+  });
+
+  it('rejects a ledger path that aliases the credential store path', () => {
+    expect(() =>
+      parseConfig({
+        ...nativePkceEnv(encryptionKey),
+        LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: '/tmp/one/../linkedin-mcp-credentials.json',
+      }),
+    ).toThrow(/must differ from the credential store/i);
+  });
 
   it('parses confidential OAuth configuration only when required values exist', () => {
     const config = parseConfig({

@@ -4,7 +4,7 @@ Last reconciled: 2026-10-08. Actual Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M02 — Text Publishing — **ACTIVE, M02.6 MCP tools/runtime**.
+M02 — Text Publishing — **ACTIVE, M02.7 skeptical/security closeout**.
 
 Active branch: `feat/m02-text-publishing`.
 Active PR: #3 — draft.
@@ -49,6 +49,14 @@ M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6`, CI `377934788
 
 ## M02.6 downstream verification checkpoint
 
-Task 6 is implemented and independently re-reviewed: optional official GET, explicit legitimate read gate, exact comparison and fresh replay evidence preserve durably succeeded creation. Final local verification passed 265 tests across 29 files plus format/lint/typecheck/build. All scoped findings are resolved; whole-milestone review remains pending. See `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md` for qualified RED/GREEN and security evidence. New pushed-head CI is pending; the last verified checkpoint remains `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842`.
+Task 6 is implemented and independently re-reviewed: optional official GET, explicit legitimate read gate, exact comparison and fresh replay evidence preserve durably succeeded creation. Final local verification passed 265 tests across 29 files plus format/lint/typecheck/build. All scoped findings are resolved; whole-milestone review remains pending. See `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md` for qualified RED/GREEN and security evidence. Subsequent pushed-head CI passed at `1a2cef29d88f7032d5befe18efb627736e49da16` / run `37832719872`.
 
-Exact next work: verify Task 6 pushed-head CI.
+Task6 pushed checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` passed exact-head CI `37832719872`: frozen install, format, test, lint, typecheck and build. Required quality steps all succeeded; the local suite at this source checkpoint passed 265 tests. Actions log downloads remain blocked at the results-receiver destination, so no remote log count is claimed. Task7 implementation subsequently passed the local checkpoint below.
+
+## Task 7 local checkpoint
+
+The three publishing tools and shared runtime are implemented and scoped independent review is clear (0 Critical/Important/Minor). Controller verification passed 319 tests across 31 files; implementer format, lint, typecheck and build also passed. Real MCP clients, built stdio and loopback HTTP cover discovery, local preview/approval, structured outcomes and shared one-POST replay. Restored strict preview/approval assertions remain alongside expanded create validation. README and configuration template describe the actual runtime and safety gates.
+
+See `docs/superpowers/evidence/2026-10-08-m02-mcp-runtime.md` for qualified behavioral RED and first-GREEN coverage. These changes await pushed-head CI. Latest verified remote checkpoint remains `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872`. Whole-milestone review, final merge gates and post-merge main verification remain pending. Live LinkedIn access remains unverified; no live reads or writes occurred.
+
+Exact next work: verify Task 7 pushed-head CI.

@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 import type { OAuthMode } from '../../../packages/core/dist/index.js';
 
 export type TransportMode = 'stdio' | 'http';
@@ -22,6 +24,9 @@ export interface ServerConfig {
   serverVersion: string;
   requestBodyLimitBytes: number;
   linkedinApiVersion?: string;
+  publishingLedgerPath?: string;
+  publishingApprovalTtlMs: number;
+  memberPostReadEnabled: boolean;
   auth?: LinkedInAuthConfig;
 }
 
@@ -162,6 +167,25 @@ export function parseConfig(env: Env = process.env): ServerConfig {
 
   const auth = parseAuthConfig(env);
   const linkedinApiVersion = parseLinkedInApiVersion(env.LINKEDIN_MCP_API_VERSION);
+  const ledgerPathValue = env.LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH;
+  if (ledgerPathValue !== undefined && ledgerPathValue.trim() === '') {
+    throw new Error('Publishing ledger path must be a nonblank local path');
+  }
+  const publishingLedgerPath = ledgerPathValue === undefined ? undefined : resolve(ledgerPathValue);
+  if (
+    publishingLedgerPath !== undefined &&
+    auth !== undefined &&
+    publishingLedgerPath === resolve(auth.credentialStorePath)
+  ) {
+    throw new Error('Publishing ledger path must differ from the credential store path');
+  }
+  const ttlValue = env.LINKEDIN_MCP_APPROVAL_TTL_MS;
+  if (ttlValue === '') throw new Error('Publishing approval TTL must be a positive integer');
+  const publishingApprovalTtlMs = parsePositiveInteger(ttlValue, 300_000, 'Publishing approval TTL', 600_000);
+  const readValue = env.LINKEDIN_MCP_MEMBER_POST_READ_ENABLED;
+  if (readValue !== undefined && readValue !== 'true' && readValue !== 'false') {
+    throw new Error('Member post read flag must be exactly true or false');
+  }
 
   return {
     transport,
@@ -175,6 +199,9 @@ export function parseConfig(env: Env = process.env): ServerConfig {
       1_048_576,
       'Request body limit',
     ),
+    publishingApprovalTtlMs,
+    memberPostReadEnabled: readValue === 'true',
+    ...(publishingLedgerPath === undefined ? {} : { publishingLedgerPath }),
     ...(linkedinApiVersion === undefined ? {} : { linkedinApiVersion }),
     ...(auth === undefined ? {} : { auth }),
   };

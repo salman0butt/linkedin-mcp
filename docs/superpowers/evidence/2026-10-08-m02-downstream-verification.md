@@ -27,3 +27,7 @@ Final focused suite: 148/148 across five files. Full suite: 265/265 across 29 fi
 ## Continuity
 
 GitHub API access recovered during this run. Fresh API recovery found the same sole open draft PR #3, no reviews/threads, mergeable head, and stable main. Live publication/read availability remains UNAVAILABLE without legitimate access and actual provider evidence. Next action: verify Task6 pushed-head CI.
+
+## Subsequent exact-head CI
+
+Checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` passed CI `37832719872`; API head SHA and every quality step were inspected. The local suite at this source checkpoint passed 265 tests. Actions log downloads remain blocked at the results-receiver destination; CI metadata is available, but no remote log count is claimed. Task7 MCP/runtime work is next.

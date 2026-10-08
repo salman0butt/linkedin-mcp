@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M02",
-  "currentIteration": "M02.6",
+  "currentIteration": "M02.7",
   "status": "ACTIVE",
   "activeBranch": "feat/m02-text-publishing",
   "activePr": 3,
   "baseBranch": "main",
-  "latestVerifiedSha": "84b36492da74961965ba3ae2cfb6e9c8a4c239e6",
-  "ciStatus": "GREEN_FORMAT_204_TESTS_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "1a2cef29d88f7032d5befe18efb627736e49da16",
+  "ciStatus": "GREEN_FORMAT_265_TESTS_LINT_TYPECHECK_BUILD",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Verify Task 6 pushed-head CI."
+  "exactNextWork": "Verify Task 7 pushed-head CI."
 }

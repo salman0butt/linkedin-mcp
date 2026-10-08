@@ -21,9 +21,25 @@ try {
   await client.connect(transport);
   const health = await client.callTool({ name: 'linkedin.health', arguments: {} });
   const authStatus = await client.callTool({ name: 'linkedin.auth.status', arguments: {} });
+  const { tools } = await client.listTools();
+  const preview = await client.callTool({ name: 'linkedin.post.preview.text', arguments: { text: 'Smoke preview' } });
+  const previewData = preview.structuredContent.data;
+  const approval = await client.callTool({ name: 'linkedin.post.approve.text', arguments: {
+    payload: previewData.payload, payloadHash: previewData.payloadHash, approved: true,
+  } });
+  const publish = await client.callTool({ name: 'linkedin.post.create.text', arguments: {
+    payload: previewData.payload, idempotencyKey: 'stdio-smoke-key',
+  } });
+  const capabilities = await client.callTool({ name: 'linkedin.capabilities', arguments: {} });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
     authStatus: authStatus.structuredContent,
+    toolNames: tools.map((tool) => tool.name),
+    toolCount: tools.length,
+    preview: preview.structuredContent,
+    approval: approval.structuredContent,
+    publish: publish.structuredContent,
+    capabilities: capabilities.structuredContent,
   }));
 } finally {
   await client.close();
@@ -31,13 +47,16 @@ try {
 `;
 
 function callBuiltServer(): unknown {
+  const cleanEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith('LINKEDIN_MCP_')),
+  );
   const stdout = execFileSync(
     'pnpm',
     ['--filter', serverPackage, 'exec', 'node', '--input-type=module', '--eval', clientScript],
     {
       cwd: process.cwd(),
       encoding: 'utf8',
-      env: process.env,
+      env: cleanEnv,
     },
   );
 
@@ -46,7 +65,17 @@ function callBuiltServer(): unknown {
 
 describe('built stdio server', () => {
   it('exposes local health and the M01 auth status contract through the real StdioClientTransport', () => {
-    expect(callBuiltServer()).toMatchObject({
+    const result = callBuiltServer() as {
+      toolNames: string[];
+      toolCount: number;
+      capabilities: { data: { capabilities: Array<{ id: string; availability: string }> } };
+      health: unknown;
+      authStatus: unknown;
+      preview: unknown;
+      approval: unknown;
+      publish: unknown;
+    };
+    expect(result).toMatchObject({
       health: {
         status: 'succeeded',
         data: {
@@ -66,7 +95,29 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
+      toolCount: 10,
+      preview: {
+        status: 'succeeded',
+        provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
+        data: { provider: 'OFFICIAL_API', payload: { commentary: 'Smoke preview' } },
+      },
+      approval: {
+        status: 'permission_required',
+        provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
+      },
+      publish: {
+        status: 'requires_approval',
+        provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
+        error: { code: 'approval_required' },
+      },
     });
+    expect(result.toolNames).toContain('linkedin.post.preview.text');
+    expect(result.toolNames).toContain('linkedin.post.approve.text');
+    expect(result.toolNames).toContain('linkedin.post.create.text');
+    expect(
+      result.capabilities.data.capabilities.find((capability) => capability.id === 'post.create.text')
+        ?.availability,
+    ).toBe('UNAVAILABLE');
   });
 
   it('does not write startup logs or other non-protocol text to stdout', () => {
@@ -74,7 +125,9 @@ describe('built stdio server', () => {
       cwd: process.cwd(),
       encoding: 'utf8',
       input: '',
-      env: process.env,
+      env: Object.fromEntries(
+        Object.entries(process.env).filter(([key]) => !key.startsWith('LINKEDIN_MCP_')),
+      ),
     });
 
     expect(result.stdout).toBe('');

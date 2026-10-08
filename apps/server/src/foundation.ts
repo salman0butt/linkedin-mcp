@@ -10,6 +10,21 @@ interface FoundationDeps {
   now: () => Date;
 }
 
+export interface LocalAuditResultOptions<T> extends FoundationDeps {
+  status: ToolResultStatus;
+  operation: 'post.preview.text' | 'post.approve.text' | 'post.create.text';
+  provider?: 'LOCAL_ONLY' | 'OFFICIAL_API';
+  data?: T;
+  payloadHash?: string;
+  replay?: boolean;
+  warnings?: string[];
+  error?: {
+    code: string;
+    message: string;
+    retryable: boolean;
+  };
+}
+
 interface VersionDeps extends FoundationDeps {
   version: string;
 }
@@ -115,5 +130,25 @@ export function createLinkedInResult<T>(options: OfficialResultOptions<T>): Tool
     ...(options.warnings === undefined ? {} : { warnings: [...options.warnings] }),
     ...(options.error === undefined ? {} : { error: { ...options.error } }),
     metadata: metadata(options),
+  };
+}
+
+export function createLocalAuditResult<T>(options: LocalAuditResultOptions<T>) {
+  const isLocal = options.provider !== 'OFFICIAL_API';
+  return {
+    status: options.status,
+    ...(options.data === undefined ? {} : { data: options.data }),
+    provider: isLocal ? provider : linkedInProvider,
+    ...(options.warnings === undefined ? {} : { warnings: [...options.warnings] }),
+    ...(options.error === undefined ? {} : { error: { ...options.error } }),
+    metadata: {
+      requestId: options.requestId,
+      timestamp: options.now().toISOString(),
+      audit: {
+        operation: options.operation,
+        ...(options.payloadHash === undefined ? {} : { payloadHash: options.payloadHash }),
+        ...(options.replay === undefined ? {} : { replay: options.replay }),
+      },
+    },
   };
 }

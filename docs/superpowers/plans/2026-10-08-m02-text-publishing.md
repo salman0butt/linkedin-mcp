@@ -168,7 +168,7 @@ Task 5 checkpoint: local implementation, coverage and scoped review pass with 20
 
 Controller owns integration/configuration policy. Task 7 may wire the trusted member-read capability option only when legitimate account product access is configured; its default remains false. Ordinary CI uses injected responses and never performs live LinkedIn reads or writes. Complete execution evidence belongs in `/tmp/linkedin-m02-sdd/task-6-report.md` when dispatched.
 
-Task6 implementation and scoped review are complete: local 265 tests and all checks passed; pushed-head CI is next. Initial behavioral RED and later first-GREEN coverage are separately qualified in `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md`. Do not infer historical RED for every expanded coverage assertion from the checklist above.
+Task6 implementation and scoped review are complete: local 265 tests and all checks passed; exact-head CI 37832719872 passed on 1a2cef29d88f7032d5befe18efb627736e49da16. Initial behavioral RED and later first-GREEN coverage are separately qualified in `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md`. Do not infer historical RED for every expanded coverage assertion from the checklist above.
 
 ### Task 7: MCP preview/approve/publish tools and real transports
 
@@ -205,6 +205,8 @@ Task6 implementation and scoped review are complete: local 265 tests and all che
 - [ ] Verify focused GREEN and full format/test/lint/typecheck/build; record actual logs/counts/failure reasons/self-review in `/tmp/linkedin-m02-sdd/task-7-report.md`.
 
 No mock/config/runtime-success projection upgrades post.create.text live availability. No constructed verified URL, new dependency, credential migration, general container/event framework or live LinkedIn call. Controller owns exact-SHA CI/durable docs/integration. Source execution starts only after Task 6 review passes.
+
+Task7 implementation and scoped review are complete locally: 319 tests and all checks passed. Pushed-head CI remains pending. The evidence document `docs/superpowers/evidence/2026-10-08-m02-mcp-runtime.md` separates observed behavioral RED from expanded first-GREEN coverage; unchecked historical RED requirements above must not be inferred as fully observed.
 
 ### Task 8: Skeptical/security review and closeout
 
