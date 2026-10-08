@@ -40,6 +40,7 @@
 ### Task 1: Activate M02 and define canonical text-post contracts
 
 **Files:**
+
 - Create: `packages/core/src/text-post.ts`
 - Modify: `packages/core/src/index.ts`
 - Modify: `packages/core/src/capabilities.ts`
@@ -57,6 +58,7 @@
 ### Task 2: Approval receipt service
 
 **Files:**
+
 - Create: `apps/server/src/publishing/approval-service.ts`
 - Test: `apps/server/test/approval-service.test.ts`
 
@@ -69,6 +71,7 @@
 ### Task 3: Persistent idempotency ledger
 
 **Files:**
+
 - Create: `apps/server/src/publishing/idempotency-ledger.ts`
 - Test: `apps/server/test/idempotency-ledger.test.ts`
 
@@ -81,6 +84,7 @@
 ### Task 4: Official LinkedIn Posts adapter
 
 **Files:**
+
 - Create: `apps/server/src/publishing/linkedin-posts.ts`
 - Test: `apps/server/test/linkedin-posts.test.ts`
 - Modify: `apps/server/src/config.ts`
@@ -96,6 +100,7 @@
 ### Task 5: Text-post publish orchestration
 
 **Files:**
+
 - Create: `apps/server/src/publishing/text-post-service.ts`
 - Test: `apps/server/test/text-post-service.test.ts`
 
@@ -109,6 +114,7 @@
 ### Task 6: Downstream verification
 
 **Files:**
+
 - Modify: `apps/server/src/publishing/linkedin-posts.ts`
 - Modify: `apps/server/src/publishing/text-post-service.ts`
 - Test: corresponding provider/service tests.
@@ -123,6 +129,7 @@
 ### Task 7: MCP preview/approve/publish tools and real transports
 
 **Files:**
+
 - Modify: `apps/server/src/create-server.ts`
 - Modify: `apps/server/src/stdio.ts`
 - Modify: `apps/server/src/http.ts`
@@ -139,6 +146,7 @@
 ### Task 8: Skeptical/security review and closeout
 
 **Files:**
+
 - Update M02 ledger, state, status, current milestone, traceability, capability matrix and known issues as evidence requires.
 - Create: `docs/superpowers/evidence/2026-10-08-m02-text-publishing-closeout.md` only when evidence exists.
 
