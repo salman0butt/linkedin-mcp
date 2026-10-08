@@ -84,7 +84,9 @@ describe('official LinkedIn Posts adapter', () => {
         isReshareDisabled: false,
       }),
     });
-    expect(String(recorded.calls[0]?.input)).not.toContain('access-token-secret');
+    const requestInput = recorded.calls[0]?.input;
+    if (typeof requestInput !== 'string') throw new Error('Expected Posts request URL string');
+    expect(requestInput).not.toContain('access-token-secret');
   });
 
   it.each([undefined, '', 'not-a-post-urn'])(
