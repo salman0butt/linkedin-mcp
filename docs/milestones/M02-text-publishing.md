@@ -1,6 +1,6 @@
 # M02 — Text Publishing
 
-Status: **PLANNED**
+Status: **ACTIVE — M02.1 contracts**
 
 ## Goal
 
@@ -24,7 +24,14 @@ No duplicate retry; approval policy enforced; final post identifier/URL verified
 
 ## Tasks / Iterations
 
-Design/plan; draft domain; approval; official provider; verification; closeout.
+1. **COMPLETE** — M02 activation, design and implementation plan.
+2. **ACTIVE** — M02.1 canonical text-post contracts and capability implementation state.
+3. **PLANNED** — approval receipt service.
+4. **PLANNED** — persistent idempotency ledger.
+5. **PLANNED** — official LinkedIn Posts adapter.
+6. **PLANNED** — publish orchestration and downstream verification.
+7. **PLANNED** — MCP tools and real transport wiring.
+8. **PLANNED** — skeptical/security review and closeout.
 
 ## TDD Evidence
 
@@ -48,10 +55,14 @@ Pending.
 
 ## Durable Recovery Sources
 
-PRD, capability matrix, M02 spec/plan, Git/PR/CI.
+PRD, capability matrix, `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`, `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`, Git/PR/CI.
 
 ## Completion Checklist
 
 - [ ] Acceptance verified.
 - [ ] Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
+
+## Exact Next Work
+
+Verify the M02 activation/spec/plan head, create the milestone draft PR, then establish the M02.1 canonical text-post contract RED.
