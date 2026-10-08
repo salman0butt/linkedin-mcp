@@ -35,6 +35,11 @@ jobs:
           cache: pnpm
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
+      - name: Diagnose M02 Posts RED formatting
+        run: |
+          pnpm exec prettier --write apps/server/test/linkedin-posts.test.ts apps/server/test/config.test.ts
+          git diff -- apps/server/test/linkedin-posts.test.ts apps/server/test/config.test.ts
+          git checkout -- apps/server/test/linkedin-posts.test.ts apps/server/test/config.test.ts
       - name: Format check
         run: pnpm format:check
       - name: Test
