@@ -8,8 +8,8 @@ M01 — Authentication & Identity — **ACTIVE, M01.8 closeout**.
 
 Active branch: `feat/m01-auth-identity`.
 Active PR: #2 — `Build M01 authentication and identity` (draft until final-head gates pass).
-Latest verified implementation SHA: `917e07a950f7732a4315daebd8d7d9e7af266a12`.
-Latest verified CI: `37658914319` — frozen install, format, 105/105 tests across 23 files, lint, typecheck and build passed, including real stdio/HTTP auth smokes.
+Latest verified closeout SHA: `aa1c81397aeb67361afec8fa353dbe62be6fe3ed`.
+Latest verified CI: `37739092014` — frozen install, format, 105/105 tests across 23 files, lint, typecheck and build passed, including real stdio/HTTP auth smokes and autonomous-framework ledger verification.
 Verified base `main`: `dde9bde5b136b0c352a864fadce08f02cab32938`; post-M00 CI `37469308840` GREEN.
 Critical findings: 0 unresolved.
 Important findings: 0 unresolved.
@@ -44,4 +44,4 @@ Ruling: OAuth `state` necessarily appears inside the opaque provider authorizati
 
 The M00 private package-boundary debt remains Minor and deferred. GitHub Actions remains the authoritative exact-head verification environment in connector sessions.
 
-Exact next work: verify exact-final-head CI on the M01 closeout documentation commit, then merge PR #2 if all merge gates remain satisfied.
+Exact next work: verify exact-final-head CI on the durable-state reconciliation commit, then merge PR #2 if all merge gates remain satisfied.
