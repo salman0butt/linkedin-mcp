@@ -28,6 +28,19 @@ describe('parseConfig', () => {
     });
   });
 
+  it('accepts an explicit LinkedIn API version only in YYYYMM form', () => {
+    expect(parseConfig({ LINKEDIN_MCP_API_VERSION: '202510' })).toMatchObject({
+      linkedinApiVersion: '202510',
+    });
+  });
+
+  it.each(['2025-10', '20251', '2025101', '202500', '202513', ' 202510 '])(
+    'rejects invalid LinkedIn API version %s',
+    (apiVersion) => {
+      expect(() => parseConfig({ LINKEDIN_MCP_API_VERSION: apiVersion })).toThrow(/api version.*yyyymm/i);
+    },
+  );
+
   it('parses confidential OAuth configuration only when required values exist', () => {
     const config = parseConfig({
       LINKEDIN_MCP_OAUTH_MODE: 'confidential',
