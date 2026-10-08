@@ -6,12 +6,12 @@
   "activeBranch": "feat/m01-auth-identity",
   "activePr": 2,
   "baseBranch": "main",
-  "latestVerifiedSha": "917e07a950f7732a4315daebd8d7d9e7af266a12",
-  "ciStatus": "GREEN_PRE_CLOSEOUT_DOCS",
+  "latestVerifiedSha": "aa1c81397aeb67361afec8fa353dbe62be6fe3ed",
+  "ciStatus": "GREEN_PRE_FINAL_STATE_RECONCILIATION",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
     "Live LinkedIn availability verification is externally blocked in CI because no configured LinkedIn developer application/member credentials/product access are present; profile.me therefore remains ACTIVE/UNAVAILABLE rather than VERIFIED."
   ],
-  "exactNextWork": "Verify exact-final-head CI on the M01 closeout documentation commit, then merge PR #2 if all merge gates remain satisfied."
+  "exactNextWork": "Verify exact-final-head CI on the durable-state reconciliation commit, then merge PR #2 if all merge gates remain satisfied."
 }
