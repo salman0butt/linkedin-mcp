@@ -7,9 +7,11 @@
   "activePr": 3,
   "baseBranch": "main",
   "latestVerifiedSha": "3dbf3e2ced5303b52fc27303de9c086a998835c7",
-  "ciStatus": "POST_M01_MAIN_GREEN_M02_ACTIVATING",
+  "ciStatus": "RED_FORMAT_M02_PLAN",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Verify exact-head CI for M02 activation, then establish the M02.1 canonical text-post contract RED."
+  "blockers": [
+    "M02 activation CI 37739689606 fails Prettier only on docs/superpowers/plans/2026-10-08-m02-text-publishing.md; tests/lint/typecheck/build were skipped."
+  ],
+  "exactNextWork": "Format the M02 implementation plan with repository Prettier, rerun exact-head CI, then establish the M02.1 canonical text-post contract RED."
 }
