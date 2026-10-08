@@ -1,6 +1,6 @@
 # M02 — Text Publishing
 
-Status: **ACTIVE — M02.4 official LinkedIn Posts adapter**
+Status: **ACTIVE — M02.5 text-post publish orchestration**
 
 ## Goal
 
@@ -28,9 +28,9 @@ No duplicate retry; approval policy enforced; final post identifier/URL verified
 2. **COMPLETE** — M02.1 canonical text-post contracts and capability implementation state.
 3. **COMPLETE** — M02.2 approval receipt service.
 4. **COMPLETE** — M02.3 persistent idempotency ledger.
-5. **ACTIVE** — M02.4 official LinkedIn Posts adapter.
-6. **PLANNED** — M02.5 publish orchestration and downstream verification.
-7. **PLANNED** — M02.6 MCP tools and real transport wiring.
+5. **COMPLETE** — M02.4 official LinkedIn Posts adapter.
+6. **ACTIVE** — M02.5 publish orchestration and downstream verification boundary.
+7. **PLANNED** — M02.6 downstream verification and MCP tools/real transport wiring.
 8. **PLANNED** — M02.7 skeptical/security review and closeout.
 
 ## TDD Evidence
@@ -43,23 +43,29 @@ M02.2 RED: `7b55eb7a09f7010acffd6ba5a6c928b99099f472`, CI `37754698723` — form
 
 M02.2 GREEN: `5f1870106988c6b5ab365df275a8b3a314c60aa5`, CI `37754858404` — format, 116/116 tests across 25 files, lint, typecheck and build passed.
 
-M02.3 RED setup initially encountered formatter-only noise. Valid RED: `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a`, CI `37755801316` — formatting passed; 116 existing tests remained green; the new ledger suite failed solely because `idempotency-ledger` did not exist.
+M02.3 valid RED: `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a`, CI `37755801316` — formatting passed; 116 existing tests remained green; the new ledger suite failed solely because `idempotency-ledger` did not exist.
 
 M02.3 GREEN: `c88ae5b909888e796880f0193299cd21e1246648`, CI `37756724053` — format, 123/123 tests across 26 files, lint, typecheck and build passed.
 
+M02.4 setup encountered formatter-only noise before the valid RED. Valid RED: `7817938bb2efcdc577d04c00b5b8625216ad6d29`, CI `37762083892` — formatting passed; 123 pre-existing tests remained green; the Posts suite failed because `linkedin-posts` did not exist and seven API-version config assertions failed because the configuration contract was absent.
+
+M02.4 GREEN: `90267d9e27bbef705e93b9ec8250548ae815b7ce`, CI `37762622471` — format, 140/140 tests across 27 files, lint, typecheck and build passed.
+
 ## Integration Test Evidence
 
-M02.1-M02.3 are deterministic local contracts/state. No live LinkedIn publication was attempted or claimed.
+M02.1-M02.4 are deterministic local/provider-adapter contracts. No live LinkedIn publication was attempted or claimed.
 
 ## Security Review
 
 M02.1 rejects caller-controlled author and unknown provider payload fields. M02.2 binds approval to exact payload hash and authenticated subject with cryptographically random opaque bounded-lifetime receipts. M02.3 stores operation/hash/result metadata rather than post text or credentials; uses restrictive file permissions and atomic same-directory replacement; fails closed on corrupt persisted state; and persists `outcome_unknown` as a replayable terminal record so uncertain remote acceptance cannot trigger an automatic duplicate POST.
 
-Scoped M02.3 skeptical review found no unresolved Critical or Important finding. The file-backed implementation is intentionally a single-runtime persistence boundary; broader distributed coordination is outside the current local-server architecture and is not represented as provided.
+M02.4 sends the bearer token only in the Authorization header, never puts it in the request URL, never reads or returns raw provider error bodies, performs no automatic retry, rejects malformed 201 responses without a valid `x-restli-id`, and validates explicit YYYYMM API versions.
+
+Scoped review through M02.4 found no unresolved Critical or Important finding. Live LinkedIn availability remains external and unverified.
 
 ## Code Review Findings
 
-No Critical or Important M02.1-M02.3 findings remain open. Live LinkedIn availability remains external and unverified.
+No Critical or Important M02.1-M02.4 findings remain open. Live LinkedIn availability remains external and unverified.
 
 ## Fresh Verification Results
 
@@ -68,6 +74,8 @@ M02.1 exact GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07`, CI `37753956032`: 
 M02.2 exact GREEN `5f1870106988c6b5ab365df275a8b3a314c60aa5`, CI `37754858404`: format, 116/116 tests, lint, typecheck and build green.
 
 M02.3 exact GREEN `c88ae5b909888e796880f0193299cd21e1246648`, CI `37756724053`: format, 123/123 tests, lint, typecheck and build green.
+
+M02.4 exact GREEN `90267d9e27bbef705e93b9ec8250548ae815b7ce`, CI `37762622471`: format, 140/140 tests, lint, typecheck and build green.
 
 ## Durable Recovery Sources
 
@@ -81,4 +89,4 @@ PRD, capability matrix, `docs/superpowers/specs/2026-10-08-m02-text-publishing-d
 
 ## Exact Next Work
 
-Establish M02.4 official LinkedIn Posts adapter RED tests for exact endpoint/headers/body, YYYYMM API-version configuration, 201 `x-restli-id` success, sanitized HTTP classifications and transport `outcome_unknown` without retries.
+Establish M02.5 text-post publish orchestration RED tests for disconnected/reauth states, missing `w_member_social`, approval mismatch/expiry, idempotency replay/conflict, one POST only, 401 auth transition, success persistence and durable `outcome_unknown` handling.

@@ -4,7 +4,7 @@ Last reconciled: 2026-10-08. Actual Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M02 — Text Publishing — **ACTIVE, M02.4 official LinkedIn Posts adapter**.
+M02 — Text Publishing — **ACTIVE, M02.5 text-post publish orchestration**.
 
 Active branch: `feat/m02-text-publishing`.
 Active PR: #3 — draft.
@@ -19,7 +19,9 @@ M02.2 approval receipts are complete. RED `7b55eb7a09f7010acffd6ba5a6c928b99099f
 
 M02.3 persistent idempotency is complete. Valid RED `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a` / CI `37755801316` passed formatting, kept all 116 existing tests green and failed only because the ledger module did not exist. GREEN `c88ae5b909888e796880f0193299cd21e1246648` / CI `37756724053` passed format, 123/123 tests across 26 files, lint, typecheck and build. The versioned JSON ledger uses restrictive permissions, same-directory atomic replacement, fail-closed corrupt-state handling, restart replay, hash conflicts, and durable `outcome_unknown` so uncertain remote acceptance is never automatically retried.
 
-Skeptical/security review of M02.3 found no unresolved Critical or Important issue in the scoped single-runtime file-backed ledger. It stores hashes/operation metadata rather than post text or credentials and preserves terminal records on replay.
+M02.4 official Posts adapter is complete. Valid RED `7817938bb2efcdc577d04c00b5b8625216ad6d29` / CI `37762083892` passed formatting, kept all 123 pre-existing tests green, failed the new Posts suite because the adapter did not yet exist, and failed the new configuration assertions because YYYYMM API-version support was absent. GREEN `90267d9e27bbef705e93b9ec8250548ae815b7ce` / CI `37762622471` passed format, 140/140 tests across 27 files, lint, typecheck and build. The adapter performs exactly one official `POST /rest/posts`, uses explicit `Linkedin-Version` and Rest.li headers, requires a valid `x-restli-id` for success, sanitizes provider failures, never reads raw provider bodies, and maps transport uncertainty to non-retryable `outcome_unknown`.
+
+Skeptical/security review through M02.4 found no unresolved Critical or Important issue in the scoped deterministic implementation. The provider adapter does not place bearer tokens in URLs, does not expose provider raw bodies, and contains no automatic retry loop.
 
 `post.create.text` remains `OFFICIAL_API`, ACTIVE for deterministic implementation work, and live `UNAVAILABLE` until legitimate configured LinkedIn write access is actually verified.
 
@@ -39,4 +41,4 @@ Downstream read verification remains access-dependent and must not turn legitima
 
 The M00 private package-boundary debt remains Minor and deferred. Live LinkedIn capability availability remains dependent on legitimate configured developer/member access.
 
-Exact next work: establish M02.4 official LinkedIn Posts adapter RED tests for exact endpoint/headers/body, YYYYMM API-version configuration, 201 `x-restli-id` success, sanitized HTTP classifications and transport `outcome_unknown` without retries.
+Exact next work: establish M02.5 text-post publish orchestration RED tests for disconnected/reauth and `w_member_social` gates, exact approval binding, idempotency replay/conflict, exactly one provider POST, persisted success/auth transitions, and durable `outcome_unknown` handling.
