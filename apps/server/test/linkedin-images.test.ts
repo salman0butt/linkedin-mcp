@@ -12,6 +12,12 @@ interface RecordedFetch {
   fetch: typeof fetch;
 }
 
+function requestUrl(input: RequestInfo | URL | undefined): string {
+  if (typeof input === 'string') return input;
+  if (input instanceof URL) return input.href;
+  return input?.url ?? '';
+}
+
 function recorder(...responses: Response[]): RecordedFetch {
   const calls: RecordedCall[] = [];
   return {
@@ -97,7 +103,7 @@ describe('official LinkedIn Images client', () => {
         initializeUploadRequest: { owner: 'urn:li:person:member-123' },
       }),
     });
-    expect(String(recorded.calls[0]?.input)).not.toContain('access-token-secret');
+    expect(requestUrl(recorded.calls[0]?.input)).not.toContain('access-token-secret');
   });
 
   it('rejects malformed initialize success values', async () => {
@@ -209,7 +215,7 @@ describe('official LinkedIn Images client', () => {
       body: bytes,
       redirect: 'error',
     });
-    expect(String(recorded.calls[0]?.input)).not.toContain('access-token-secret');
+    expect(requestUrl(recorded.calls[0]?.input)).not.toContain('access-token-secret');
   });
 
   it('rejects unsafe upload URLs before fetch', async () => {
