@@ -40,7 +40,7 @@ Image/video/document publishing, organization publishing, scheduling, bulk posti
 7. **COMPLETE** — M02.6 downstream verification plus MCP tools/real transport wiring through Task 7.
 8. **ACTIVE** — M02.7 skeptical/security closeout and final merge gates.
 
-## TDD / Verification Evidence
+## TDD Evidence
 
 M02.1 RED `7c193f9adb8049a5849c603a5c5e29bea69ef59d` / CI `37753499633`; GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07` / CI `37753956032`.
 
@@ -54,9 +54,15 @@ M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478
 
 M02.6 exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` green after downstream verification review. Evidence: `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md`.
 
-Task 7 exact checkpoint `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` green: frozen install, format check, tests, lint, typecheck and build. The preceding local checkpoint passed 319 tests across 31 files, including built stdio and loopback HTTP MCP smokes. Evidence: `docs/superpowers/evidence/2026-10-08-m02-mcp-runtime.md`.
+Task 7 exact checkpoint `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` green after the preceding local RED→GREEN work. Historical RED limitations remain qualified in committed evidence rather than reconstructed.
 
-## Security / Correctness Closeout
+## Integration Test Evidence
+
+The Task 7 local checkpoint passed 319 tests across 31 files, including built stdio and real loopback HTTP MCP smokes. Exact code-head CI `37838015911` on `1986831bf58fdd48ea5b0da64109898a768bd937` passed frozen install, format, tests, lint, typecheck and build. Ordinary verification used injected providers; no live LinkedIn request occurred.
+
+The stdio and HTTP transports share one auth/approval/publishing runtime, so approval state and persistent idempotency behavior are consistent across real MCP client connections.
+
+## Security Review
 
 Whole-milestone skeptical/security review completed on 2026-10-09 with **0 unresolved Critical findings and 0 unresolved Important findings** and no blocking review threads.
 
@@ -76,7 +82,36 @@ The reviewed implementation enforces:
 - bounded, sanitized outputs/audit metadata with no raw provider bodies, receipt IDs, idempotency keys or bearer tokens in errors/audit;
 - provider provenance remains explicit and live availability remains conservative.
 
-The interactive closeout runtime could not reproduce the suite locally because it exposed Node 22 rather than required Node 24, lacked pnpm and had no GitHub DNS. That limitation is not represented as a passing local verification; exact-head GitHub Actions is authoritative.
+## Code Review Findings
+
+Scoped M02.5, M02.6 and Task 7 review findings were fixed and re-reviewed before their recorded green checkpoints. The 2026-10-09 whole-milestone closeout review found no new Critical or Important issue.
+
+Unresolved Critical findings: **0**.
+Unresolved Important findings: **0**.
+Blocking review threads: **0**.
+
+## Fresh Verification Results
+
+Task 7 implementation head `1986831bf58fdd48ea5b0da64109898a768bd937` passed exact-head PR CI `37838015911`: frozen install, format, tests, lint, typecheck and build.
+
+Closeout documentation commit `4c2853037cc865e7d56c2230d351d215e1cab6dd` failed CI `37894812747` only at Prettier because two edited Markdown tables were not normalized. Formatting commit `a5030a609c9cb999a821f1e6489a6a990ffa53f4` then passed Prettier but CI `37895150596` exposed this ledger's missing mandatory framework headings. That failure is the RED evidence for the current ledger-repair change; source behavior remained 318/318 passing outside the framework assertion, with the single failure identifying the six missing headings.
+
+The interactive closeout runtime could not reproduce the full suite locally because it exposed Node 22 rather than required Node 24, lacked pnpm and had no GitHub DNS. That limitation is not represented as passing local verification; exact-head GitHub Actions remains authoritative.
+
+## Durable Recovery Sources
+
+- `AGENTS.md`
+- `CODEX-START-HERE.md`
+- `docs/AUTONOMOUS-DEVELOPMENT.md`
+- `docs/progress/project-state.json`
+- `docs/progress/STATUS.md`
+- `docs/progress/KNOWN-ISSUES.md`
+- `docs/milestones/CURRENT.md`
+- this M02 ledger
+- `docs/product/CAPABILITY-MATRIX.md`
+- `docs/requirements/TRACEABILITY.md`
+- M02 design, plan and committed evidence under `docs/superpowers/`
+- Git graph, PR #3, exact-SHA GitHub Actions and source/tests
 
 ## Completion Checklist
 
