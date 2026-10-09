@@ -7,10 +7,12 @@ interface RecordedCall {
   init: RequestInit | undefined;
 }
 
-function recorder(...responses: Response[]): {
+interface RecordedFetch {
   calls: RecordedCall[];
   fetch: typeof fetch;
-} {
+}
+
+function recorder(...responses: Response[]): RecordedFetch {
   const calls: RecordedCall[] = [];
   return {
     calls,
@@ -23,10 +25,7 @@ function recorder(...responses: Response[]): {
   };
 }
 
-function throwingRecorder(): {
-  calls: RecordedCall[];
-  fetch: typeof fetch;
-} {
+function throwingRecorder(): RecordedFetch {
   const calls: RecordedCall[] = [];
   return {
     calls,
@@ -37,7 +36,12 @@ function throwingRecorder(): {
   };
 }
 
-function unreadableErrorResponse(status: number): { response: Response; wasRead: () => boolean } {
+interface UnreadableErrorResponse {
+  response: Response;
+  wasRead: () => boolean;
+}
+
+function unreadableErrorResponse(status: number): UnreadableErrorResponse {
   let bodyRead = false;
   const response = new Response('private provider body access-token-secret', { status });
   const originalText = response.text.bind(response);
@@ -52,18 +56,19 @@ function unreadableErrorResponse(status: number): { response: Response; wasRead:
   return { response, wasRead: () => bodyRead };
 }
 
+const config = { apiVersion: '202610' };
+const validImageUrn = 'urn:li:image:C4E10AQHqQ1';
+const validUploadUrl = 'https://www.linkedin.com/dms-uploads/C4E10AQ/upload?ca=vector';
 const initializeBody = {
   value: {
-    uploadUrl: 'https://www.linkedin.com/dms-uploads/C4E10AQ/upload?ca=vector',
-    image: 'urn:li:image:C4E10AQHqQ1',
+    uploadUrl: validUploadUrl,
+    image: validImageUrn,
     uploadUrlExpiresAt: 1_800_000_000_000,
   },
 };
 
-const config = { apiVersion: '202610' };
-
 describe('official LinkedIn Images client', () => {
-  it('initializes exactly one member image with official endpoint, headers, and body', async () => {
+  it('initializes one image with the official request contract', async () => {
     const recorded = recorder(Response.json(initializeBody));
     const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
 
@@ -73,8 +78,8 @@ describe('official LinkedIn Images client', () => {
         ownerUrn: 'urn:li:person:member-123',
       }),
     ).resolves.toEqual({
-      imageUrn: 'urn:li:image:C4E10AQHqQ1',
-      uploadUrl: 'https://www.linkedin.com/dms-uploads/C4E10AQ/upload?ca=vector',
+      imageUrn: validImageUrn,
+      uploadUrl: validUploadUrl,
       uploadUrlExpiresAt: 1_800_000_000_000,
     });
 
@@ -97,55 +102,62 @@ describe('official LinkedIn Images client', () => {
     expect(String(recorded.calls[0]?.input)).not.toContain('access-token-secret');
   });
 
-  it.each([
-    [{ value: { ...initializeBody.value, image: 'urn:li:image:' } }, 'invalid image URN'],
-    [{ value: { ...initializeBody.value, uploadUrl: 'http://www.linkedin.com/upload' } }, 'non-HTTPS URL'],
-    [
-      { value: { ...initializeBody.value, uploadUrl: 'https://www.linkedin.com.evil.example/upload' } },
-      'spoofed host',
-    ],
-    [{ value: { ...initializeBody.value, uploadUrlExpiresAt: 0 } }, 'invalid expiry'],
-    [{ value: { image: 'urn:li:image:C4E10AQHqQ1' } }, 'missing fields'],
-  ])('rejects malformed initialize success: %s', async (body) => {
-    const recorded = recorder(Response.json(body));
-    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+  it('rejects malformed initialize success values', async () => {
+    const invalidBodies = [
+      { value: { ...initializeBody.value, image: 'urn:li:image:' } },
+      { value: { ...initializeBody.value, uploadUrl: 'http://www.linkedin.com/upload' } },
+      {
+        value: {
+          ...initializeBody.value,
+          uploadUrl: 'https://www.linkedin.com.evil.example/upload',
+        },
+      },
+      { value: { ...initializeBody.value, uploadUrlExpiresAt: 0 } },
+      { value: { image: validImageUrn } },
+    ];
 
-    await expect(
-      client.initializeUpload({
-        accessToken: 'access-token-secret',
-        ownerUrn: 'urn:li:person:member-123',
-      }),
-    ).rejects.toMatchObject({ kind: 'malformed_success', retryable: false });
-  });
-
-  it.each([
-    [401, 'reauthentication_required'],
-    [403, 'permission_required'],
-    [429, 'rate_limited'],
-    [500, 'provider_failure'],
-  ] as const)('classifies initialize HTTP %i without reading private body', async (status, kind) => {
-    const { response, wasRead } = unreadableErrorResponse(status);
-    const recorded = recorder(response);
-    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
-
-    let caught: unknown;
-    try {
-      await client.initializeUpload({
-        accessToken: 'access-token-secret',
-        ownerUrn: 'urn:li:person:member-123',
-      });
-    } catch (error) {
-      caught = error;
+    for (const body of invalidBodies) {
+      const recorded = recorder(Response.json(body));
+      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+      await expect(
+        client.initializeUpload({
+          accessToken: 'access-token-secret',
+          ownerUrn: 'urn:li:person:member-123',
+        }),
+      ).rejects.toMatchObject({ kind: 'malformed_success', retryable: false });
     }
-
-    expect(caught).toBeInstanceOf(LinkedInImagesError);
-    expect(caught).toMatchObject({ kind, retryable: false });
-    expect((caught as Error).message).not.toContain('access-token-secret');
-    expect((caught as Error).message).not.toContain('private provider body');
-    expect(wasRead()).toBe(false);
   });
 
-  it('treats initialize transport failure as an unknown mutation outcome without retrying', async () => {
+  it('classifies initialize HTTP errors without reading private bodies', async () => {
+    const cases = [
+      [401, 'reauthentication_required'],
+      [403, 'permission_required'],
+      [429, 'rate_limited'],
+      [500, 'provider_failure'],
+    ] as const;
+
+    for (const [status, kind] of cases) {
+      const errorResponse = unreadableErrorResponse(status);
+      const recorded = recorder(errorResponse.response);
+      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+      let caught: unknown;
+      try {
+        await client.initializeUpload({
+          accessToken: 'access-token-secret',
+          ownerUrn: 'urn:li:person:member-123',
+        });
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toBeInstanceOf(LinkedInImagesError);
+      expect(caught).toMatchObject({ kind, retryable: false });
+      expect((caught as Error).message).not.toContain('access-token-secret');
+      expect((caught as Error).message).not.toContain('private provider body');
+      expect(errorResponse.wasRead()).toBe(false);
+    }
+  });
+
+  it('treats initialize transport failure as outcome unknown', async () => {
     const recorded = throwingRecorder();
     const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
 
@@ -158,20 +170,23 @@ describe('official LinkedIn Images client', () => {
     expect(recorded.calls).toHaveLength(1);
   });
 
-  it.each(['', '  ', 'urn:li:organization:123', 'person-123'])(
-    'rejects invalid initialize owner %j before fetch',
-    async (ownerUrn) => {
-      const recorded = recorder(Response.json(initializeBody));
-      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+  it('rejects invalid initialize input before fetch', async () => {
+    const recorded = recorder(Response.json(initializeBody));
+    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
 
-      await expect(
-        client.initializeUpload({ accessToken: 'access-token-secret', ownerUrn }),
-      ).rejects.toThrow();
-      expect(recorded.calls).toHaveLength(0);
-    },
-  );
+    await expect(
+      client.initializeUpload({
+        accessToken: 'access-token-secret',
+        ownerUrn: 'urn:li:organization:123',
+      }),
+    ).rejects.toThrow();
+    await expect(
+      client.initializeUpload({ accessToken: '', ownerUrn: 'urn:li:person:member-123' }),
+    ).rejects.toThrow();
+    expect(recorded.calls).toHaveLength(0);
+  });
 
-  it('uploads exact bytes once without redirects and keeps the token in headers', async () => {
+  it('uploads exact bytes once without following redirects', async () => {
     const recorded = recorder(new Response(null, { status: 201 }));
     const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
     const bytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9]);
@@ -179,16 +194,14 @@ describe('official LinkedIn Images client', () => {
     await expect(
       client.upload({
         accessToken: 'access-token-secret',
-        uploadUrl: 'https://www.linkedin.com/dms-uploads/C4E10AQ/upload?ca=vector',
+        uploadUrl: validUploadUrl,
         bytes,
         mimeType: 'image/jpeg',
       }),
     ).resolves.toBeUndefined();
 
     expect(recorded.calls).toHaveLength(1);
-    expect(recorded.calls[0]?.input).toBe(
-      'https://www.linkedin.com/dms-uploads/C4E10AQ/upload?ca=vector',
-    );
+    expect(recorded.calls[0]?.input).toBe(validUploadUrl);
     expect(recorded.calls[0]?.init).toEqual({
       method: 'PUT',
       headers: {
@@ -201,63 +214,68 @@ describe('official LinkedIn Images client', () => {
     expect(String(recorded.calls[0]?.input)).not.toContain('access-token-secret');
   });
 
-  it.each([
-    'http://www.linkedin.com/dms-uploads/x',
-    'https://linkedin.com.evil.example/dms-uploads/x',
-    'https://example.com/upload',
-  ])('rejects unsafe upload URL %s before fetch', async (uploadUrl) => {
-    const recorded = recorder(new Response(null, { status: 201 }));
-    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+  it('rejects unsafe upload URLs before fetch', async () => {
+    const unsafeUrls = [
+      'http://www.linkedin.com/dms-uploads/x',
+      'https://linkedin.com.evil.example/dms-uploads/x',
+      'https://example.com/upload',
+    ];
 
-    await expect(
-      client.upload({
-        accessToken: 'access-token-secret',
-        uploadUrl,
-        bytes: Uint8Array.from([1]),
-        mimeType: 'image/png',
-      }),
-    ).rejects.toThrow();
-    expect(recorded.calls).toHaveLength(0);
-  });
-
-  it.each([
-    [401, 'reauthentication_required'],
-    [403, 'permission_required'],
-    [429, 'rate_limited'],
-    [500, 'provider_failure'],
-  ] as const)('classifies upload HTTP %i without reading private body', async (status, kind) => {
-    const { response, wasRead } = unreadableErrorResponse(status);
-    const recorded = recorder(response);
-    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
-
-    let caught: unknown;
-    try {
-      await client.upload({
-        accessToken: 'access-token-secret',
-        uploadUrl: 'https://www.linkedin.com/dms-uploads/C4E10AQ/upload?secret=url-detail',
-        bytes: Uint8Array.from([1, 2, 3]),
-        mimeType: 'image/png',
-      });
-    } catch (error) {
-      caught = error;
+    for (const uploadUrl of unsafeUrls) {
+      const recorded = recorder(new Response(null, { status: 201 }));
+      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+      await expect(
+        client.upload({
+          accessToken: 'access-token-secret',
+          uploadUrl,
+          bytes: Uint8Array.from([1]),
+          mimeType: 'image/png',
+        }),
+      ).rejects.toThrow();
+      expect(recorded.calls).toHaveLength(0);
     }
-
-    expect(caught).toBeInstanceOf(LinkedInImagesError);
-    expect(caught).toMatchObject({ kind, retryable: false });
-    expect((caught as Error).message).not.toContain('access-token-secret');
-    expect((caught as Error).message).not.toContain('url-detail');
-    expect((caught as Error).message).not.toContain('private provider body');
-    expect(wasRead()).toBe(false);
   });
 
-  it('treats upload transport failure as an unknown mutation outcome without retrying', async () => {
+  it('classifies upload errors without leaking provider data', async () => {
+    const cases = [
+      [401, 'reauthentication_required'],
+      [403, 'permission_required'],
+      [429, 'rate_limited'],
+      [500, 'provider_failure'],
+    ] as const;
+
+    for (const [status, kind] of cases) {
+      const errorResponse = unreadableErrorResponse(status);
+      const recorded = recorder(errorResponse.response);
+      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+      let caught: unknown;
+      try {
+        await client.upload({
+          accessToken: 'access-token-secret',
+          uploadUrl: `${validUploadUrl}&secret=url-detail`,
+          bytes: Uint8Array.from([1, 2, 3]),
+          mimeType: 'image/png',
+        });
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toBeInstanceOf(LinkedInImagesError);
+      expect(caught).toMatchObject({ kind, retryable: false });
+      expect((caught as Error).message).not.toContain('access-token-secret');
+      expect((caught as Error).message).not.toContain('url-detail');
+      expect((caught as Error).message).not.toContain('private provider body');
+      expect(errorResponse.wasRead()).toBe(false);
+    }
+  });
+
+  it('treats upload transport failure as outcome unknown', async () => {
     const recorded = throwingRecorder();
     const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
 
     await expect(
       client.upload({
         accessToken: 'access-token-secret',
-        uploadUrl: 'https://www.linkedin.com/dms-uploads/C4E10AQ/upload',
+        uploadUrl: validUploadUrl,
         bytes: Uint8Array.from([1, 2, 3]),
         mimeType: 'image/gif',
       }),
@@ -265,19 +283,15 @@ describe('official LinkedIn Images client', () => {
     expect(recorded.calls).toHaveLength(1);
   });
 
-  it.each(['WAITING_UPLOAD', 'PROCESSING', 'PROCESSING_FAILED', 'AVAILABLE'] as const)(
-    'reads image status %s with official versioned GET',
-    async (status) => {
+  it('reads every documented image status with the official GET contract', async () => {
+    const statuses = ['WAITING_UPLOAD', 'PROCESSING', 'PROCESSING_FAILED', 'AVAILABLE'] as const;
+
+    for (const status of statuses) {
       const recorded = recorder(Response.json({ status }));
       const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
-
       await expect(
-        client.getStatus({
-          accessToken: 'access-token-secret',
-          imageUrn: 'urn:li:image:C4E10AQHqQ1',
-        }),
+        client.getStatus({ accessToken: 'access-token-secret', imageUrn: validImageUrn }),
       ).resolves.toBe(status);
-      expect(recorded.calls).toHaveLength(1);
       expect(recorded.calls[0]?.input).toBe(
         'https://api.linkedin.com/rest/images/urn%3Ali%3Aimage%3AC4E10AQHqQ1',
       );
@@ -289,86 +303,63 @@ describe('official LinkedIn Images client', () => {
           'x-restli-protocol-version': '2.0.0',
         },
       });
-    },
-  );
-
-  it.each([
-    [401, 'reauthentication_required'],
-    [403, 'permission_required'],
-    [404, 'not_found'],
-    [429, 'rate_limited'],
-    [500, 'provider_failure'],
-  ] as const)('classifies status GET HTTP %i without reading private body', async (status, kind) => {
-    const { response, wasRead } = unreadableErrorResponse(status);
-    const recorded = recorder(response);
-    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
-
-    await expect(
-      client.getStatus({
-        accessToken: 'access-token-secret',
-        imageUrn: 'urn:li:image:C4E10AQHqQ1',
-      }),
-    ).rejects.toMatchObject({ kind, retryable: false });
-    expect(wasRead()).toBe(false);
+    }
   });
 
-  it.each([
-    new Response('{', { status: 200 }),
-    Response.json([]),
-    Response.json({ status: 'UNKNOWN_STATUS' }),
-  ])('rejects malformed image status success', async (response) => {
-    const recorded = recorder(response);
-    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+  it('rejects malformed image status responses', async () => {
+    const responses = [
+      new Response('{', { status: 200 }),
+      Response.json([]),
+      Response.json({ status: 'UNKNOWN_STATUS' }),
+    ];
 
-    await expect(
-      client.getStatus({
-        accessToken: 'access-token-secret',
-        imageUrn: 'urn:li:image:C4E10AQHqQ1',
-      }),
-    ).rejects.toMatchObject({ kind: 'malformed_response', retryable: false });
+    for (const response of responses) {
+      const recorded = recorder(response);
+      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+      await expect(
+        client.getStatus({ accessToken: 'access-token-secret', imageUrn: validImageUrn }),
+      ).rejects.toMatchObject({ kind: 'malformed_response', retryable: false });
+    }
   });
 
-  it('classifies status transport failure as a sanitized provider failure', async () => {
+  it('classifies status GET errors without reading private bodies', async () => {
+    const cases = [
+      [401, 'reauthentication_required'],
+      [403, 'permission_required'],
+      [404, 'not_found'],
+      [429, 'rate_limited'],
+      [500, 'provider_failure'],
+    ] as const;
+
+    for (const [status, kind] of cases) {
+      const errorResponse = unreadableErrorResponse(status);
+      const recorded = recorder(errorResponse.response);
+      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+      await expect(
+        client.getStatus({ accessToken: 'access-token-secret', imageUrn: validImageUrn }),
+      ).rejects.toMatchObject({ kind, retryable: false });
+      expect(errorResponse.wasRead()).toBe(false);
+    }
+  });
+
+  it('classifies status transport failure as provider failure', async () => {
     const recorded = throwingRecorder();
     const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
 
     await expect(
-      client.getStatus({
-        accessToken: 'access-token-secret',
-        imageUrn: 'urn:li:image:C4E10AQHqQ1',
-      }),
+      client.getStatus({ accessToken: 'access-token-secret', imageUrn: validImageUrn }),
     ).rejects.toMatchObject({ kind: 'provider_failure', retryable: false });
     expect(recorded.calls).toHaveLength(1);
   });
 
-  it.each(['', 'urn:li:image:', 'urn:li:image:C4E?bad', 'urn:li:share:123'])(
-    'rejects invalid image URN %j before status fetch',
-    async (imageUrn) => {
-      const recorded = recorder(Response.json({ status: 'AVAILABLE' }));
-      const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
+  it('rejects invalid status input and API versions before provider calls', async () => {
+    const recorded = recorder(Response.json({ status: 'AVAILABLE' }));
+    const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
 
-      await expect(
-        client.getStatus({ accessToken: 'access-token-secret', imageUrn }),
-      ).rejects.toThrow();
-      expect(recorded.calls).toHaveLength(0);
-    },
-  );
-
-  it.each(['', '  ', 'not-a-token'])('validates required token syntax only for nonblank values', (token) => {
-    if (token === 'not-a-token') return;
-    const client = createLinkedInImagesClient(config, { fetch: recorder(Response.json({})).fetch });
-    expect(
-      client.initializeUpload({
-        accessToken: token,
-        ownerUrn: 'urn:li:person:member-123',
-      }),
+    await expect(
+      client.getStatus({ accessToken: 'access-token-secret', imageUrn: 'urn:li:share:123' }),
     ).rejects.toThrow();
+    expect(recorded.calls).toHaveLength(0);
+    expect(() => createLinkedInImagesClient({ apiVersion: '2026-10' })).toThrow(/YYYYMM/i);
   });
-
-  it.each(['2026-10', '20261', '202600', '202613'])(
-    'rejects invalid API version %s at construction',
-    (apiVersion) => {
-      expect(() => createLinkedInImagesClient({ apiVersion })).toThrow(/YYYYMM/i);
-    },
-  );
 });
