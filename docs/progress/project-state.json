@@ -1,17 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M03",
-  "currentIteration": "M03.2",
+  "currentIteration": "M03.3",
   "status": "ACTIVE",
   "activeBranch": "feat/m03-media-publishing",
   "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "875efabef785c5e36cd2b725072643d63cbf0e7f",
-  "ciStatus": "RED_INTENDED_fcc5bf8faf43e7c3763a26acbf201dc7292014bc_RUN_37925688859_FORMAT_PASS_BEHAVIORAL_TESTS_FAIL",
+  "latestVerifiedSha": "16d6fa2ffd6088d8973001fece18c2d5ab331ebd",
+  "ciStatus": "GREEN_16d6fa2ffd6088d8973001fece18c2d5ab331ebd_RUN_37964060504_346_TESTS_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [
-    "M03.2 configuration Contents API and Git blob writes rejected by connector safety checks on 2026-10-09; no implementation pushed. Superpowers skill unavailable."
-  ],
-  "exactNextWork": "Implement M03.2 media-root config and bounded JPEG/PNG/GIF reader in PR #4 after rechecking remote head, then obtain exact-head GREEN CI."
+  "blockers": [],
+  "exactNextWork": "Write M03.3 failing tests for the official LinkedIn Images adapter on PR #4, verify intended exact-head RED, then implement the minimum safe adapter."
 }
