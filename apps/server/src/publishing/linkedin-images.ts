@@ -214,6 +214,7 @@ export function createLinkedInImagesClient(
 
     async upload(input) {
       validateUploadInput(input);
+      const uploadBytes = Uint8Array.from(input.bytes);
 
       let response: Response;
       try {
@@ -223,7 +224,7 @@ export function createLinkedInImagesClient(
             authorization: `Bearer ${input.accessToken}`,
             'content-type': input.mimeType,
           },
-          body: input.bytes,
+          body: uploadBytes,
           redirect: 'error',
         });
       } catch {
