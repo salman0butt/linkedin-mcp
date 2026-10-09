@@ -130,7 +130,7 @@ function validateCommonPostFields(record: Record<string, unknown>): {
   return {
     text: record.text,
     visibility: (record.visibility as TextPostVisibility | undefined) ?? 'PUBLIC',
-    disableReshare: (record.disableReshare as boolean | undefined) ?? false,
+    disableReshare: record.disableReshare ?? false,
   };
 }
 
