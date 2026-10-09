@@ -77,24 +77,25 @@ describe('MediaFileReader', () => {
     });
   });
 
-  it.each([
-    '',
-    '.',
-    '..',
-    '../escape.png',
-    'nested/../photo.png',
-    'nested//photo.png',
-    'a\\b.png',
-    'a\0b.png',
-    '/etc/passwd',
-  ])(
-    'rejects unsafe source path %j',
-    async (path) => {
-      await expect(new MediaFileReader({ root }).read(path)).rejects.toMatchObject({
+  it('rejects unsafe source paths', async () => {
+    const unsafePaths = [
+      '',
+      '.',
+      '..',
+      '../escape.png',
+      'nested/../photo.png',
+      'nested//photo.png',
+      'a\\b.png',
+      'a\0b.png',
+      '/etc/passwd',
+    ];
+    const reader = new MediaFileReader({ root });
+    for (const path of unsafePaths) {
+      await expect(reader.read(path)).rejects.toMatchObject({
         code: 'media_path_invalid',
       });
-    },
-  );
+    }
+  });
 
   it('rejects symlinks, including final links and directory escapes', async () => {
     await writeFile(join(root, 'real.png'), png());
