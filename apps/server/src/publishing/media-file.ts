@@ -87,11 +87,7 @@ function validateRelativePath(sourcePath: string): string[] {
 }
 
 function validateDimensions(width: number, height: number): void {
-  if (
-    width <= 0 ||
-    height <= 0 ||
-    BigInt(width) * BigInt(height) >= MAX_PIXEL_COUNT
-  ) {
+  if (width <= 0 || height <= 0 || BigInt(width) * BigInt(height) >= MAX_PIXEL_COUNT) {
     fail('media_dimensions_invalid', 'Media dimensions are outside the local safety bounds');
   }
 }
@@ -203,10 +199,7 @@ function parseImage(bytes: Buffer): ParsedImage {
   if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xd8) {
     return parseJpeg(bytes);
   }
-  if (
-    bytes.length >= 6 &&
-    (bytes.subarray(0, 6).equals(GIF87A) || bytes.subarray(0, 6).equals(GIF89A))
-  ) {
+  if (bytes.length >= 6 && (bytes.subarray(0, 6).equals(GIF87A) || bytes.subarray(0, 6).equals(GIF89A))) {
     return parseGif(bytes);
   }
   fail('media_type_unsupported', 'Media type is not supported');
