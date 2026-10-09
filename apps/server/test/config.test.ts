@@ -27,6 +27,7 @@ describe('parseConfig', () => {
       requestBodyLimitBytes: 1_048_576,
       publishingApprovalTtlMs: 300_000,
       memberPostReadEnabled: false,
+      mediaMaxBytes: 20 * 1_048_576,
     });
   });
 
