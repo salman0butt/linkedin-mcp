@@ -1,23 +1,36 @@
 # Current Milestone
 
-Milestone: M01 — Authentication & Identity
-Status: ACTIVE — M01.8 closeout; deterministic implementation reviewed
-Iteration: M01.8
-Branch: `feat/m01-auth-identity`
-PR: #2 — draft pending exact-final-head gate
-Design: `docs/superpowers/specs/2026-10-06-m01-auth-identity-design.md`
-Plan: `docs/superpowers/plans/2026-10-06-m01-auth-identity.md`
-Ledger: `docs/milestones/M01-auth-identity.md`
-Closeout evidence: `docs/superpowers/evidence/2026-10-06-m01-auth-identity-closeout.md`
+Milestone: M02 — Text Publishing
+Status: ACTIVE — M02.7 closeout; whole-milestone review clear, final closeout-head CI pending
+Iteration: M02.7
+Branch: `feat/m02-text-publishing`
+PR: #3 — draft
+Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`
+Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`
+Ledger: `docs/milestones/M02-text-publishing.md`
 
 ## Recovery
 
-M00 merged at `dde9bde5b136b0c352a864fadce08f02cab32938`; push CI `37469308840` GREEN.
+M01 merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge main CI `37739373991` passed format, tests, lint, typecheck and build.
 
-M01 closeout is verified through `aa1c81397aeb67361afec8fa353dbe62be6fe3ed`, CI `37739092014`: 105/105 tests, format, lint, typecheck and build all green, including built stdio/HTTP auth contracts and autonomous-framework ledger verification.
+M02.1 through M02.4 retain their recorded RED/GREEN evidence in the milestone ledger and committed Superpowers evidence.
 
-M01.8 self-review resolved three Important findings through RED→GREEN: structured MCP auth errors (`01ff034b`→`40f770e8`), real transport AuthService wiring (`2bf25ed0`→`80f5d33e`), and structured logout-cleanup failure (`4a978e6f`→`917e07a9`). Zero Critical/Important findings remain open.
+M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842` is green after orchestration review fixes.
 
-`profile.me` remains OFFICIAL_API / ACTIVE / UNAVAILABLE in the static matrix. Live LinkedIn availability was not verified because this environment has no configured LinkedIn developer application/member credentials/product access. Native PKCE and programmatic refresh remain access-dependent.
+M02.6 exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` is green after downstream-verification review fixes.
 
-Exact next work: verify exact-final-head CI on the durable-state reconciliation commit, then merge PR #2 if all merge gates remain satisfied.
+Task 7 exact checkpoint `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` is green. GitHub Actions completed frozen install, format, tests, lint, typecheck and build. The preceding local checkpoint passed 319 tests across 31 files including built stdio and real HTTP smokes. No live LinkedIn request occurred.
+
+## M02.7 Closeout Review
+
+Whole-milestone skeptical/security review completed on 2026-10-09. Unresolved Critical findings: 0. Unresolved Important findings: 0. Blocking review threads: 0.
+
+The review re-checked approval payload/subject binding, raw-key/member binding, cross-process reservation locking, restart replay, caller mutation, auth-refresh/invalidation races, one-POST semantics, provider uncertainty, secret-safe errors, strict MCP inputs, shared runtime state, optional read verification and provider provenance.
+
+The design's success contract is a provider-returned valid post URN plus explicit verification state. No post URL is constructed or represented as verified. Live `post.create.text` availability remains UNAVAILABLE until legitimate configured provider evidence exists.
+
+## Remaining Merge Gate
+
+The closeout documentation commit must receive exact-head green CI. Before merge, re-check PR head/base, mergeability, reviews/threads and concurrent work. If those gates remain clear, mark PR #3 ready and squash-merge under the repository policy, then verify post-merge `main` CI before activating M03.
+
+Exact next work: **Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main.**

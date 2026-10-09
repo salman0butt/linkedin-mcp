@@ -44,6 +44,16 @@ function connectedAuthService(): AuthService {
         emailVerified: true,
       });
     },
+    getProviderContext() {
+      return Promise.resolve({
+        accessToken: 'internal-test-access-token',
+        subject: 'member-123',
+        scopes: ['openid', 'profile'],
+      });
+    },
+    markReauthRequired() {
+      return Promise.resolve();
+    },
     logout() {
       return Promise.resolve({
         localCredentialsCleared: true,

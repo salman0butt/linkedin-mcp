@@ -1,10 +1,10 @@
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 
-import { createAuthService } from './auth/auth-service.js';
 import { parseConfig } from './config.js';
 import { createLinkedInMcpServer } from './create-server.js';
+import { createLinkedInRuntime } from './runtime.js';
 
 const config = parseConfig();
-const authService = createAuthService(config.auth === undefined ? {} : { config: config.auth });
+const runtime = createLinkedInRuntime(config);
 
-serveStdio(() => createLinkedInMcpServer({ authService, version: config.serverVersion }));
+serveStdio(() => createLinkedInMcpServer(runtime));

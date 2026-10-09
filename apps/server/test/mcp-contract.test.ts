@@ -147,7 +147,7 @@ describe('LinkedIn MCP server contract', () => {
     }
   });
 
-  it('advertises exactly the three M00 tools with input and output schemas', async () => {
+  it('advertises the three M00 tools and all three text-post tools before authentication is configured', async () => {
     const handler = createMcpHandler(() => createLinkedInMcpServer({ version: '1.2.3' }));
     const transport = new StreamableHTTPClientTransport(new URL('http://test.local/mcp'), {
       fetch: (url, init) => handler.fetch(new Request(url, init)),
@@ -161,6 +161,9 @@ describe('LinkedIn MCP server contract', () => {
       expect(tools.map((tool) => tool.name).sort()).toEqual([
         'linkedin.capabilities',
         'linkedin.health',
+        'linkedin.post.approve.text',
+        'linkedin.post.create.text',
+        'linkedin.post.preview.text',
         'linkedin.version',
       ]);
       for (const tool of tools) {

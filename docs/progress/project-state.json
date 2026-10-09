@@ -1,17 +1,15 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M01",
-  "currentIteration": "M01.8",
+  "currentMilestone": "M02",
+  "currentIteration": "M02.7",
   "status": "ACTIVE",
-  "activeBranch": "feat/m01-auth-identity",
-  "activePr": 2,
+  "activeBranch": "feat/m02-text-publishing",
+  "activePr": 3,
   "baseBranch": "main",
-  "latestVerifiedSha": "aa1c81397aeb67361afec8fa353dbe62be6fe3ed",
-  "ciStatus": "GREEN_PRE_FINAL_STATE_RECONCILIATION",
+  "latestVerifiedSha": "1986831bf58fdd48ea5b0da64109898a768bd937",
+  "ciStatus": "GREEN_EXACT_HEAD_37838015911_INSTALL_FORMAT_TEST_LINT_TYPECHECK_BUILD",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [
-    "Live LinkedIn availability verification is externally blocked in CI because no configured LinkedIn developer application/member credentials/product access are present; profile.me therefore remains ACTIVE/UNAVAILABLE rather than VERIFIED."
-  ],
-  "exactNextWork": "Verify exact-final-head CI on the durable-state reconciliation commit, then merge PR #2 if all merge gates remain satisfied."
+  "blockers": [],
+  "exactNextWork": "Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main."
 }

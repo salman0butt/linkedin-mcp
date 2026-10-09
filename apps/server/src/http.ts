@@ -2,14 +2,15 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 
 import { createMcpHandler } from '@modelcontextprotocol/server';
 
-import { createAuthService } from './auth/auth-service.js';
 import { parseConfig } from './config.js';
 import { createLinkedInMcpServer } from './create-server.js';
+import { createLinkedInRuntime, type LinkedInRuntime } from './runtime.js';
 
 export interface HttpServerOptions {
   host?: string;
   port?: number;
   requestBodyLimitBytes?: number;
+  runtime?: LinkedInRuntime;
 }
 
 export interface RunningHttpServer {
@@ -142,10 +143,8 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
   const port = options.port ?? 3000;
   const requestBodyLimitBytes = options.requestBodyLimitBytes ?? DEFAULT_REQUEST_BODY_LIMIT_BYTES;
   const config = parseConfig();
-  const authService = createAuthService(config.auth === undefined ? {} : { config: config.auth });
-  const handler = createMcpHandler(() =>
-    createLinkedInMcpServer({ authService, version: config.serverVersion }),
-  );
+  const runtime = options.runtime ?? createLinkedInRuntime(config);
+  const handler = createMcpHandler(() => createLinkedInMcpServer(runtime));
 
   const server = createServer((request, response) => {
     if (

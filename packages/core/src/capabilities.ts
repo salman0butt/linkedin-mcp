@@ -95,9 +95,11 @@ const descriptors: CapabilityDescriptor[] = [
     provider: 'OFFICIAL_API',
     availability: 'UNAVAILABLE',
     milestone: 'M02',
-    status: 'PLANNED',
+    status: 'ACTIVE',
     accessNote: 'Requires authenticated publishing permission.',
     approvalRequired: true,
+    evidence:
+      'M02.1 canonical preview and payload identity are CI-verified; live Posts API publication remains unverified.',
   },
   {
     id: 'post.create.image',

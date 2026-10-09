@@ -1,47 +1,58 @@
 # Project Status
 
-Last reconciled: 2026-10-07. Actual Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-09. Actual Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M01 — Authentication & Identity — **ACTIVE, M01.8 closeout**.
+M02 — Text Publishing — **ACTIVE, M02.7 closeout**.
 
-Active branch: `feat/m01-auth-identity`.
-Active PR: #2 — `Build M01 authentication and identity` (draft until final-head gates pass).
-Latest verified closeout SHA: `aa1c81397aeb67361afec8fa353dbe62be6fe3ed`.
-Latest verified CI: `37739092014` — frozen install, format, 105/105 tests across 23 files, lint, typecheck and build passed, including real stdio/HTTP auth smokes and autonomous-framework ledger verification.
-Verified base `main`: `dde9bde5b136b0c352a864fadce08f02cab32938`; post-M00 CI `37469308840` GREEN.
-Critical findings: 0 unresolved.
-Important findings: 0 unresolved.
+Active branch: `feat/m02-text-publishing`.
+Active PR: #3 — draft pending final closeout-head CI.
+Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`.
+Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`.
 
-## M01 Implementation Summary
+## Verified M02 Checkpoints
 
-- M01.2 auth configuration/contracts: GREEN `30ec5b4ac6d867b7cd50b7f2e2d7e7ad007386bc`, CI `37482919464`.
-- M01.3 OAuth session/callback: reviewed GREEN `9035cebcaba485429d77efd0c487de811296051e`, CI `37585523117`.
-- M01.4 encrypted credential store: reviewed GREEN `9fcb2c8cf1e18df72217affe0f854fc798303e65`, CI `37588029054`.
-- M01.5 official OAuth adapter: GREEN `faedaf2f53b3b7f000bc702650421c2e348b057a`, CI `37593107489`.
-- M01.6 OIDC userinfo identity: GREEN `e9f138d4286dd99eab64bd1170132c4a69b57a1c`, CI `37612551536`.
-- M01.7 lifecycle/callback integration: lifecycle GREEN `aa6e09b141366fe5e6d1804c6013096be2dccbcb`, CI `37615170527`; callback review RED `8a044af98a38c7f182012cbf77426c91493bd564`, CI `37615537027`, then reviewed GREEN `bc880dc9fe3435b0bec2f9d9444163d5edbc9695`, CI `37616331784`.
-- M01.7 MCP integration: RED `e030911064acde6f69bf1cc341dd141127c89406`, CI `37623309357`; GREEN `5d2aea6425d7c9398a853edcc7ae018002b70d2a`, CI `37656151910`.
+M02.1 canonical text-post contracts: RED `7c193f9adb8049a5849c603a5c5e29bea69ef59d` / CI `37753499633`; GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07` / CI `37753956032`.
 
-## M01.8 Skeptical / Security Review
+M02.2 approval receipts: RED `7b55eb7a09f7010acffd6ba5a6c928b99099f472` / CI `37754698723`; GREEN `5f1870106988c6b5ab365df275a8b3a314c60aa5` / CI `37754858404`.
 
-Self-review was required because this session has no subagent reviewer tool. Three Important integration findings were identified and resolved with genuine regression RED→GREEN cycles:
+M02.3 persistent idempotency: valid RED `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a` / CI `37755801316`; GREEN `c88ae5b909888e796880f0193299cd21e1246648` / CI `37756724053`.
 
-1. MCP auth failures/statuses were not mapped into explicit ToolResult states. RED `01ff034b81584d7d53a07aaa064408f6b416b27b`, CI `37657296785`; GREEN `40f770e8d48a97564066efd3f19981c25fb9e538`, CI `37657621857`.
-2. Built stdio/HTTP entrypoints did not inject AuthService, so auth tools existed only in injected tests. RED `2bf25ed01cefc91479dae27fbdd21ccaa472b948`, CI `37657889533`; GREEN `80f5d33e4ad4f7ab1fc37cade4ad8be9eff58344`, CI `37658194001`.
-3. Local credential cleanup failure during logout escaped the structured MCP result boundary. RED `4a978e6f2076886f759de038c04d589455c367c5`, CI `37658686972`; GREEN `917e07a950f7732a4315daebd8d7d9e7af266a12`, CI `37658914319`.
+M02.4 official Posts adapter: valid RED `7817938bb2efcdc577d04c00b5b8625216ad6d29` / CI `37762083892`; GREEN `90267d9e27bbef705e93b9ec8250548ae815b7ce` / CI `37762622471`.
 
-Review focus covered state replay/expiry, loopback callback binding/path, PKCE mode correctness, encrypted credential tamper/wrong-key handling, downstream 401→reauth without retry loops, refresh entitlement truth, optional OIDC email claims, secret-safe provider errors, runtime transport wiring, capability provenance and local-only logout semantics. Zero Critical/Important findings remain open.
+M02.5 publish orchestration: exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842` green. Scoped Important findings were resolved; historical RED limitations remain explicitly qualified in the committed evidence.
 
-## Capability Truth / External Gate
+M02.6 downstream verification: exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` green. Creation success and optional read verification remain separate; read confirmation requires trusted enablement plus granted `r_member_social`.
 
-M01 deterministic implementation is verified. `profile.me` remains `OFFICIAL_API`, `ACTIVE`, and `UNAVAILABLE` in the static product matrix because no live configured LinkedIn developer app/member call was executed in CI. Native PKCE enablement and programmatic refresh remain access-dependent and are not claimed as universally available. Local logout never claims remote revocation.
+Task 7 MCP/runtime integration: exact head `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` green. GitHub Actions completed frozen install, format check, tests, lint, typecheck and build. The immediately preceding local checkpoint passed 319 tests across 31 files, including real stdio and loopback HTTP MCP smokes. No live LinkedIn request occurred.
 
-Ruling: OAuth `state` necessarily appears inside the opaque provider authorization URL sent to the user/browser; it is not returned as a separate MCP field and must never be logged or echoed in errors. Removing it from the authorization URL would break CSRF protection and the OAuth flow.
+## M02.7 Whole-Milestone Review
+
+A fresh skeptical/security closeout review on 2026-10-09 covered approval binding, caller-controlled fields, member-bound idempotency, process/restart races, credential invalidation, provider uncertainty, post-URN validation, optional read verification, MCP result sanitization, provenance and transport/runtime sharing.
+
+Unresolved Critical findings: **0**.
+Unresolved Important findings: **0**.
+Blocking review threads: **0**.
+
+The file ledger uses fail-closed exclusive sibling locks and atomic replacement, preventing independent ledger instances from both returning a new reservation. Approval is bound to canonical payload hash plus authenticated subject and one raw idempotency key. The mutation fingerprint includes authenticated author, successful replay performs no second POST, uncertain remote acceptance remains terminal `outcome_unknown`, and provider/admin credentials, author and read-policy controls are not caller-supplied MCP fields.
+
+The M02 design intentionally treats a valid provider-returned post URN as the authoritative creation identifier. It forbids constructing or claiming a verified LinkedIn post URL when the provider has not supplied one. Optional GET confirmation never downgrades durable creation success and does not upgrade live capability availability.
+
+Interactive local re-execution in this closeout session was unavailable because that runtime exposed Node 22 rather than the repository-required Node 24, had no pnpm, and could not resolve github.com. Those environment limitations are not counted as verification evidence; the exact-head GitHub Actions run above is authoritative.
+
+## Completed Milestones
+
+M01 — Authentication & Identity merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge CI `37739373991` passed the required quality gates.
+
+M00 foundation/control-plane remains verified from its post-merge main gate.
 
 ## Known Carryover
 
-The M00 private package-boundary debt remains Minor and deferred. GitHub Actions remains the authoritative exact-head verification environment in connector sessions.
+The M00 private package-boundary debt remains Minor and deferred. Live LinkedIn capability availability still depends on legitimate configured developer/member access and must not be inferred from deterministic tests.
 
-Exact next work: verify exact-final-head CI on the durable-state reconciliation commit, then merge PR #2 if all merge gates remain satisfied.
+## Handoff
+
+Critical findings: 0. Important findings: 0. Blockers: none.
+
+Exact next work: **Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main.**

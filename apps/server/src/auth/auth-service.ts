@@ -31,6 +31,9 @@ export type AuthServiceErrorKind =
   | 'not_configured'
   | 'disconnected'
   | 'reauth_required'
+  | 'authorization_pending'
+  | 'expired'
+  | 'permission_required'
   | 'rate_limited'
   | 'provider_failure';
 
@@ -76,6 +79,8 @@ export interface AuthService {
   getStatus(): Promise<AuthStatus>;
   completeAuthorization(code: ConsumedAuthorizationCode): Promise<AuthStatus>;
   getProfile(): Promise<AuthenticatedIdentity>;
+  getProviderContext(): Promise<{ accessToken: string; subject: string; scopes: string[] }>;
+  markReauthRequired(expected?: { accessToken: string; subject: string }): Promise<void>;
   logout(): Promise<LogoutResult>;
 }
 
@@ -200,6 +205,16 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
   let authorizationError = false;
   let callbackGeneration = 0;
   let activeListener: OAuthCallbackListener | null = null;
+  let credentialQueue: Promise<void> = Promise.resolve();
+
+  function serializeCredentials<T>(action: () => Promise<T>): Promise<T> {
+    const result = credentialQueue.then(action, action);
+    credentialQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  }
 
   function requireConfigured(): ConfiguredDeps {
     if (configured === null) throw new AuthServiceError('not_configured', false);
@@ -208,7 +223,11 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
 
   async function transitionToReauth(store: CredentialStore): Promise<never> {
     reauthRequired = true;
-    await store.clear();
+    try {
+      await store.clear();
+    } catch {
+      // The auth state is already marked locally; never expose credential-store errors.
+    }
     throw new AuthServiceError('reauth_required', false);
   }
 
@@ -224,40 +243,114 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
     current: ConfiguredDeps,
     code: ConsumedAuthorizationCode,
   ): Promise<AuthStatus> {
-    let token: LinkedInTokenResult;
-    try {
-      token = await current.oauth.exchangeAuthorizationCode(code);
-    } catch (error: unknown) {
-      throw mapOAuthError(error);
+    return serializeCredentials(async () => {
+      let token: LinkedInTokenResult;
+      try {
+        token = await current.oauth.exchangeAuthorizationCode(code);
+      } catch (error: unknown) {
+        throw mapOAuthError(error);
+      }
+
+      let identity: AuthenticatedIdentity;
+      try {
+        identity = await current.fetchIdentity(token.accessToken);
+      } catch (error: unknown) {
+        const mapped = mapIdentityError(error);
+        if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
+        throw mapped;
+      }
+
+      const currentTime = now();
+      const allowRefresh = current.config.mode === 'confidential';
+      const credential: StoredCredential = {
+        accessToken: token.accessToken,
+        ...(allowRefresh && token.refreshToken !== undefined ? { refreshToken: token.refreshToken } : {}),
+        expiresAt: addSeconds(currentTime, token.expiresInSeconds),
+        ...(allowRefresh && token.refreshTokenExpiresInSeconds !== undefined
+          ? { refreshExpiresAt: addSeconds(currentTime, token.refreshTokenExpiresInSeconds) }
+          : {}),
+        scopes: token.scopes.length === 0 ? [...code.scopes] : [...token.scopes],
+        subject: identity.sub,
+        mode: current.config.mode,
+      };
+
+      try {
+        await current.store.save(credential);
+      } catch {
+        throw new AuthServiceError('provider_failure', false);
+      }
+      reauthRequired = false;
+      authorizationError = false;
+      return statusForCredential(credential, currentTime);
+    });
+  }
+
+  async function getProviderContextWith(
+    current: ConfiguredDeps,
+  ): Promise<{ accessToken: string; subject: string; scopes: string[] }> {
+    if (reauthRequired) throw new AuthServiceError('reauth_required', false);
+    if (current.coordinator.peek() !== null) {
+      throw new AuthServiceError('authorization_pending', false);
     }
 
-    let identity: AuthenticatedIdentity;
-    try {
-      identity = await current.fetchIdentity(token.accessToken);
-    } catch (error: unknown) {
-      const mapped = mapIdentityError(error);
-      if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
-      throw mapped;
-    }
+    let credential = await loadCredential(current.store);
+    if (credential === null) throw new AuthServiceError('disconnected', false);
 
     const currentTime = now();
-    const allowRefresh = current.config.mode === 'confidential';
-    const credential: StoredCredential = {
-      accessToken: token.accessToken,
-      ...(allowRefresh && token.refreshToken !== undefined ? { refreshToken: token.refreshToken } : {}),
-      expiresAt: addSeconds(currentTime, token.expiresInSeconds),
-      ...(allowRefresh && token.refreshTokenExpiresInSeconds !== undefined
-        ? { refreshExpiresAt: addSeconds(currentTime, token.refreshTokenExpiresInSeconds) }
-        : {}),
-      scopes: token.scopes.length === 0 ? [...code.scopes] : [...token.scopes],
-      subject: identity.sub,
-      mode: current.config.mode,
-    };
+    if (isExpired(credential.expiresAt, currentTime)) {
+      if (!canRefresh(credential, currentTime)) {
+        reauthRequired = true;
+        throw new AuthServiceError('expired', false);
+      }
 
-    await current.store.save(credential);
-    reauthRequired = false;
-    authorizationError = false;
-    return statusForCredential(credential, currentTime);
+      let token: LinkedInTokenResult | null;
+      try {
+        token = await current.oauth.refreshAccessToken(credential.refreshToken);
+      } catch (error: unknown) {
+        const mapped = mapOAuthError(error);
+        if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
+        throw mapped;
+      }
+      if (token === null) return transitionToReauth(current.store);
+
+      credential = refreshedCredential(credential, token, currentTime);
+      try {
+        await current.store.save(credential);
+      } catch {
+        throw new AuthServiceError('provider_failure', false);
+      }
+    }
+
+    if (credential.subject === undefined || credential.subject.trim() === '') {
+      let identity: AuthenticatedIdentity;
+      try {
+        identity = await current.fetchIdentity(credential.accessToken);
+      } catch (error: unknown) {
+        const mapped = mapIdentityError(error);
+        if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
+        throw mapped;
+      }
+      if (typeof identity.sub !== 'string' || identity.sub.trim() === '') {
+        throw new AuthServiceError('provider_failure', false);
+      }
+      credential = { ...credential, subject: identity.sub };
+      try {
+        await current.store.save(credential);
+      } catch {
+        throw new AuthServiceError('provider_failure', false);
+      }
+    }
+
+    const subject = credential.subject;
+    if (subject === undefined || subject.trim() === '') {
+      throw new AuthServiceError('provider_failure', false);
+    }
+
+    return {
+      accessToken: credential.accessToken,
+      subject,
+      scopes: [...credential.scopes],
+    };
   }
 
   function safelyClose(listener: OAuthCallbackListener): void {
@@ -397,60 +490,99 @@ export function createAuthService(deps: AuthServiceDeps = {}): AuthService {
     },
 
     async getProfile() {
-      const current = requireConfigured();
-      if (reauthRequired) throw new AuthServiceError('reauth_required', false);
+      return serializeCredentials(async () => {
+        const current = requireConfigured();
+        if (reauthRequired) throw new AuthServiceError('reauth_required', false);
 
-      let credential = await loadCredential(current.store);
-      if (credential === null) throw new AuthServiceError('disconnected', false);
+        let credential = await loadCredential(current.store);
+        if (credential === null) throw new AuthServiceError('disconnected', false);
 
-      const currentTime = now();
-      if (isExpired(credential.expiresAt, currentTime)) {
-        if (!canRefresh(credential, currentTime)) {
-          reauthRequired = true;
-          throw new AuthServiceError('reauth_required', false);
+        const currentTime = now();
+        if (isExpired(credential.expiresAt, currentTime)) {
+          if (!canRefresh(credential, currentTime)) {
+            reauthRequired = true;
+            throw new AuthServiceError('reauth_required', false);
+          }
+
+          let token: LinkedInTokenResult | null;
+          try {
+            token = await current.oauth.refreshAccessToken(credential.refreshToken);
+          } catch (error: unknown) {
+            const mapped = mapOAuthError(error);
+            if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
+            throw mapped;
+          }
+
+          if (token === null) return transitionToReauth(current.store);
+          credential = refreshedCredential(credential, token, currentTime);
+          try {
+            await current.store.save(credential);
+          } catch {
+            throw new AuthServiceError('provider_failure', false);
+          }
         }
 
-        let token: LinkedInTokenResult | null;
         try {
-          token = await current.oauth.refreshAccessToken(credential.refreshToken);
+          return await current.fetchIdentity(credential.accessToken);
         } catch (error: unknown) {
-          const mapped = mapOAuthError(error);
+          const mapped = mapIdentityError(error);
           if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
           throw mapped;
         }
+      });
+    },
 
-        if (token === null) return transitionToReauth(current.store);
-        credential = refreshedCredential(credential, token, currentTime);
-        await current.store.save(credential);
-      }
+    async getProviderContext() {
+      return serializeCredentials(() => getProviderContextWith(requireConfigured()));
+    },
 
-      try {
-        return await current.fetchIdentity(credential.accessToken);
-      } catch (error: unknown) {
-        const mapped = mapIdentityError(error);
-        if (mapped.kind === 'reauth_required') return transitionToReauth(current.store);
-        throw mapped;
-      }
+    async markReauthRequired(expected) {
+      return serializeCredentials(async () => {
+        const current = requireConfigured();
+        if (expected !== undefined) {
+          const credential = await loadCredential(current.store);
+          if (
+            credential === null ||
+            credential.accessToken !== expected.accessToken ||
+            credential.subject !== expected.subject
+          ) {
+            return;
+          }
+        }
+
+        reauthRequired = true;
+        try {
+          await current.store.clear();
+        } catch {
+          throw new AuthServiceError('provider_failure', false);
+        }
+      });
     },
 
     async logout() {
-      reauthRequired = false;
-      authorizationError = false;
-      callbackGeneration += 1;
-      const listener = activeListener;
-      activeListener = null;
-      if (listener !== null) safelyClose(listener);
+      return serializeCredentials(async () => {
+        reauthRequired = false;
+        authorizationError = false;
+        callbackGeneration += 1;
+        const listener = activeListener;
+        activeListener = null;
+        if (listener !== null) safelyClose(listener);
 
-      if (configured !== null) {
-        configured.coordinator.cancel();
-        await configured.store.clear();
-      }
+        if (configured !== null) {
+          configured.coordinator.cancel();
+          try {
+            await configured.store.clear();
+          } catch {
+            throw new AuthServiceError('provider_failure', false);
+          }
+        }
 
-      return {
-        localCredentialsCleared: true,
-        remoteRevocation: 'not_claimed',
-        provider,
-      };
+        return {
+          localCredentialsCleared: true,
+          remoteRevocation: 'not_claimed',
+          provider,
+        };
+      });
     },
   };
 }

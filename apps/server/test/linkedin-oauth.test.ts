@@ -83,6 +83,33 @@ function formBody(call: FetchCall): URLSearchParams {
 }
 
 describe('official LinkedIn OAuth adapter', () => {
+  it('preserves an omitted token response scope for the authorized-scope fallback', async () => {
+    const recorder = createFetchRecorder(() =>
+      Response.json({ access_token: 'access-token-secret', expires_in: 3600 }),
+    );
+    const adapter = createLinkedInOAuthAdapter(config('confidential'), { fetch: recorder.fetch });
+
+    await expect(adapter.exchangeAuthorizationCode(consumed('confidential'))).resolves.toMatchObject({
+      scopes: [],
+    });
+  });
+
+  it.each([
+    ['empty', ''],
+    ['whitespace-only', '   \t'],
+    ['non-string', 12],
+  ])('rejects an explicitly present %s scope as a sanitized provider failure', async (_name, scope) => {
+    const recorder = createFetchRecorder(() =>
+      Response.json({ access_token: 'access-token-secret', expires_in: 3600, scope }),
+    );
+    const adapter = createLinkedInOAuthAdapter(config('confidential'), { fetch: recorder.fetch });
+
+    await expect(adapter.exchangeAuthorizationCode(consumed('confidential'))).rejects.toMatchObject({
+      kind: 'provider_failure',
+      retryable: false,
+    });
+  });
+
   it('builds the confidential authorization URL without PKCE or client secret material', () => {
     const adapter = createLinkedInOAuthAdapter(config('confidential'));
 
