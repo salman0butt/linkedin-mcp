@@ -1,7 +1,7 @@
 # Current Milestone
 
 Milestone: M02 — Text Publishing
-Status: ACTIVE — M02.7 skeptical/security closeout
+Status: ACTIVE — M02.7 closeout; whole-milestone review clear, final closeout-head CI pending
 Iteration: M02.7
 Branch: `feat/m02-text-publishing`
 PR: #3 — draft
@@ -11,34 +11,26 @@ Ledger: `docs/milestones/M02-text-publishing.md`
 
 ## Recovery
 
-M01 merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge main CI `37739373991` passed format, 105/105 tests, lint, typecheck and build.
+M01 merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge main CI `37739373991` passed format, tests, lint, typecheck and build.
 
-M02.1 RED `7c193f9adb8049a5849c603a5c5e29bea69ef59d` / CI `37753499633`; GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07` / CI `37753956032` with 111/111 tests plus format, lint, typecheck and build green.
+M02.1 through M02.4 retain their recorded RED/GREEN evidence in the milestone ledger and committed Superpowers evidence.
 
-M02.2 RED `7b55eb7a09f7010acffd6ba5a6c928b99099f472` / CI `37754698723`; GREEN `5f1870106988c6b5ab365df275a8b3a314c60aa5` / CI `37754858404` with 116/116 tests plus format, lint, typecheck and build green.
+M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842` is green after orchestration review fixes.
 
-M02.3 valid RED `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a` / CI `37755801316`; GREEN `c88ae5b909888e796880f0193299cd21e1246648` / CI `37756724053` with 123/123 tests plus format, lint, typecheck and build green.
+M02.6 exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` is green after downstream-verification review fixes.
 
-M02.4 valid RED `7817938bb2efcdc577d04c00b5b8625216ad6d29` / CI `37762083892`; GREEN `90267d9e27bbef705e93b9ec8250548ae815b7ce` / CI `37762622471` with 140/140 tests across 27 files plus format, lint, typecheck and build green. The official Posts adapter performs one `POST https://api.linkedin.com/rest/posts`, uses explicit API-version/Rest.li headers, requires a valid `x-restli-id`, sanitizes provider errors and preserves transport uncertainty as non-retryable `outcome_unknown`.
+Task 7 exact checkpoint `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` is green. GitHub Actions completed frozen install, format, tests, lint, typecheck and build. The preceding local checkpoint passed 319 tests across 31 files including built stdio and real HTTP smokes. No live LinkedIn request occurred.
 
-M02 uses the official LinkedIn Posts API for member text publishing, requires explicit approval plus idempotency before mutation, and treats downstream read verification as access-dependent. `post.create.text` remains live `UNAVAILABLE` until legitimate configured provider access is verified. Ordinary CI must never publish a real LinkedIn post.
+## M02.7 Closeout Review
 
-## M02.5 local checkpoint
+Whole-milestone skeptical/security review completed on 2026-10-09. Unresolved Critical findings: 0. Unresolved Important findings: 0. Blocking review threads: 0.
 
-Publish orchestration and safety review passed locally: 204 tests across 29 files, format, lint, typecheck and build. Both Important review findings and the Minor storage finding were addressed. Historical RED limits and the observed regression cycles are recorded in `docs/superpowers/evidence/2026-10-08-m02-publish-orchestration.md`. The subsequent exact pushed-head CI result is recorded below; no live LinkedIn write was performed.
+The review re-checked approval payload/subject binding, raw-key/member binding, cross-process reservation locking, restart replay, caller mutation, auth-refresh/invalidation races, one-POST semantics, provider uncertainty, secret-safe errors, strict MCP inputs, shared runtime state, optional read verification and provider provenance.
 
-M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6`, CI `37793478842`, is GREEN. Format, tests, lint, typecheck and build completed; local suite at this checkpoint passed 204 tests. All scoped review findings are addressed. GitHub API access recovered later in this run; fresh API reads confirm PR #3 remains the sole open milestone PR, with no reviews or review threads and a mergeable head. All final merge gates still require fresh checks.
+The design's success contract is a provider-returned valid post URN plus explicit verification state. No post URL is constructed or represented as verified. Live `post.create.text` availability remains UNAVAILABLE until legitimate configured provider evidence exists.
 
-## M02.6 downstream verification checkpoint
+## Remaining Merge Gate
 
-Task 6 is implemented and independently re-reviewed: optional official GET, explicit legitimate read gate, exact comparison and fresh replay evidence preserve durably succeeded creation. Final local verification passed 265 tests across 29 files plus format/lint/typecheck/build. All scoped findings are resolved; whole-milestone review remains pending. See `docs/superpowers/evidence/2026-10-08-m02-downstream-verification.md` for qualified RED/GREEN and security evidence. Subsequent pushed-head CI passed at `1a2cef29d88f7032d5befe18efb627736e49da16` / run `37832719872`.
+The closeout documentation commit must receive exact-head green CI. Before merge, re-check PR head/base, mergeability, reviews/threads and concurrent work. If those gates remain clear, mark PR #3 ready and squash-merge under the repository policy, then verify post-merge `main` CI before activating M03.
 
-Task6 pushed checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` passed exact-head CI `37832719872`: frozen install, format, test, lint, typecheck and build. Required quality steps all succeeded; the local suite at this source checkpoint passed 265 tests. Actions log downloads remain blocked at the results-receiver destination, so no remote log count is claimed. Task7 implementation subsequently passed the local checkpoint below.
-
-## Task 7 local checkpoint
-
-The three publishing tools and shared runtime are implemented and scoped independent review is clear (0 Critical/Important/Minor). Controller verification passed 319 tests across 31 files; implementer format, lint, typecheck and build also passed. Real MCP clients, built stdio and loopback HTTP cover discovery, local preview/approval, structured outcomes and shared one-POST replay. Restored strict preview/approval assertions remain alongside expanded create validation. README and configuration template describe the actual runtime and safety gates.
-
-See `docs/superpowers/evidence/2026-10-08-m02-mcp-runtime.md` for qualified behavioral RED and first-GREEN coverage. These changes await pushed-head CI. Latest verified remote checkpoint remains `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872`. Whole-milestone review, final merge gates and post-merge main verification remain pending. Live LinkedIn access remains unverified; no live reads or writes occurred.
-
-Exact next work: verify Task 7 pushed-head CI.
+Exact next work: **Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main.**

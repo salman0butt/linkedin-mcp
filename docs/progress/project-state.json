@@ -6,10 +6,10 @@
   "activeBranch": "feat/m02-text-publishing",
   "activePr": 3,
   "baseBranch": "main",
-  "latestVerifiedSha": "1a2cef29d88f7032d5befe18efb627736e49da16",
-  "ciStatus": "GREEN_FORMAT_265_TESTS_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "1986831bf58fdd48ea5b0da64109898a768bd937",
+  "ciStatus": "GREEN_EXACT_HEAD_37838015911_INSTALL_FORMAT_TEST_LINT_TYPECHECK_BUILD",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Verify Task 7 pushed-head CI."
+  "exactNextWork": "Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main."
 }
