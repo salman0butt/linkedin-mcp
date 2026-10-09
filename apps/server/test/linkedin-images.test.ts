@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  LinkedInImagesError,
-  createLinkedInImagesClient,
-} from '../src/publishing/linkedin-images.js';
+import { LinkedInImagesError, createLinkedInImagesClient } from '../src/publishing/linkedin-images.js';
 
 interface RecordedCall {
   input: RequestInfo | URL;
@@ -174,7 +171,7 @@ describe('official LinkedIn Images client', () => {
     },
   );
 
-  it('uploads exact validated bytes once, refuses redirects, and keeps the token in headers only', async () => {
+  it('uploads exact bytes once without redirects and keeps the token in headers', async () => {
     const recorded = recorder(new Response(null, { status: 201 }));
     const client = createLinkedInImagesClient(config, { fetch: recorded.fetch });
     const bytes = Uint8Array.from([0xff, 0xd8, 0xff, 0xd9]);
