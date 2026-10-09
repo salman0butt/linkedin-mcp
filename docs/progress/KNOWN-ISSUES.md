@@ -8,11 +8,11 @@
 
 ### External verification gate — live LinkedIn capability availability
 
-M01/M02 deterministic implementation and M03.1/M03.2 local behavior are verified through the recorded checkpoints, but ordinary CI has no configured LinkedIn developer application/member credentials/product access. Live `profile.me`, `post.create.text`, image upload and media-post availability therefore remain unverified. Native PKCE enablement, programmatic refresh and member/media read verification are access-dependent and must not be converted into VERIFIED live-capability claims without legitimate provider evidence.
+M01/M02 deterministic implementation and M03.1–M03.3 deterministic/local behavior are verified through recorded checkpoints, but ordinary CI has no configured LinkedIn developer application/member credentials/product access. Live `profile.me`, `post.create.text`, image upload and media-post availability therefore remain unverified. Native PKCE enablement, programmatic refresh and member/media read verification are access-dependent and must not be converted into VERIFIED live-capability claims without legitimate provider evidence.
 
 ### Interactive connector/container limitations
 
-GitHub Actions is the authoritative exact-head execution environment when interactive package/network execution is unavailable. Repository writes may use the Git data API with an exact-head lease when the Contents API is transiently unavailable; this does not relax concurrency or security policy.
+GitHub Actions is the authoritative exact-head execution environment when interactive package/network execution is unavailable. Repository writes may use supported GitHub write mechanisms with exact-head checks when a primary connector path is transiently unavailable; this does not relax concurrency or security policy.
 
 During the 2026-10-09 M02 closeout review, the interactive runtime exposed Node 22 rather than required Node 24, had no pnpm and could not resolve github.com. A later M03.2 local clone attempt also could not resolve github.com, so no local rerun is claimed; exact-head Actions evidence is used instead.
 
@@ -21,6 +21,10 @@ During the 2026-10-09 M02 closeout review, the interactive runtime exposed Node 
 ### M03.2 — implementation write block resolved
 
 Earlier connector safety checks rejected M03.2 implementation writes, but repository writes later became available. The secure media-root configuration and bounded JPEG/PNG/GIF reader reached verified GREEN at `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`: 346 tests passed, format/lint/typecheck/build passed. The transient write/skill availability issue is not an active blocker.
+
+### M03.3 — successful provider responses are bounded
+
+The first complete Images adapter GREEN at `4b4ca8a8618709034132ba36bc41d14ddd92a740` / CI `37966349832` exposed one Important scoped-review issue: successful provider JSON was parsed without a byte limit. Regression RED `982628adaaaa1cc61ad5e717654ca563bcb2c616` / CI `37966563223` proved the gap while preserving 361 existing passing tests. Final GREEN `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f` / CI `37966842680` streams successful provider JSON with a hard 64 KiB local bound; 363 tests plus format/lint/typecheck/build pass. This finding is resolved.
 
 ## Review state
 
@@ -34,4 +38,6 @@ Task 7 scoped review cleared MCP safety/envelope findings before `1986831bf58fdd
 
 M02 whole-milestone skeptical/security review completed on 2026-10-09 with **0 unresolved Critical findings and 0 unresolved Important findings** before merge.
 
-M03.2 scoped correctness/security review completed after exact-head GREEN with **0 unresolved Critical findings and 0 unresolved Important findings**. Full M03 whole-milestone review remains pending later milestone work.
+M03.2 scoped correctness/security review completed after exact-head GREEN with **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+M03.3 scoped correctness/security re-review completed after bounded-response GREEN with **0 unresolved Critical findings and 0 unresolved Important findings**. Full M03 whole-milestone review remains pending later milestone work.
