@@ -84,9 +84,7 @@ describe('official LinkedIn Images client', () => {
     });
 
     expect(recorded.calls).toHaveLength(1);
-    expect(recorded.calls[0]?.input).toBe(
-      'https://api.linkedin.com/rest/images?action=initializeUpload',
-    );
+    expect(recorded.calls[0]?.input).toBe('https://api.linkedin.com/rest/images?action=initializeUpload');
     expect(recorded.calls[0]?.init).toEqual({
       method: 'POST',
       headers: {
