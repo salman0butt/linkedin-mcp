@@ -182,7 +182,7 @@ Extend the existing Posts adapter rather than creating a parallel post client.
 Single image maps to:
 
 ```json
-{"content":{"media":{"id":"urn:li:image:...","altText":"..."}}}
+{ "content": { "media": { "id": "urn:li:image:...", "altText": "..." } } }
 ```
 
 Multi-image maps to ordered `content.multiImage.images`, each carrying `id` and `altText`.

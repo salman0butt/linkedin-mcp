@@ -96,9 +96,9 @@ describe('M03 canonical media-post preview', () => {
     const two = [descriptor('1.png'), descriptor('2.png')];
     const twenty = Array.from({ length: 20 }, (_, index) => descriptor(`${index + 1}.png`));
 
-    expect(createMultiImagePostPreviewFromDescriptors({ text: 'Two', images: two }).payload.media).toHaveLength(
-      2,
-    );
+    expect(
+      createMultiImagePostPreviewFromDescriptors({ text: 'Two', images: two }).payload.media,
+    ).toHaveLength(2);
     expect(
       createMultiImagePostPreviewFromDescriptors({ text: 'Twenty', images: twenty }).payload.media,
     ).toHaveLength(20);
@@ -144,9 +144,7 @@ describe('M03 canonical media-post preview', () => {
     });
 
     expect(recommended.warnings).toEqual([]);
-    expect(warning.warnings).toEqual([
-      "Image alt text exceeds LinkedIn's recommended 120 characters.",
-    ]);
+    expect(warning.warnings).toEqual(["Image alt text exceeds LinkedIn's recommended 120 characters."]);
     expect(multiWarning.warnings).toEqual([
       "Image 2 alt text exceeds LinkedIn's recommended 120 characters.",
     ]);

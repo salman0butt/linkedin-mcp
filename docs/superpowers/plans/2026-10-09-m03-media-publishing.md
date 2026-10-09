@@ -36,6 +36,7 @@
 ### Task 1: Activate M03 and define canonical media-post contracts
 
 **Files:**
+
 - Create: `packages/core/src/media-post.ts`
 - Modify: `packages/core/src/index.ts`
 - Modify: `packages/core/src/capabilities.ts`
@@ -48,6 +49,7 @@
 - Modify: `docs/requirements/TRACEABILITY.md`
 
 **Interfaces:**
+
 - Produces: `SupportedImageMime`, `CanonicalImageDescriptor`, `ImagePostPayload`, `MultiImagePostPayload`, `createImagePostPreviewFromDescriptors(...)`, `createMultiImagePostPreviewFromDescriptors(...)`.
 - Consumes: existing text-post visibility/distribution conventions.
 
@@ -74,6 +76,7 @@ Record exact RED/GREEN SHAs and CI run IDs without claiming live availability.
 ### Task 2: Add media-root configuration and bounded local image reader
 
 **Files:**
+
 - Create: `apps/server/src/publishing/media-file.ts`
 - Modify: `apps/server/src/config.ts`
 - Modify: `.env.example`
@@ -81,6 +84,7 @@ Record exact RED/GREEN SHAs and CI run IDs without claiming live availability.
 - Modify: `apps/server/test/config.test.ts`
 
 **Interfaces:**
+
 - Consumes: `SupportedImageMime` from Task 1.
 - Produces: `MediaFileReader.read(relativePath): Promise<ValidatedMediaFile>` where `ValidatedMediaFile` carries safe name, exact bytes, digest, MIME, size, dimensions and optional GIF frame count.
 
@@ -107,10 +111,12 @@ Focused tests plus full quality gate must pass.
 ### Task 3: Implement official LinkedIn Images adapter
 
 **Files:**
+
 - Create: `apps/server/src/publishing/linkedin-images.ts`
 - Create: `apps/server/test/linkedin-images.test.ts`
 
 **Interfaces:**
+
 - Produces: `LinkedInImagesClient.initializeUpload`, `.upload`, `.getStatus` and `LinkedInImagesError` taxonomy.
 - Consumes: explicit API version, access token, authenticated person URN, validated bytes/MIME.
 
@@ -131,10 +137,12 @@ Ensure bearer tokens only enter headers and redirects cannot exfiltrate them.
 ### Task 4: Upgrade durable ledger for media checkpoints
 
 **Files:**
+
 - Modify: `apps/server/src/publishing/idempotency-ledger.ts`
 - Modify: `apps/server/test/idempotency-ledger.test.ts`
 
 **Interfaces:**
+
 - Produces backward-compatible persisted schema v2 with optional media checkpoints and methods `checkpointMedia(...)` plus existing `reserve/complete` semantics.
 - Consumes existing exclusive file-lock and atomic-write machinery.
 
@@ -159,12 +167,14 @@ All text publishing replay/concurrency behavior must remain unchanged.
 ### Task 5: Add bounded image processing verification policy
 
 **Files:**
+
 - Create: `apps/server/src/publishing/media-verification.ts`
 - Create: `apps/server/test/media-verification.test.ts`
 - Modify: `apps/server/src/config.ts`
 - Modify: `.env.example`
 
 **Interfaces:**
+
 - Produces: `verifyImageProcessing(...)` returning `available | processing_failed | pending | verification_unavailable`.
 - Consumes: `LinkedInImagesClient.getStatus`, trusted read-enabled configuration and auth scope/access outcome.
 
@@ -183,12 +193,14 @@ No background polling after tool return. Never convert inability to GET into fab
 ### Task 6: Orchestrate approval-gated single and multi-image publication
 
 **Files:**
+
 - Create: `apps/server/src/publishing/media-post-service.ts`
 - Modify: `apps/server/src/publishing/linkedin-posts.ts`
 - Create: `apps/server/test/media-post-service.test.ts`
 - Modify: `apps/server/test/linkedin-posts.test.ts`
 
 **Interfaces:**
+
 - Produces: `MediaPostService.previewImage`, `.previewMultiImage`, `.approve`, `.createImage`, `.createMultiImage` plus typed structured outcomes.
 - Consumes: auth provider context, ApprovalService, MediaFileReader, LinkedInImagesClient, verification policy, upgraded ledger and existing Posts client.
 
@@ -211,6 +223,7 @@ Re-read/re-hash files before approval consumption/reservation. Checkpoint each k
 ### Task 7: Wire strict MCP tools and shared runtime
 
 **Files:**
+
 - Modify: `apps/server/src/create-server.ts`
 - Modify: `apps/server/src/runtime.ts`
 - Modify: `apps/server/src/stdio.ts`
@@ -221,6 +234,7 @@ Re-read/re-hash files before approval consumption/reservation. Checkpoint each k
 - Modify: `README.md`
 
 **Interfaces:**
+
 - Produces six M03 MCP tools using one shared media runtime across stdio/HTTP connections.
 - Consumes Task 6 `MediaPostService`.
 
@@ -239,6 +253,7 @@ Keep M00/M01/M02 discovery usable when M03 media root is absent. stdout remains 
 ### Task 8: Whole-milestone review, durable closeout and merge gates
 
 **Files:**
+
 - Modify: `docs/progress/project-state.json`
 - Modify: `docs/progress/STATUS.md`
 - Modify: `docs/progress/KNOWN-ISSUES.md`
@@ -250,6 +265,7 @@ Keep M00/M01/M02 discovery usable when M03 media root is absent. stdout remains 
 - Modify: PR #4 body/review state as appropriate
 
 **Interfaces:**
+
 - Consumes all M03 evidence.
 - Produces durable recovery state and merge decision.
 
