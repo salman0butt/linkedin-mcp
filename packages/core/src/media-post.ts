@@ -106,9 +106,11 @@ function rejectUnknownKeys(
   }
 }
 
-function validateCommonPostFields(
-  record: Record<string, unknown>,
-): { text: string; visibility: TextPostVisibility; disableReshare: boolean } {
+function validateCommonPostFields(record: Record<string, unknown>): {
+  text: string;
+  visibility: TextPostVisibility;
+  disableReshare: boolean;
+} {
   if (typeof record.text !== 'string' || record.text.trim().length === 0) {
     throw new Error('Media post text must be a non-empty string');
   }
@@ -224,9 +226,7 @@ function hashPayload(payload: ImagePostPayload | MultiImagePostPayload): {
   };
 }
 
-export function createImagePostPreviewFromDescriptors(
-  input: ImagePostPreviewInput,
-): ImagePostPreview {
+export function createImagePostPreviewFromDescriptors(input: ImagePostPreviewInput): ImagePostPreview {
   const record = requireRecord(input, 'Image post input');
   rejectUnknownKeys(record, allowedSingleInputKeys, 'image post');
   const common = validateCommonPostFields(record);
