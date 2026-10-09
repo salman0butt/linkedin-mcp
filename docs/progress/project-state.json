@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M03",
-  "currentIteration": "M03.3",
+  "currentIteration": "M03.4",
   "status": "ACTIVE",
   "activeBranch": "feat/m03-media-publishing",
   "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "16d6fa2ffd6088d8973001fece18c2d5ab331ebd",
-  "ciStatus": "GREEN_16d6fa2ffd6088d8973001fece18c2d5ab331ebd_RUN_37964060504_346_TESTS_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "latestVerifiedSha": "f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f",
+  "ciStatus": "GREEN_f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f_RUN_37966842680_363_TESTS_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Write M03.3 failing tests for the official LinkedIn Images adapter on PR #4, verify intended exact-head RED, then implement the minimum safe adapter."
+  "exactNextWork": "Write M03.4 failing tests for backward-compatible media checkpoints and ledger migration on PR #4, verify intended exact-head RED, then implement the minimum safe v2 checkpoint support."
 }
