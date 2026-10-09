@@ -1,15 +1,17 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M02",
-  "currentIteration": "M02.7",
+  "currentMilestone": "M03",
+  "currentIteration": "M03.2",
   "status": "ACTIVE",
-  "activeBranch": "feat/m02-text-publishing",
-  "activePr": 3,
+  "activeBranch": "feat/m03-media-publishing",
+  "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "1986831bf58fdd48ea5b0da64109898a768bd937",
-  "ciStatus": "GREEN_EXACT_HEAD_37838015911_INSTALL_FORMAT_TEST_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "875efabef785c5e36cd2b725072643d63cbf0e7f",
+  "ciStatus": "RED_INTENDED_4024ea449cdd3fe5eada2d9de38dad9420030ce2_RUN_37919800880_FORMAT_PASS_326_PASS_11_CONFIG_FAIL_MISSING_MEDIA_READER",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main."
+  "blockers": [
+    "Implementation writes for M03.2 configuration and media reader were rejected by GitHub connector safety checks in this run; no implementation commit was pushed."
+  ],
+  "exactNextWork": "Implement M03.2 media-root configuration and bounded JPEG/PNG/GIF reader on PR #4, then verify exact-head GREEN CI."
 }

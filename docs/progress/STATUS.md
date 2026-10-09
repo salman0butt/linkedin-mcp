@@ -1,58 +1,47 @@
 # Project Status
 
-Last reconciled: 2026-10-09. Actual Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-09. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M02 — Text Publishing — **ACTIVE, M02.7 closeout**.
+M03 — Media Publishing — **ACTIVE, M03.2 secure local media reader**.
 
-Active branch: `feat/m02-text-publishing`.
-Active PR: #3 — draft pending final closeout-head CI.
-Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`.
-Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`.
+Active branch: `feat/m03-media-publishing`. Active PR: #4 (draft).
+Main: `8e3917a46a4f3b3ce6c598ea7706f4d3feeb623b` (M02 merged).
+Design: `docs/superpowers/specs/2026-10-09-m03-media-publishing-design.md`.
+Plan: `docs/superpowers/plans/2026-10-09-m03-media-publishing.md`.
 
-## Verified M02 Checkpoints
+## Verified Evidence
 
-M02.1 canonical text-post contracts: RED `7c193f9adb8049a5849c603a5c5e29bea69ef59d` / CI `37753499633`; GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07` / CI `37753956032`.
+M02 merged through PR #3. Post-merge main CI run `37895605908` passed.
+M03.1 canonical media contracts passed exact-head CI `37900961050` on
+`875efabef785c5e36cd2b725072643d63cbf0e7f`: frozen install,
+format, 326 tests across 32 files, lint, typecheck and build.
 
-M02.2 approval receipts: RED `7b55eb7a09f7010acffd6ba5a6c928b99099f472` / CI `37754698723`; GREEN `5f1870106988c6b5ab365df275a8b3a314c60aa5` / CI `37754858404`.
+M03.2 **genuine intended RED** at `4024ea449cdd3fe5eada2d9de38dad9420030ce2`,
+CI `37919800880`: frozen install and Prettier passed; 326 existing tests passed,
+11 media-config tests failed for missing behavior, and the media-file suite
+could not import the not-yet-created reader. Lint/typecheck/build were skipped.
+This is not GREEN and does not verify M03.2 behavior.
 
-M02.3 persistent idempotency: valid RED `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a` / CI `37755801316`; GREEN `c88ae5b909888e796880f0193299cd21e1246648` / CI `37756724053`.
+Earlier M03.2 test commit `a05ca8e99d7d2627e26d2a0fbea55e65d40fc493`
+failed at Prettier in run `37913448271`; two follow-up commits repaired
+formatting before the observed behavioral RED.
 
-M02.4 official Posts adapter: valid RED `7817938bb2efcdc577d04c00b5b8625216ad6d29` / CI `37762083892`; GREEN `90267d9e27bbef705e93b9ec8250548ae815b7ce` / CI `37762622471`.
+## Blockers and Findings
 
-M02.5 publish orchestration: exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842` green. Scoped Important findings were resolved; historical RED limitations remain explicitly qualified in the committed evidence.
+Unresolved Critical findings: 0 observed. Unresolved Important findings: 0 observed.
+Review threads on PR #4: 0. Full M03 skeptical/security review is not yet due.
 
-M02.6 downstream verification: exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` green. Creation success and optional read verification remain separate; read confirmation requires trusted enablement plus granted `r_member_social`.
+GitHub connector safety checks rejected attempts to write M03.2 configuration
+and reader implementation, including a Contents API update and Git data object
+writes. No implementation code was pushed. The Superpowers skill was not
+exposed by this runtime; repository policy, design, plan and TDD discipline
+were read and followed where available.
 
-Task 7 MCP/runtime integration: exact head `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` green. GitHub Actions completed frozen install, format check, tests, lint, typecheck and build. The immediately preceding local checkpoint passed 319 tests across 31 files, including real stdio and loopback HTTP MCP smokes. No live LinkedIn request occurred.
-
-## M02.7 Whole-Milestone Review
-
-A fresh skeptical/security closeout review on 2026-10-09 covered approval binding, caller-controlled fields, member-bound idempotency, process/restart races, credential invalidation, provider uncertainty, post-URN validation, optional read verification, MCP result sanitization, provenance and transport/runtime sharing.
-
-Unresolved Critical findings: **0**.
-Unresolved Important findings: **0**.
-Blocking review threads: **0**.
-
-The file ledger uses fail-closed exclusive sibling locks and atomic replacement, preventing independent ledger instances from both returning a new reservation. Approval is bound to canonical payload hash plus authenticated subject and one raw idempotency key. The mutation fingerprint includes authenticated author, successful replay performs no second POST, uncertain remote acceptance remains terminal `outcome_unknown`, and provider/admin credentials, author and read-policy controls are not caller-supplied MCP fields.
-
-The M02 design intentionally treats a valid provider-returned post URN as the authoritative creation identifier. It forbids constructing or claiming a verified LinkedIn post URL when the provider has not supplied one. Optional GET confirmation never downgrades durable creation success and does not upgrade live capability availability.
-
-Interactive local re-execution in this closeout session was unavailable because that runtime exposed Node 22 rather than the repository-required Node 24, had no pnpm, and could not resolve github.com. Those environment limitations are not counted as verification evidence; the exact-head GitHub Actions run above is authoritative.
-
-## Completed Milestones
-
-M01 — Authentication & Identity merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge CI `37739373991` passed the required quality gates.
-
-M00 foundation/control-plane remains verified from its post-merge main gate.
-
-## Known Carryover
-
-The M00 private package-boundary debt remains Minor and deferred. Live LinkedIn capability availability still depends on legitimate configured developer/member access and must not be inferred from deterministic tests.
+Live LinkedIn image/multi-image publication remains **unverified/unavailable**
+without legitimate configured provider access. CI uses synthetic media only.
 
 ## Handoff
 
-Critical findings: 0. Important findings: 0. Blockers: none.
-
-Exact next work: **Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main.**
+Exact next work: **Implement M03.2 media-root configuration and bounded JPEG/PNG/GIF reader on PR #4, then verify exact-head GREEN CI.**

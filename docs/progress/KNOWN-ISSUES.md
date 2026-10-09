@@ -2,6 +2,16 @@
 
 ## Current unresolved issues
 
+### M03.2 — implementation write blocked (2026-10-09)
+
+The M03.2 test-only branch head `4024ea449cdd3fe5eada2d9de38dad9420030ce2`
+passed formatting but failed intended behavioral tests in CI `37919800880`.
+Attempts to write the media-root configuration and bounded media reader were
+rejected by connector safety checks. No implementation was pushed. Re-check
+remote branch/PR state before a safe retry; never weaken tests or policy.
+
+
+
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` is private and currently imports the built private core package through `../../../packages/core/dist/index.js`, while its build script explicitly builds core first. Monorepo tests/build/real transport smokes verify this arrangement. When package-consumer boundaries expand, replace it with an explicit `@linkedin-mcp/core` workspace dependency and regenerate the lockfile under the repository supply-chain policy.
