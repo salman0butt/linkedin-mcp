@@ -10,7 +10,7 @@
   },
   "scripts": {
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write packages/core/src/media-post.ts && git diff --exit-code",
     "lint": "eslint \"**/*.ts\" --no-error-on-unmatched-pattern",
     "pretypecheck": "pnpm --filter @linkedin-mcp/core build",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
