@@ -24,7 +24,7 @@ RECOVER
 -> FIX CRITICAL/IMPORTANT FINDINGS
 -> VERIFY AGAIN
 -> UPDATE DURABLE STATE
--> COMMIT/PUSH
+-> COMMIT + REMOTE GITHUB WRITE
 -> CREATE/UPDATE ONE MILESTONE PR
 -> VERIFY EXACT REMOTE HEAD + CI
 -> MERGE ONLY THROUGH GATES
@@ -36,6 +36,16 @@ RECOVER
 ## Pre-authorized autonomy
 
 The owner grants standing approval for routine internal architecture/design/spec/plan and normal repository-local implementation decisions. This eliminates waiting only; it does not permit skipping investigation, self-review, TDD, review or verification.
+
+## Scheduled/unattended GitHub writes
+
+Follow `GITHUB_WRITE_MODE = CONNECTOR_FIRST` from `AGENTS.md`. Scheduled runs are fresh sessions and must not rely on a previous clone, credential helper, token, SSH agent or authenticated shell surviving from an earlier invocation.
+
+Use the connected GitHub write surface as the preferred durable path for feature-branch creation/reuse, repository content or Git-object persistence, branch-ref updates, pull-request mutations, and merge operations that pass the repository gates. Local Git remains useful for worktrees, diffs and tests, but local state is not a durable checkpoint until the remote branch contains it.
+
+Immediately before each remote mutation, refresh the relevant remote head and PR state. After durable checkpoints, verify the exact remote SHA and its CI. Raw `git push` may be used when genuinely available in an interactive environment, but scheduled work must never assume it is the only way to persist progress.
+
+If a connected write is blocked by an interactive approval boundary, missing permission, or unavailable action, do not bypass the control or report success. Preserve already-durable progress, record the exact blocker when a safe durable write path remains available, and allow the next fresh run to recover from GitHub truth.
 
 ## TDD
 
@@ -59,4 +69,4 @@ Re-check remote head/PR/CI before writes. Resume existing active work. If anothe
 
 ## Durable handoff
 
-At the end of meaningful work, reconcile `project-state.json`, `STATUS.md`, known issues, current/active ledger, traceability and capability matrix when their state changed. Record only observed SHAs/CI. Keep exactly one next work action.
+At the end of meaningful work, persist safe progress to the remote GitHub branch and reconcile `project-state.json`, `STATUS.md`, known issues, current/active ledger, traceability and capability matrix when their state changed. Record only observed SHAs/CI. Keep exactly one next work action.
