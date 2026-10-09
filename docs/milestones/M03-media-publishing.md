@@ -1,6 +1,6 @@
 # M03 — Media Publishing
 
-Status: **ACTIVE — M03.3 official LinkedIn Images adapter next**
+Status: **ACTIVE — M03.4 durable media checkpoints and v1 ledger migration next**
 
 ## Goal
 
@@ -39,8 +39,8 @@ sponsored publishing, image transcoding and unverified live capability claims.
 
 1. **COMPLETE** — M03.1 canonical media-post contracts and capability registry.
 2. **COMPLETE** — M03.2 media-root configuration and bounded local image reader.
-3. **ACTIVE** — Official LinkedIn Images adapter.
-4. **PLANNED** — Durable media checkpoints and v1 ledger migration.
+3. **COMPLETE** — M03.3 official LinkedIn Images adapter.
+4. **ACTIVE** — M03.4 durable media checkpoints and v1 ledger migration.
 5. **PLANNED** — Access-aware image processing verification.
 6. **PLANNED** — Approval-gated media orchestration and Posts payload mapping.
 7. **PLANNED** — Strict MCP tool/stdio/HTTP integration.
@@ -52,45 +52,61 @@ M03.1 initial tests-only RED `17f55d6aeda31fc593bf1ad96eb4cd8c2a5a06c8`,
 CI `37896584192`. GREEN `875efabef785c5e36cd2b725072643d63cbf0e7f`,
 CI `37900961050`: 326 tests passed, format, lint, typecheck, build passed.
 
-M03.2 tests-only commit `a05ca8e99d7d2627e26d2a0fbea55e65d40fc493`
-first failed Prettier in CI `37913448271`. Formatting repairs led to
-`4024ea449cdd3fe5eada2d9de38dad9420030ce2`, CI `37919800880`:
-format passed; existing tests remained green while the new media configuration
-and reader behavior failed for the intended missing implementation.
+M03.2 behavioral RED `4024ea449cdd3fe5eada2d9de38dad9420030ce2`,
+CI `37919800880`, led to final GREEN
+`16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`:
+346/346 tests across 34 files plus format/lint/typecheck/build passed.
 
-M03.2 implementation then progressed through formatting/type/test failures that
-were debugged without weakening security assertions. Exact implementation GREEN
-is `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`:
-**346/346 tests across 34 files**, format, lint, typecheck and build passed.
+M03.3 behavioral RED `7af0139a2a7f51a873b584af7270628006180e31`,
+CI `37965807247`: format passed, all 346 existing tests remained green, and the
+new Images adapter suite failed only because the adapter module was absent.
+
+Initial adapter GREEN `4b4ca8a8618709034132ba36bc41d14ddd92a740`,
+CI `37966349832`, passed 361/361 tests plus format/lint/typecheck/build. Scoped
+review then found one Important issue: successful provider response JSON was not
+bounded. Regression RED `982628adaaaa1cc61ad5e717654ca563bcb2c616`,
+CI `37966563223`, preserved all 361 existing tests and failed only the two new
+oversized-response assertions.
+
+Final M03.3 GREEN `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`,
+CI `37966842680`: **363/363 tests across 36 files**, format, lint, typecheck and
+build passed. Successful provider JSON is streamed with a hard 64 KiB local bound.
 
 ## Integration Test Evidence
 
-M03.1/M03.2 use deterministic local tests and synthetic media only. No real
-LinkedIn image upload or media post has been executed or verified.
+M03.1–M03.3 use deterministic tests, synthetic media and injected fetch providers.
+No real LinkedIn image upload, image-status read or media post has been executed
+or verified.
 
 ## Security Review
 
-M03.2 scoped review checked containment, ancestor/final symlinks, bounded reads,
-file replacement checks, signature-based format validation, dimension/frame
-limits, sanitized errors and separation from credential/ledger paths. It found
-**0 unresolved Critical findings and 0 unresolved Important findings**.
+M03.2 scoped review found 0 unresolved Critical/Important findings after
+containment, symlink, bounded-read, replacement, format and error-sanitization checks.
 
-Full M03 review remains pending because remote Images adapter, persistence,
-verification, orchestration and transport integration are unfinished.
+M03.3 scoped review checks official versioned endpoints, member-only ownership,
+strict image URNs, HTTPS LinkedIn-controlled upload hosts, disabled redirects,
+exact-byte uploads, no automatic mutation retries, sanitized errors, unread HTTP
+error bodies and bounded successful JSON parsing. One Important unbounded-response
+finding was fixed through RED `982628ad...` and final GREEN `f5f4a7d9...`.
+Re-review has **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+Full M03 review remains pending because persistence, processing verification,
+orchestration and MCP integration are unfinished.
 
 ## Code Review Findings
 
-PR #4 has no blocking review comments/threads observed. M03.2 scoped review is
-clear, but this does not satisfy the later whole-milestone review gate.
+PR #4 has no blocking review comments/threads observed. M03.2 and M03.3 scoped
+reviews are clear, but this does not satisfy the later whole-milestone review gate.
 
 ## Fresh Verification Results
 
 Latest implementation GREEN checkpoint:
-`16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`.
-The job passed frozen install, Prettier, 346 tests, lint, typecheck and build.
+`f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`, CI `37966842680`.
+The job passed frozen install, Prettier, 363 tests across 36 files, lint,
+typecheck and build.
 
-Durable documentation commits after that checkpoint require their own final
-exact-head CI before any future merge readiness claim.
+Durable documentation commits after that checkpoint require their own exact-head
+CI before any future merge-readiness claim.
 
 ## Durable Recovery Sources
 
@@ -101,11 +117,11 @@ exact-head CI before any future merge readiness claim.
 ## Completion Checklist
 
 - [x] M03.1 canonical contracts deterministically verified.
-- [x] M03.2 behavioral RED observed.
-- [x] M03.2 implementation and exact-head GREEN.
-- [ ] M03.3 official Images adapter RED/GREEN.
+- [x] M03.2 behavioral RED and exact-head GREEN.
+- [x] M03.3 official Images adapter RED/GREEN and scoped security re-review.
+- [ ] M03.4 durable checkpoint migration RED/GREEN.
 - [ ] Remaining M03 tasks and whole-milestone security review.
 - [ ] Exact-final-head CI and merge gates.
 - [ ] Post-merge main CI verified.
 
-Exact next work: **Write M03.3 RED tests for the official LinkedIn Images adapter, verify intended exact-head RED, then implement the minimum safe adapter.**
+Exact next work: **Write M03.4 RED tests for backward-compatible durable media checkpoints and v1 ledger migration, verify intended exact-head RED, then implement minimum safe v2 checkpoint support.**
