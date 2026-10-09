@@ -3,6 +3,7 @@ import type { SupportedImageMime } from '../../../../packages/core/dist/index.js
 const IMAGES_ENDPOINT = 'https://api.linkedin.com/rest/images';
 const IMAGE_URN_PATTERN = /^urn:li:image:[A-Za-z0-9_-]+$/;
 const MEMBER_URN_PATTERN = /^urn:li:person:[^\s]+$/;
+const MAX_PROVIDER_JSON_BYTES = 64 * 1024;
 const SUPPORTED_MIME_TYPES = new Set<SupportedImageMime>(['image/jpeg', 'image/png', 'image/gif']);
 const IMAGE_STATUSES = new Set<LinkedInImageStatus>([
   'WAITING_UPLOAD',
@@ -147,6 +148,51 @@ function versionedHeaders(accessToken: string, apiVersion: string): Record<strin
   };
 }
 
+async function readBoundedJson(
+  response: Response,
+  errorKind: 'malformed_success' | 'malformed_response',
+): Promise<unknown> {
+  const body = response.body;
+  if (body === null) throw new LinkedInImagesError(errorKind);
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value === undefined) continue;
+      total += value.byteLength;
+      if (total > MAX_PROVIDER_JSON_BYTES) {
+        await reader.cancel().catch(() => undefined);
+        throw new LinkedInImagesError(errorKind);
+      }
+      chunks.push(value);
+    }
+  } catch (error) {
+    if (error instanceof LinkedInImagesError) throw error;
+    throw new LinkedInImagesError(errorKind);
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new LinkedInImagesError(errorKind);
+  }
+}
+
 function parseInitializeSuccess(value: unknown): InitializeImageUploadResult {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new LinkedInImagesError('malformed_success');
@@ -203,12 +249,7 @@ export function createLinkedInImagesClient(
         throw classifyHttpError(response.status);
       }
 
-      let value: unknown;
-      try {
-        value = await response.json();
-      } catch {
-        throw new LinkedInImagesError('malformed_success');
-      }
+      const value = await readBoundedJson(response, 'malformed_success');
       return parseInitializeSuccess(value);
     },
 
@@ -253,12 +294,7 @@ export function createLinkedInImagesClient(
         throw classifyHttpError(response.status, true);
       }
 
-      let value: unknown;
-      try {
-        value = await response.json();
-      } catch {
-        throw new LinkedInImagesError('malformed_response');
-      }
+      const value = await readBoundedJson(response, 'malformed_response');
       if (value === null || typeof value !== 'object' || Array.isArray(value)) {
         throw new LinkedInImagesError('malformed_response');
       }
