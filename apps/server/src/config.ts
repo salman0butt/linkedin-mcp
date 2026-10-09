@@ -1,4 +1,5 @@
-import { resolve } from 'node:path';
+import { realpathSync, statSync } from 'node:fs';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 import type { OAuthMode } from '../../../packages/core/dist/index.js';
 
@@ -27,6 +28,8 @@ export interface ServerConfig {
   publishingLedgerPath?: string;
   publishingApprovalTtlMs: number;
   memberPostReadEnabled: boolean;
+  mediaRoot?: string;
+  mediaMaxBytes: number;
   auth?: LinkedInAuthConfig;
 }
 
@@ -45,6 +48,10 @@ const AUTH_ENV_KEYS = [
   'LINKEDIN_MCP_CREDENTIAL_STORE_PATH',
   'LINKEDIN_MCP_TOKEN_ENCRYPTION_KEY',
 ] as const;
+const MIB = 1_048_576;
+const DEFAULT_MEDIA_MAX_BYTES = 20 * MIB;
+const MIN_MEDIA_MAX_BYTES = MIB;
+const MAX_MEDIA_MAX_BYTES = 50 * MIB;
 
 function parsePositiveInteger(
   value: string | undefined,
@@ -60,6 +67,39 @@ function parsePositiveInteger(
     );
   }
   return parsed;
+}
+
+function parseMediaMaxBytes(value: string | undefined): number {
+  if (value === undefined) return DEFAULT_MEDIA_MAX_BYTES;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < MIN_MEDIA_MAX_BYTES || parsed > MAX_MEDIA_MAX_BYTES) {
+    throw new Error(
+      `Media max bytes must be an integer between ${MIN_MEDIA_MAX_BYTES} and ${MAX_MEDIA_MAX_BYTES}`,
+    );
+  }
+  return parsed;
+}
+
+function parseMediaRoot(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || !isAbsolute(trimmed)) {
+    throw new Error('Media root must be an existing absolute directory');
+  }
+  try {
+    const canonical = realpathSync(trimmed);
+    if (!statSync(canonical).isDirectory()) {
+      throw new Error('not-directory');
+    }
+    return canonical;
+  } catch {
+    throw new Error('Media root must be an existing absolute directory');
+  }
+}
+
+function isSameOrInside(root: string, candidate: string): boolean {
+  const rel = relative(root, candidate);
+  return rel === '' || (!rel.startsWith(`..${sep}`) && rel !== '..' && !isAbsolute(rel));
 }
 
 function parseLinkedInApiVersion(value: string | undefined): string | undefined {
@@ -179,9 +219,31 @@ export function parseConfig(env: Env = process.env): ServerConfig {
   ) {
     throw new Error('Publishing ledger path must differ from the credential store path');
   }
+
+  const mediaRoot = parseMediaRoot(env.LINKEDIN_MCP_MEDIA_ROOT);
+  const mediaMaxBytes = parseMediaMaxBytes(env.LINKEDIN_MCP_MEDIA_MAX_BYTES);
+  if (mediaRoot !== undefined && auth !== undefined) {
+    const credentialStorePath = resolve(auth.credentialStorePath);
+    if (isSameOrInside(mediaRoot, credentialStorePath)) {
+      throw new Error('OAuth credential store must not be inside the media root');
+    }
+  }
+  if (
+    mediaRoot !== undefined &&
+    publishingLedgerPath !== undefined &&
+    isSameOrInside(mediaRoot, publishingLedgerPath)
+  ) {
+    throw new Error('Publishing ledger must not be inside the media root');
+  }
+
   const ttlValue = env.LINKEDIN_MCP_APPROVAL_TTL_MS;
   if (ttlValue === '') throw new Error('Publishing approval TTL must be a positive integer');
-  const publishingApprovalTtlMs = parsePositiveInteger(ttlValue, 300_000, 'Publishing approval TTL', 600_000);
+  const publishingApprovalTtlMs = parsePositiveInteger(
+    ttlValue,
+    300_000,
+    'Publishing approval TTL',
+    600_000,
+  );
   const readValue = env.LINKEDIN_MCP_MEMBER_POST_READ_ENABLED;
   if (readValue !== undefined && readValue !== 'true' && readValue !== 'false') {
     throw new Error('Member post read flag must be exactly true or false');
@@ -201,6 +263,8 @@ export function parseConfig(env: Env = process.env): ServerConfig {
     ),
     publishingApprovalTtlMs,
     memberPostReadEnabled: readValue === 'true',
+    mediaMaxBytes,
+    ...(mediaRoot === undefined ? {} : { mediaRoot }),
     ...(publishingLedgerPath === undefined ? {} : { publishingLedgerPath }),
     ...(linkedinApiVersion === undefined ? {} : { linkedinApiVersion }),
     ...(auth === undefined ? {} : { auth }),
