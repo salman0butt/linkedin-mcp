@@ -232,6 +232,25 @@ export class MediaFileReader {
     }
 
     const candidatePath = join(resolvedRoot, ...segments);
+    let current = resolvedRoot;
+    for (let index = 0; index < segments.length; index += 1) {
+      current = join(current, segments[index] as string);
+      try {
+        if ((await lstat(current)).isSymbolicLink()) {
+          const resolvedLink = await realpath(current);
+          if (!isSameOrInside(resolvedRoot, resolvedLink)) {
+            fail('media_outside_root', 'Media source resolves outside the configured root');
+          }
+          fail('media_path_invalid', 'Media source path must not contain symbolic links');
+        }
+      } catch (error) {
+        if (error instanceof MediaFileError) throw error;
+        if (index < segments.length - 1) {
+          fail('media_not_regular_file', 'Media source is not a regular file');
+        }
+      }
+    }
+
     let resolvedCandidate: string;
     try {
       resolvedCandidate = await realpath(candidatePath);
@@ -240,19 +259,6 @@ export class MediaFileReader {
     }
     if (!isSameOrInside(resolvedRoot, resolvedCandidate) || resolvedCandidate === resolvedRoot) {
       fail('media_outside_root', 'Media source resolves outside the configured root');
-    }
-
-    let current = resolvedRoot;
-    try {
-      for (const segment of segments) {
-        current = join(current, segment);
-        if ((await lstat(current)).isSymbolicLink()) {
-          fail('media_path_invalid', 'Media source path must not contain symbolic links');
-        }
-      }
-    } catch (error) {
-      if (error instanceof MediaFileError) throw error;
-      fail('media_not_regular_file', 'Media source is not a regular file');
     }
 
     let handle;
