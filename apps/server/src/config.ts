@@ -238,12 +238,7 @@ export function parseConfig(env: Env = process.env): ServerConfig {
 
   const ttlValue = env.LINKEDIN_MCP_APPROVAL_TTL_MS;
   if (ttlValue === '') throw new Error('Publishing approval TTL must be a positive integer');
-  const publishingApprovalTtlMs = parsePositiveInteger(
-    ttlValue,
-    300_000,
-    'Publishing approval TTL',
-    600_000,
-  );
+  const publishingApprovalTtlMs = parsePositiveInteger(ttlValue, 300_000, 'Publishing approval TTL', 600_000);
   const readValue = env.LINKEDIN_MCP_MEMBER_POST_READ_ENABLED;
   if (readValue !== undefined && readValue !== 'true' && readValue !== 'false') {
     throw new Error('Member post read flag must be exactly true or false');
