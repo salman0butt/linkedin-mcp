@@ -298,7 +298,7 @@ export class MediaFileReader {
       };
     } catch (error) {
       if (error instanceof MediaFileError) throw error;
-      fail('media_not_regular_file', 'Media source could not be read as a regular file');
+      throw new MediaFileError('media_not_regular_file', 'Media source could not be read as a regular file');
     } finally {
       await handle?.close();
     }
