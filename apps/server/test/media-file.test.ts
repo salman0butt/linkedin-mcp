@@ -77,7 +77,17 @@ describe('MediaFileReader', () => {
     });
   });
 
-  it.each(['', '.', '..', '../escape.png', 'nested/../photo.png', 'nested//photo.png', 'a\\b.png', 'a\0b.png', '/etc/passwd'])(
+  it.each([
+    '',
+    '.',
+    '..',
+    '../escape.png',
+    'nested/../photo.png',
+    'nested//photo.png',
+    'a\\b.png',
+    'a\0b.png',
+    '/etc/passwd',
+  ])(
     'rejects unsafe source path %j',
     async (path) => {
       await expect(new MediaFileReader({ root }).read(path)).rejects.toMatchObject({
@@ -110,7 +120,8 @@ describe('MediaFileReader', () => {
 
   it('enforces bounded reads before returning any oversized bytes', async () => {
     await writeFile(join(root, 'large.png'), Buffer.alloc(1_048_577));
-    await expect(new MediaFileReader({ root, maxBytes: 1_048_576 }).read('large.png')).rejects.toMatchObject({
+    const reader = new MediaFileReader({ root, maxBytes: 1_048_576 });
+    await expect(reader.read('large.png')).rejects.toMatchObject({
       code: 'media_too_large',
     });
   });

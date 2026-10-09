@@ -18,8 +18,16 @@ describe('M03 media configuration', () => {
     const root = await mkdtemp(join(tmpdir(), 'media-config-'));
     created.push(root);
     expect(parseConfig({ LINKEDIN_MCP_MEDIA_ROOT: root }).mediaRoot).toBe(root);
-    expect(parseConfig({ LINKEDIN_MCP_MEDIA_ROOT: root, LINKEDIN_MCP_MEDIA_MAX_BYTES: '1048576' }).mediaMaxBytes).toBe(1_048_576);
-    expect(parseConfig({ LINKEDIN_MCP_MEDIA_ROOT: root, LINKEDIN_MCP_MEDIA_MAX_BYTES: '52428800' }).mediaMaxBytes).toBe(52_428_800);
+    const oneMiB = parseConfig({
+      LINKEDIN_MCP_MEDIA_ROOT: root,
+      LINKEDIN_MCP_MEDIA_MAX_BYTES: '1048576',
+    });
+    const fiftyMiB = parseConfig({
+      LINKEDIN_MCP_MEDIA_ROOT: root,
+      LINKEDIN_MCP_MEDIA_MAX_BYTES: '52428800',
+    });
+    expect(oneMiB.mediaMaxBytes).toBe(1_048_576);
+    expect(fiftyMiB.mediaMaxBytes).toBe(52_428_800);
   });
 
   it('rejects relative, blank, nonexistent and non-directory media roots', async () => {
