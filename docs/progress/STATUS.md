@@ -28,6 +28,13 @@ Earlier M03.2 test commit `a05ca8e99d7d2627e26d2a0fbea55e65d40fc493`
 failed at Prettier in run `37913448271`; two follow-up commits repaired
 formatting before the observed behavioral RED.
 
+Latest M03.2 test-only head `ce866f2ea2e9a53de8582768ccdbbefcdd5c04ac`
+passed the formatting check in CI `37925567037`; 326 existing tests passed,
+11 media configuration tests failed for the intended missing behavior, and
+the media-file suite could not import its unimplemented reader. This remains
+behavioral RED; lint/typecheck/build were skipped. The preceding commit
+corrected the known-issues Markdown formatting failure.
+
 ## Blockers and Findings
 
 Unresolved Critical findings: 0 observed. Unresolved Important findings: 0 observed.
