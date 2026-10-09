@@ -52,9 +52,31 @@ Before repository writes:
 
 ## Standing owner authorization
 
-The repository owner explicitly pre-authorizes routine architecture, design, specs, plans, decomposition, naming, dependencies, implementation, tests, refactors in scope, branches, commits, pushes, draft PR creation/updates, CI fixes, review-finding fixes, and transitions between approved engineering stages.
+The repository owner explicitly pre-authorizes routine architecture, design, specs, plans, decomposition, naming, dependencies, implementation, tests, refactors in scope, branches, commits, remote branch writes/ref updates, draft PR creation/updates, CI fixes, review-finding fixes, and transitions between approved engineering stages.
 
 Where Superpowers normally pauses for routine design/spec/plan approval, investigate alternatives, write/self-review the artifact, treat it as approved under this standing authorization, and continue. Auto-approval removes waiting, not rigor.
+
+## Scheduled/unattended GitHub write policy
+
+```text
+GITHUB_WRITE_MODE = CONNECTOR_FIRST
+```
+
+Scheduled and other fresh-session workers must treat the connected GitHub write surface as the preferred durable persistence path. Do not depend on a prior clone, shell session, credential helper, personal access token, SSH agent, or local `git push` authentication surviving between runs.
+
+For durable repository writes:
+
+1. re-read the current remote branch/PR state immediately before mutation;
+2. create or reuse a feature branch through the connected GitHub write surface;
+3. persist repository content/commit changes through GitHub-supported write actions when available;
+4. update remote branch refs with current-head/lease safety where applicable;
+5. create or update the pull request through GitHub;
+6. verify the exact remote head and its CI after durable checkpoints;
+7. merge only through the existing repository merge gates.
+
+A local clone may still be used for investigation, tests, worktrees and implementation when available, but local state is not durable until the remote GitHub branch contains it. In scheduled/unattended runs, raw `git push` is not the primary persistence path and must never be the only assumed way to save progress.
+
+If a GitHub write requires interactive approval, lacks permission, or is unavailable, do not claim it succeeded and do not bypass the control. Preserve any already-durable safe progress, record the exact pending action/blocker in durable state when a safe write path remains available, and let the next run recover from actual GitHub state.
 
 ## Work-selection priority
 
@@ -77,7 +99,7 @@ Continue existing work before starting unrelated work.
 RECOVER -> REQUIREMENTS -> INVESTIGATE -> DESIGN -> SELF-REVIEW -> SPEC -> PLAN
 -> ISOLATE -> RED -> VERIFY RED -> MINIMUM GREEN -> VERIFY GREEN -> REFACTOR
 -> BROADER TESTS -> SECURITY/ARCHITECTURE REVIEW -> FIX -> RE-REVIEW
--> FULL VERIFICATION -> DURABLE DOCS -> COMMIT/PUSH -> PR -> EXACT-SHA CI -> CONTINUE
+-> FULL VERIFICATION -> DURABLE DOCS -> COMMIT/GITHUB-WRITE -> PR -> EXACT-SHA CI -> CONTINUE
 ```
 
 Meaningful behavior uses genuine RED -> GREEN -> REFACTOR. Never fabricate RED/GREEN history, weaken useful assertions, delete tests to match broken behavior, or hide CI failures.
@@ -94,7 +116,7 @@ Meaningful behavior uses genuine RED -> GREEN -> REFACTOR. Never fabricate RED/G
 
 ## Concurrency safety
 
-Before every write/push/merge, re-check remote head, active PRs and CI. Do not duplicate another worker's active unit. Add lease machinery only if overlapping workers become a demonstrated recurring problem.
+Before every remote write/ref update/merge, re-check remote head, active PRs and CI. Do not duplicate another worker's active unit. Add lease machinery only if overlapping workers become a demonstrated recurring problem.
 
 ## Merge policy
 
@@ -114,7 +136,7 @@ Use Superpowers `verification-before-completion`. Never say a command or CI “s
 
 ## End-of-run durable handoff
 
-Before ending meaningful work, push safe progress and reconcile state. `project-state.json` and `STATUS.md` must record current milestone/task, branch/PR, actual CI status, blockers/findings, and exactly one exact next work action. A fresh worker must not need chat history.
+Before ending meaningful work, persist safe progress to the remote GitHub branch and reconcile state. `project-state.json` and `STATUS.md` must record current milestone/task, branch/PR, actual CI status, blockers/findings, and exactly one exact next work action. A fresh worker must not need chat history.
 
 ## Valid stop conditions
 

@@ -11,6 +11,8 @@ const REQUIRED_RECOVERY_FILES = [
   'docs/milestones/CURRENT.md',
 ] as const;
 
+const REQUIRED_UNATTENDED_GITHUB_WRITE_MARKER = 'GITHUB_WRITE_MODE = CONNECTOR_FIRST';
+
 const MILESTONE_LEDGER_FILES = [
   'M00-foundation.md',
   'M01-auth-identity.md',
@@ -52,6 +54,16 @@ export function verifyAutonomousFramework(root: string): string[] {
 
   for (const path of REQUIRED_RECOVERY_FILES) {
     if (!existsSync(resolve(root, path))) errors.push(`Missing mandatory recovery file: ${path}`);
+  }
+
+  const agentsPath = resolve(root, 'AGENTS.md');
+  if (
+    existsSync(agentsPath) &&
+    !readFileSync(agentsPath, 'utf8').includes(REQUIRED_UNATTENDED_GITHUB_WRITE_MARKER)
+  ) {
+    errors.push(
+      `AGENTS.md missing required unattended GitHub write marker: ${REQUIRED_UNATTENDED_GITHUB_WRITE_MARKER}`,
+    );
   }
 
   for (const file of MILESTONE_LEDGER_FILES) {

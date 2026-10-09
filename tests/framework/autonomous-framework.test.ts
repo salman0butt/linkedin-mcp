@@ -33,6 +33,22 @@ describe('verifyAutonomousFramework', () => {
     expect(verifyAutonomousFramework(root)).toContain('Missing mandatory recovery file: AGENTS.md');
   });
 
+  it('rejects a recovery policy that omits connector-first unattended GitHub writes', () => {
+    const root = fixture({
+      'AGENTS.md': '# policy',
+      'CODEX-START-HERE.md': '# start',
+      'docs/AUTONOMOUS-DEVELOPMENT.md': '# autonomous',
+      'docs/progress/project-state.json': '{}',
+      'docs/progress/STATUS.md': '# status',
+      'docs/progress/KNOWN-ISSUES.md': '# issues',
+      'docs/milestones/CURRENT.md': '# current',
+    });
+
+    expect(verifyAutonomousFramework(root)).toContain(
+      'AGENTS.md missing required unattended GitHub write marker: GITHUB_WRITE_MODE = CONNECTOR_FIRST',
+    );
+  });
+
   it('rejects a milestone ledger missing required sections', () => {
     const root = fixture({
       'AGENTS.md': '# policy',
