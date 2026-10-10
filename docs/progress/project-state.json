@@ -6,10 +6,12 @@
   "activeBranch": "feat/m03-media-publishing",
   "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "0eaa01e31f605a576b2b4456a23605c379f7d3eb",
-  "ciStatus": "GREEN_0eaa01e31f605a576b2b4456a23605c379f7d3eb_RUN_38057237124_389_TESTS_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "latestVerifiedSha": "cc8aa5342a6d72dd73393319471719eaf1f9cf91",
+  "ciStatus": "RED_FORMAT_fef05542b92119a7a2a7411d15facb7038f24aa2_RUN_38088698955_PRETTIER_FAILED_TESTS_SKIPPED",
   "criticalFindings": 0,
-  "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Write M03.6 RED tests for approval-gated single/multi-image orchestration and Posts payload mapping, verify intended RED, then implement the minimum transaction without duplicate remote mutations."
+  "importantFindings": 1,
+  "blockers": [
+    "Image processing verification can hang on stalled getStatus; RED regression test committed at fef05542 but CI 38088698955 failed formatting before tests. Subsequent formatting-only GitHub writes rejected by connector safety checks."
+  ],
+  "exactNextWork": "Correct formatting in apps/server/test/media-verification.test.ts on the existing PR #4 branch, then verify intended behavioral RED in exact-head CI before implementing deadline cancellation."
 }
