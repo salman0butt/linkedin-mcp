@@ -4,7 +4,7 @@ Last reconciled: 2026-10-10. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M03 — Media Publishing — **ACTIVE, M03.5 bounded image processing verification**.
+M03 — Media Publishing — **ACTIVE, M03.6 approval-gated media orchestration**.
 
 Active branch: `feat/m03-media-publishing`. Active PR: #4 (draft).
 Current main: `e006d0d21ee6b3531ec6fcd7a4390bfebf704374`.
@@ -62,11 +62,27 @@ uncertainty, keeps terminal records immutable, and retains the existing exclusiv
 sibling-lock plus atomic replacement boundary. Scoped review found 0 unresolved
 Critical and 0 unresolved Important findings.
 
+M03.5 bounded image processing verification behavioral RED was established at
+`7bc3392614a853c760b538d7169a95d07e5e97fd`, CI `38052598853`: formatting passed,
+all 370 existing tests remained green, the new image-status configuration assertions
+failed because the trusted flag was absent, and the verifier suite failed because the
+module was absent.
+
+M03.5 final GREEN: `0eaa01e31f605a576b2b4456a23605c379f7d3eb`,
+CI `38057237124` — **389/389 tests across 39 files**, format, lint, typecheck and
+build passed. Image-status reads default disabled and require an exact trusted config
+flag; disabled or legitimately restricted reads return `verification_unavailable`,
+AVAILABLE and PROCESSING_FAILED remain explicit provider states, 401 reauthentication
+propagates, other read failures do not fabricate status, polling is bounded to six
+attempts or 10 seconds with at least one second between attempts, and no background
+polling continues after return. Scoped review found 0 unresolved Critical and
+0 unresolved Important findings.
+
 ## Blockers and Findings
 
 Unresolved Critical findings: 0 observed. Unresolved Important findings: 0 observed.
-Blocking PR #4 review comments/threads: 0 observed. Full M03 whole-milestone review
-remains due at closeout.
+Blocking PR #4 review comments/threads: 0 observed as of the last scoped check. Full
+M03 whole-milestone review remains due at closeout.
 
 Live LinkedIn image/multi-image publication remains **unverified/unavailable**
 without legitimate configured provider access. CI uses injected providers and
@@ -75,4 +91,4 @@ been performed.
 
 ## Handoff
 
-Exact next work: **Write M03.5 RED tests for bounded access-aware image processing verification, verify intended exact-head RED, then implement the injectable verifier without fabricating provider availability.**
+Exact next work: **Write M03.6 RED tests for approval-gated single/multi-image orchestration and Posts payload mapping, verify intended RED, then implement the minimum transaction without duplicate remote mutations.**
