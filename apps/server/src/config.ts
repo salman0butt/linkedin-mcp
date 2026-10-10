@@ -28,6 +28,7 @@ export interface ServerConfig {
   publishingLedgerPath?: string;
   publishingApprovalTtlMs: number;
   memberPostReadEnabled: boolean;
+  imageStatusReadEnabled: boolean;
   mediaRoot?: string;
   mediaMaxBytes: number;
   auth?: LinkedInAuthConfig;
@@ -243,6 +244,14 @@ export function parseConfig(env: Env = process.env): ServerConfig {
   if (readValue !== undefined && readValue !== 'true' && readValue !== 'false') {
     throw new Error('Member post read flag must be exactly true or false');
   }
+  const imageStatusReadValue = env.LINKEDIN_MCP_IMAGE_STATUS_READ_ENABLED;
+  if (
+    imageStatusReadValue !== undefined &&
+    imageStatusReadValue !== 'true' &&
+    imageStatusReadValue !== 'false'
+  ) {
+    throw new Error('Image status read flag must be exactly true or false');
+  }
 
   return {
     transport,
@@ -258,6 +267,7 @@ export function parseConfig(env: Env = process.env): ServerConfig {
     ),
     publishingApprovalTtlMs,
     memberPostReadEnabled: readValue === 'true',
+    imageStatusReadEnabled: imageStatusReadValue === 'true',
     mediaMaxBytes,
     ...(mediaRoot === undefined ? {} : { mediaRoot }),
     ...(publishingLedgerPath === undefined ? {} : { publishingLedgerPath }),
