@@ -324,9 +324,7 @@ function canTransitionMediaState(from: MediaUploadState, to: MediaUploadState): 
   return false;
 }
 
-export function createFileIdempotencyLedger(
-  options: FileIdempotencyLedgerOptions,
-): MediaIdempotencyLedger {
+export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOptions): MediaIdempotencyLedger {
   if (options.filePath.trim() === '') throw new Error('Idempotency ledger file path is required');
 
   const now = options.now ?? (() => new Date());
