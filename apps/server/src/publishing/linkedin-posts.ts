@@ -72,9 +72,12 @@ export interface LinkedInPostReadResult {
 
 export interface LinkedInPostsAdapter {
   createTextPost(input: CreateTextPostInput): Promise<LinkedInPostCreateResult>;
+  getTextPost(input: GetTextPostInput): Promise<LinkedInPostReadResult>;
+}
+
+export interface MediaLinkedInPostsAdapter extends LinkedInPostsAdapter {
   createImagePost(input: CreateImagePostInput): Promise<LinkedInPostCreateResult>;
   createMultiImagePost(input: CreateMultiImagePostInput): Promise<LinkedInPostCreateResult>;
-  getTextPost(input: GetTextPostInput): Promise<LinkedInPostReadResult>;
 }
 
 interface LinkedInPostsAdapterDeps {
@@ -143,7 +146,7 @@ function postBodyBase(
 export function createLinkedInPostsAdapter(
   config: LinkedInPostsConfig,
   deps: LinkedInPostsAdapterDeps = {},
-): LinkedInPostsAdapter {
+): MediaLinkedInPostsAdapter {
   validateApiVersion(config.apiVersion);
   const fetchImpl = deps.fetch ?? globalThis.fetch;
 
