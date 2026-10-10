@@ -12,11 +12,8 @@ describe('image status read configuration', () => {
     expect(config.imageStatusReadEnabled).toBe(true);
   });
 
-  it.each(['yes', '1', 'TRUE', ' false ', ''])(
-    'rejects non-exact flag %j',
-    (value) => {
-      const env = { LINKEDIN_MCP_IMAGE_STATUS_READ_ENABLED: value };
-      expect(() => parseConfig(env)).toThrow(/true or false/i);
-    },
-  );
+  it.each(['yes', '1', 'TRUE', ' false ', ''])('rejects non-exact flag %j', (value) => {
+    const env = { LINKEDIN_MCP_IMAGE_STATUS_READ_ENABLED: value };
+    expect(() => parseConfig(env)).toThrow(/true or false/i);
+  });
 });
