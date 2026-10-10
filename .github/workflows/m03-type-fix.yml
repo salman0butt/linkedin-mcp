@@ -1,0 +1,52 @@
+name: M03 Type Fix
+
+on:
+  push:
+    branches:
+      - feat/m03-media-publishing
+
+permissions:
+  contents: write
+
+jobs:
+  patch-media-service:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/m03-media-publishing
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply runtime-safe image URN narrowing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/server/src/publishing/media-post-service.ts')
+          source = path.read_text()
+          old = """    if (checkpoint?.uploadState === 'uploaded') {\n      let verification: ImageProcessingVerification;\n      try {\n        verification = await verify({\n          readsEnabled: deps.imageStatusReadEnabled === true,\n          client: deps.images,\n          accessToken: context.accessToken,\n          imageUrn: checkpoint.imageUrn as string,\n        });\n"""
+          new = """    if (checkpoint?.uploadState === 'uploaded') {\n      const imageUrn = checkpoint.imageUrn;\n      if (imageUrn === undefined) throw new MediaPostServiceError('outcome_unknown');\n\n      let verification: ImageProcessingVerification;\n      try {\n        verification = await verify({\n          readsEnabled: deps.imageStatusReadEnabled === true,\n          client: deps.images,\n          accessToken: context.accessToken,\n          imageUrn,\n        });\n"""
+          if old not in source:
+              raise SystemExit('expected verification block not found')
+          source = source.replace(old, new, 1)
+          source = source.replace('            imageUrn: checkpoint.imageUrn,\n            uploadState,', '            imageUrn,\n            uploadState,', 1)
+          path.write_text(source)
+          PY
+          pnpm exec prettier apps/server/src/publishing/media-post-service.ts --write
+          git fetch origin feat/m03-media-publishing
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/feat/m03-media-publishing)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/server/src/publishing/media-post-service.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(m03): require checkpoint image URN before verification"
+          git push origin HEAD:feat/m03-media-publishing
