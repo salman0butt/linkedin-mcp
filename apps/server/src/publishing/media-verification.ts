@@ -1,7 +1,4 @@
-import {
-  LinkedInImagesError,
-  type LinkedInImagesClient,
-} from './linkedin-images.js';
+import { LinkedInImagesError, type LinkedInImagesClient } from './linkedin-images.js';
 
 const MAX_ATTEMPTS = 6;
 const MAX_DURATION_MS = 10_000;
