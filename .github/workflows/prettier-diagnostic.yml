@@ -1,0 +1,32 @@
+name: Prettier Diagnostic
+
+on:
+  push:
+    branches:
+      - feat/m03-media-publishing
+
+permissions:
+  contents: read
+
+jobs:
+  media-service-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Print canonical source
+        shell: bash
+        run: |
+          pnpm exec prettier apps/server/src/publishing/media-post-service.ts --write
+          echo MEDIA_SERVICE_FORMAT_START
+          base64 -w0 apps/server/src/publishing/media-post-service.ts
+          echo
+          echo MEDIA_SERVICE_FORMAT_END
