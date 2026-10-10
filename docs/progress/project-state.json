@@ -6,10 +6,12 @@
   "activeBranch": "feat/m03-media-publishing",
   "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f",
-  "ciStatus": "GREEN_f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f_RUN_37966842680_363_TESTS_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "latestVerifiedSha": "22cdfe906d3eb69dbc05e35f5c4c2ae732a1dd2e",
+  "ciStatus": "RED_22cdfe906d3eb69dbc05e35f5c4c2ae732a1dd2e_RUN_38035751980_363_EXISTING_PASS_2_NEW_EXPECTED_FAIL",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Write M03.4 failing tests for backward-compatible media checkpoints and ledger migration on PR #4, verify intended exact-head RED, then implement the minimum safe v2 checkpoint support."
+  "blockers": [
+    "GitHub connector rejected M03.4 implementation source-file update; retry through approved safe write mechanism after remote-head check."
+  ],
+  "exactNextWork": "Commit the M03.4 v2 ledger implementation and schema-version test update on PR #4; verify exact-head GREEN CI."
 }
