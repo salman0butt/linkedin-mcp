@@ -19,13 +19,11 @@ import {
   type MutationRecord,
   type ReserveMutationResult,
 } from './idempotency-ledger.js';
-import {
-  LinkedInImagesError,
-  type LinkedInImagesClient,
-} from './linkedin-images.js';
+import { LinkedInImagesError, type LinkedInImagesClient } from './linkedin-images.js';
 import {
   isValidLinkedInPostUrn,
   LinkedInPostsError,
+  type LinkedInPostCreateResult,
   type LinkedInPostsAdapter,
 } from './linkedin-posts.js';
 import {
@@ -53,6 +51,7 @@ export type MediaPostServiceErrorKind =
   | 'approval_consumed'
   | 'idempotency_conflict'
   | 'storage_failure'
+  | 'media_changed'
   | 'media_upload_failed'
   | 'media_processing_failed'
   | 'media_processing_pending'
@@ -158,7 +157,6 @@ interface PreparedMultiImageDraft {
 }
 
 interface ProcessedMedia {
-  record: MutationRecord;
   imageUrns: string[];
   processing: ImageProcessingVerification[];
   progressed: boolean;
@@ -207,7 +205,7 @@ function descriptorFor(file: ValidatedMediaFile, altText: string): CanonicalImag
   };
 }
 
-function mapMediaFileError(error: unknown): MediaPostServiceError {
+function mapPreviewError(error: unknown): MediaPostServiceError {
   if (error instanceof MediaFileError) return new MediaPostServiceError(error.code);
   if (error instanceof MediaPostServiceError) return error;
   return new MediaPostServiceError('invalid_payload');
@@ -242,7 +240,7 @@ async function prepareImageDraft(
     });
     return { preview, files: [file] };
   } catch (error: unknown) {
-    throw mapMediaFileError(error);
+    throw mapPreviewError(error);
   }
 }
 
@@ -279,27 +277,17 @@ async function prepareMultiImageDraft(
     });
     return { preview, files: validatedFiles };
   } catch (error: unknown) {
-    throw mapMediaFileError(error);
+    throw mapPreviewError(error);
   }
 }
 
-function errorForAuth(error: unknown): MediaPostServiceError {
+function authError(error: unknown): MediaPostServiceError {
   if (error instanceof AuthServiceError) {
-    switch (error.kind) {
-      case 'not_configured':
-        return new MediaPostServiceError('auth_unconfigured');
-      case 'disconnected':
-      case 'authorization_pending':
-        return new MediaPostServiceError('not_connected');
-      case 'expired':
-      case 'reauth_required':
-        return new MediaPostServiceError('reauth_required');
-      case 'permission_required':
-        return new MediaPostServiceError('permission_required');
-      case 'rate_limited':
-      case 'provider_failure':
-        return new MediaPostServiceError('not_connected');
+    if (error.kind === 'not_configured') return new MediaPostServiceError('auth_unconfigured');
+    if (error.kind === 'expired' || error.kind === 'reauth_required') {
+      return new MediaPostServiceError('reauth_required');
     }
+    if (error.kind === 'permission_required') return new MediaPostServiceError('permission_required');
   }
   return new MediaPostServiceError('not_connected');
 }
@@ -309,7 +297,7 @@ async function providerContext(deps: MediaPostServiceDeps): Promise<ProviderCont
   try {
     context = await deps.auth.getProviderContext();
   } catch (error: unknown) {
-    throw errorForAuth(error);
+    throw authError(error);
   }
   if (
     typeof context.accessToken !== 'string' ||
@@ -326,30 +314,24 @@ async function providerContext(deps: MediaPostServiceDeps): Promise<ProviderCont
   return context;
 }
 
-function errorForApproval(error: unknown): MediaPostServiceError {
+function approvalError(error: unknown): MediaPostServiceError {
   if (error instanceof ApprovalServiceError) {
-    switch (error.kind) {
-      case 'mismatch':
-        return new MediaPostServiceError('approval_mismatch');
-      case 'expired':
-        return new MediaPostServiceError('approval_expired');
-      case 'not_found':
-        return new MediaPostServiceError('approval_not_found');
-      case 'already_consumed':
-        return new MediaPostServiceError('approval_consumed');
-    }
+    if (error.kind === 'mismatch') return new MediaPostServiceError('approval_mismatch');
+    if (error.kind === 'expired') return new MediaPostServiceError('approval_expired');
+    if (error.kind === 'not_found') return new MediaPostServiceError('approval_not_found');
+    if (error.kind === 'already_consumed') return new MediaPostServiceError('approval_consumed');
   }
   return new MediaPostServiceError('storage_failure');
 }
 
-function errorForLedger(error: unknown): MediaPostServiceError {
+function ledgerError(error: unknown): MediaPostServiceError {
   if (error instanceof IdempotencyLedgerError && error.kind === 'conflict') {
     return new MediaPostServiceError('idempotency_conflict');
   }
   return new MediaPostServiceError('storage_failure');
 }
 
-function errorForTerminal(record: MutationRecord): MediaPostServiceError {
+function terminalError(record: MutationRecord): MediaPostServiceError {
   switch (record.result?.errorCode) {
     case 'reauth_required':
       return new MediaPostServiceError('reauth_required');
@@ -377,7 +359,7 @@ async function bestEffortReauth(deps: MediaPostServiceDeps, context: ProviderCon
       subject: context.subject,
     });
   } catch {
-    // The provider classification outranks best-effort local credential cleanup.
+    // Provider evidence is preserved even if local credential marking fails.
   }
 }
 
@@ -399,30 +381,68 @@ async function completeFailure(
   } catch {
     throw new MediaPostServiceError('outcome_unknown');
   }
-  if (completed.state === 'failed_terminal') throw errorForTerminal(completed);
+  if (completed.state === 'failed_terminal') throw terminalError(completed);
   throw new MediaPostServiceError('outcome_unknown');
 }
 
-function finalProcessing(record: MutationRecord): {
+async function failImageMutation(
+  deps: MediaPostServiceDeps,
+  context: ProviderContext,
+  idempotencyKey: string,
+  mutationHash: string,
+  error: unknown,
+): Promise<never> {
+  if (error instanceof LinkedInImagesError) {
+    if (error.kind === 'reauthentication_required') {
+      await bestEffortReauth(deps, context);
+      return completeFailure(deps, idempotencyKey, mutationHash, 'failed_terminal', 'reauth_required');
+    }
+    if (error.kind === 'permission_required') {
+      return completeFailure(
+        deps,
+        idempotencyKey,
+        mutationHash,
+        'failed_terminal',
+        'permission_required',
+      );
+    }
+    if (error.kind === 'rate_limited') {
+      return completeFailure(deps, idempotencyKey, mutationHash, 'failed_terminal', 'rate_limited');
+    }
+    if (error.kind === 'provider_failure') {
+      return completeFailure(
+        deps,
+        idempotencyKey,
+        mutationHash,
+        'failed_terminal',
+        'media_upload_failed',
+      );
+    }
+  }
+  return completeFailure(
+    deps,
+    idempotencyKey,
+    mutationHash,
+    'outcome_unknown',
+    'media_remote_outcome_unknown',
+  );
+}
+
+function restoredResult(record: MutationRecord): {
   imageUrns: string[];
   processing: ImageProcessingVerification[];
 } {
-  const checkpoints = record.media ?? [];
   const imageUrns: string[] = [];
   const processing: ImageProcessingVerification[] = [];
-  for (const checkpoint of checkpoints) {
+  for (const checkpoint of record.media ?? []) {
     if (checkpoint.imageUrn === undefined) throw new MediaPostServiceError('outcome_unknown');
-    if (checkpoint.uploadState === 'available') {
-      imageUrns.push(checkpoint.imageUrn);
-      processing.push('available');
-      continue;
-    }
-    if (checkpoint.uploadState === 'verification_unavailable') {
-      imageUrns.push(checkpoint.imageUrn);
+    if (checkpoint.uploadState === 'available') processing.push('available');
+    else if (checkpoint.uploadState === 'verification_unavailable') {
       processing.push('verification_unavailable');
-      continue;
+    } else {
+      throw new MediaPostServiceError('outcome_unknown');
     }
-    throw new MediaPostServiceError('outcome_unknown');
+    imageUrns.push(checkpoint.imageUrn);
   }
   return { imageUrns, processing };
 }
@@ -454,7 +474,16 @@ async function processMedia(
       throw new MediaPostServiceError('idempotency_conflict');
     }
 
-    let initializedNow = false;
+    if (checkpoint?.uploadState === 'pending') {
+      return completeFailure(
+        deps,
+        idempotencyKey,
+        mutationHash,
+        'outcome_unknown',
+        'interrupted_upload_unknown',
+      );
+    }
+
     if (checkpoint === undefined) {
       let initialized;
       try {
@@ -463,52 +492,7 @@ async function processMedia(
           ownerUrn: `urn:li:person:${context.subject}`,
         });
       } catch (error: unknown) {
-        if (error instanceof LinkedInImagesError) {
-          if (error.kind === 'reauthentication_required') {
-            await bestEffortReauth(deps, context);
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'reauth_required',
-            );
-          }
-          if (error.kind === 'permission_required') {
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'permission_required',
-            );
-          }
-          if (error.kind === 'rate_limited') {
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'rate_limited',
-            );
-          }
-          if (error.kind === 'provider_failure') {
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'media_upload_failed',
-            );
-          }
-        }
-        return completeFailure(
-          deps,
-          idempotencyKey,
-          mutationHash,
-          'outcome_unknown',
-          'image_initialize_unknown',
-        );
+        return failImageMutation(deps, context, idempotencyKey, mutationHash, error);
       }
 
       try {
@@ -522,118 +506,25 @@ async function processMedia(
             uploadState: 'pending',
           },
         });
-      } catch (error: unknown) {
-        throw errorForLedger(error);
-      }
-      checkpoint = record.media?.[index];
-      initializedNow = true;
-      progressed = true;
-    }
-
-    if (checkpoint?.imageUrn === undefined) {
-      throw new MediaPostServiceError('outcome_unknown');
-    }
-
-    if (checkpoint.uploadState === 'pending') {
-      if (!initializedNow) {
-        return completeFailure(
-          deps,
-          idempotencyKey,
-          mutationHash,
-          'outcome_unknown',
-          'interrupted_upload_unknown',
-        );
-      }
-
-      try {
-        const initialized = await deps.images.initializeUpload;
-        void initialized;
-        const currentCheckpoint = record.media?.[index];
-        if (currentCheckpoint?.imageUrn === undefined) {
-          throw new MediaPostServiceError('outcome_unknown');
-        }
-        const initializationResult = await Promise.resolve(currentCheckpoint.imageUrn);
-        void initializationResult;
       } catch {
-        throw new MediaPostServiceError('outcome_unknown');
-      }
-
-      const currentImageUrn = checkpoint.imageUrn;
-      let uploadUrl: string | undefined;
-      try {
-        const latestInitialization = await deps.images.initializeUpload({
-          accessToken: context.accessToken,
-          ownerUrn: `urn:li:person:${context.subject}`,
-        });
-        if (latestInitialization.imageUrn !== currentImageUrn) {
-          throw new MediaPostServiceError('outcome_unknown');
-        }
-        uploadUrl = latestInitialization.uploadUrl;
-      } catch (error: unknown) {
-        if (error instanceof MediaPostServiceError) throw error;
         return completeFailure(
           deps,
           idempotencyKey,
           mutationHash,
           'outcome_unknown',
-          'upload_url_unavailable',
+          'checkpoint_after_initialize_failed',
         );
       }
 
       try {
         await deps.images.upload({
           accessToken: context.accessToken,
-          uploadUrl,
+          uploadUrl: initialized.uploadUrl,
           bytes: file.bytes,
           mimeType: file.mimeType,
         });
       } catch (error: unknown) {
-        if (error instanceof LinkedInImagesError) {
-          if (error.kind === 'outcome_unknown') {
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'outcome_unknown',
-              'media_upload_unknown',
-            );
-          }
-          if (error.kind === 'reauthentication_required') {
-            await bestEffortReauth(deps, context);
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'reauth_required',
-            );
-          }
-          if (error.kind === 'permission_required') {
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'permission_required',
-            );
-          }
-          if (error.kind === 'rate_limited') {
-            return completeFailure(
-              deps,
-              idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'rate_limited',
-            );
-          }
-        }
-        return completeFailure(
-          deps,
-          idempotencyKey,
-          mutationHash,
-          'failed_terminal',
-          'media_upload_failed',
-        );
+        return failImageMutation(deps, context, idempotencyKey, mutationHash, error);
       }
 
       try {
@@ -643,12 +534,12 @@ async function processMedia(
           index,
           checkpoint: {
             sha256: descriptor.sha256,
-            imageUrn: checkpoint.imageUrn,
+            imageUrn: initialized.imageUrn,
             uploadState: 'uploaded',
           },
         });
-      } catch (error: unknown) {
-        throw errorForLedger(error);
+      } catch {
+        throw new MediaPostServiceError('outcome_unknown');
       }
       checkpoint = record.media?.[index];
       progressed = true;
@@ -703,7 +594,7 @@ async function processMedia(
           },
         });
       } catch (error: unknown) {
-        throw errorForLedger(error);
+        throw ledgerError(error);
       }
       checkpoint = record.media?.[index];
       progressed = true;
@@ -719,7 +610,7 @@ async function processMedia(
     imageUrns.push(checkpoint.imageUrn);
   }
 
-  return { record, imageUrns, processing, progressed };
+  return { imageUrns, processing, progressed };
 }
 
 function serializeByLedger<T>(ledger: MediaIdempotencyLedger, action: () => Promise<T>): Promise<T> {
@@ -735,6 +626,37 @@ function serializeByLedger<T>(ledger: MediaIdempotencyLedger, action: () => Prom
   return result;
 }
 
+function mutationHash(operation: string, author: string, payloadHash: string): string {
+  return createHash('sha256')
+    .update(JSON.stringify({ operation, author, payloadHash }))
+    .digest('hex');
+}
+
+async function handlePostError(
+  deps: MediaPostServiceDeps,
+  context: ProviderContext,
+  idempotencyKey: string,
+  hash: string,
+  error: unknown,
+): Promise<never> {
+  if (error instanceof LinkedInPostsError) {
+    if (error.kind === 'reauthentication_required') {
+      await bestEffortReauth(deps, context);
+      return completeFailure(deps, idempotencyKey, hash, 'failed_terminal', 'reauth_required');
+    }
+    if (error.kind === 'permission_required') {
+      return completeFailure(deps, idempotencyKey, hash, 'failed_terminal', 'permission_required');
+    }
+    if (error.kind === 'conflict') {
+      return completeFailure(deps, idempotencyKey, hash, 'failed_terminal', 'provider_conflict');
+    }
+    if (error.kind === 'rate_limited') {
+      return completeFailure(deps, idempotencyKey, hash, 'failed_terminal', 'rate_limited');
+    }
+  }
+  return completeFailure(deps, idempotencyKey, hash, 'outcome_unknown', 'post_outcome_unknown');
+}
+
 export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostService {
   async function approve(input: ApproveMediaPostInput): Promise<ApprovalReceipt> {
     const context = await providerContext(deps);
@@ -745,52 +667,39 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
     }
   }
 
-  async function create(
+  async function execute(
     operation: 'post.create.image' | 'post.create.multi_image',
-    input: CreateImagePostInput | CreateMultiImagePostInput,
+    input: CreateMediaPostBaseInput,
+    payloadHash: string,
+    descriptors: readonly CanonicalImageDescriptor[],
+    files: readonly ValidatedMediaFile[],
+    createPost: (context: ProviderContext, imageUrns: string[]) => Promise<LinkedInPostCreateResult>,
   ): Promise<MediaPostPublishResult> {
-    const prepared =
-      operation === 'post.create.image'
-        ? await prepareImageDraft(deps.files, (input as CreateImagePostInput).draft)
-        : await prepareMultiImageDraft(deps.files, (input as CreateMultiImagePostInput).draft);
-
-    if (prepared.preview.payloadHash !== input.payloadHash) {
-      throw new MediaPostServiceError('media_changed');
-    }
+    if (payloadHash !== input.payloadHash) throw new MediaPostServiceError('media_changed');
 
     return serializeByLedger(deps.ledger, async () => {
       const context = await providerContext(deps);
-      let approval;
       try {
-        approval = deps.approvals.consume({
+        deps.approvals.consume({
           receiptId: input.approvalReceiptId,
-          payloadHash: prepared.preview.payloadHash,
+          payloadHash,
           subject: context.subject,
           idempotencyKey: input.idempotencyKey,
         });
       } catch (error: unknown) {
-        throw errorForApproval(error);
+        throw approvalError(error);
       }
 
       const author = `urn:li:person:${context.subject}`;
-      const mutationHash = createHash('sha256')
-        .update(
-          JSON.stringify({
-            operation,
-            author,
-            payloadHash: prepared.preview.payloadHash,
-          }),
-        )
-        .digest('hex');
-
+      const hash = mutationHash(operation, author, payloadHash);
       let reservation: ReserveMutationResult;
       try {
         reservation = await deps.ledger.reserve({
           idempotencyKey: input.idempotencyKey,
-          payloadHash: mutationHash,
+          payloadHash: hash,
         });
       } catch (error: unknown) {
-        throw errorForLedger(error);
+        throw ledgerError(error);
       }
 
       if (reservation.status === 'replay' && reservation.record.state !== 'reserved') {
@@ -798,7 +707,7 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
           if (!isValidLinkedInPostUrn(reservation.record.result?.postUrn)) {
             throw new MediaPostServiceError('outcome_unknown');
           }
-          const restored = finalProcessing(reservation.record);
+          const restored = restoredResult(reservation.record);
           return {
             state: 'succeeded',
             provider: 'OFFICIAL_API',
@@ -808,120 +717,47 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
             replay: true,
           };
         }
-        if (reservation.record.state === 'failed_terminal') throw errorForTerminal(reservation.record);
+        if (reservation.record.state === 'failed_terminal') throw terminalError(reservation.record);
         throw new MediaPostServiceError('outcome_unknown');
       }
 
-      if (approval.status !== 'initiated' && reservation.status === 'reserved') {
-        return completeFailure(
-          deps,
-          input.idempotencyKey,
-          mutationHash,
-          'failed_terminal',
-          'approval_consumed',
-        );
-      }
-
-      const descriptors =
-        operation === 'post.create.image'
-          ? [prepared.preview.payload.media as CanonicalImageDescriptor]
-          : [...prepared.preview.payload.media];
       const processed = await processMedia(
         deps,
         context,
         input.idempotencyKey,
-        mutationHash,
+        hash,
         reservation,
         descriptors,
-        prepared.files,
+        files,
       );
 
       if (reservation.status === 'replay' && !processed.progressed) {
         return completeFailure(
           deps,
           input.idempotencyKey,
-          mutationHash,
+          hash,
           'outcome_unknown',
           'interrupted_post_unknown',
         );
       }
 
-      let postUrn: string;
+      let created: LinkedInPostCreateResult;
       try {
-        const created =
-          operation === 'post.create.image'
-            ? await deps.posts.createImagePost({
-                accessToken: context.accessToken,
-                author,
-                payload: prepared.preview.payload as ImagePostPreview['payload'],
-                imageUrn: processed.imageUrns[0] as string,
-              })
-            : await deps.posts.createMultiImagePost({
-                accessToken: context.accessToken,
-                author,
-                payload: prepared.preview.payload as MultiImagePostPreview['payload'],
-                imageUrns: processed.imageUrns,
-              });
+        created = await createPost(context, processed.imageUrns);
         if (!isValidLinkedInPostUrn(created.postUrn)) {
           throw new LinkedInPostsError('malformed_success');
         }
-        postUrn = created.postUrn;
       } catch (error: unknown) {
-        if (error instanceof LinkedInPostsError) {
-          if (error.kind === 'reauthentication_required') {
-            await bestEffortReauth(deps, context);
-            return completeFailure(
-              deps,
-              input.idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'reauth_required',
-            );
-          }
-          if (error.kind === 'permission_required') {
-            return completeFailure(
-              deps,
-              input.idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'permission_required',
-            );
-          }
-          if (error.kind === 'conflict') {
-            return completeFailure(
-              deps,
-              input.idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'provider_conflict',
-            );
-          }
-          if (error.kind === 'rate_limited') {
-            return completeFailure(
-              deps,
-              input.idempotencyKey,
-              mutationHash,
-              'failed_terminal',
-              'rate_limited',
-            );
-          }
-        }
-        return completeFailure(
-          deps,
-          input.idempotencyKey,
-          mutationHash,
-          'outcome_unknown',
-          'post_outcome_unknown',
-        );
+        return handlePostError(deps, context, input.idempotencyKey, hash, error);
       }
 
       let completed: MutationRecord;
       try {
         completed = await deps.ledger.complete({
           idempotencyKey: input.idempotencyKey,
-          payloadHash: mutationHash,
+          payloadHash: hash,
           state: 'succeeded',
-          result: { postUrn },
+          result: { postUrn: created.postUrn },
         });
       } catch {
         throw new MediaPostServiceError('outcome_unknown');
@@ -945,15 +781,48 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
     previewImage(draft) {
       return prepareImageDraft(deps.files, draft).then((prepared) => prepared.preview);
     },
+
     previewMultiImage(draft) {
       return prepareMultiImageDraft(deps.files, draft).then((prepared) => prepared.preview);
     },
+
     approve,
-    createImage(input) {
-      return create('post.create.image', input);
+
+    async createImage(input) {
+      const prepared = await prepareImageDraft(deps.files, input.draft);
+      const descriptor = prepared.preview.payload.media;
+      return execute(
+        'post.create.image',
+        input,
+        prepared.preview.payloadHash,
+        [descriptor],
+        prepared.files,
+        (context, imageUrns) =>
+          deps.posts.createImagePost({
+            accessToken: context.accessToken,
+            author: `urn:li:person:${context.subject}`,
+            payload: prepared.preview.payload,
+            imageUrn: imageUrns[0] as string,
+          }),
+      );
     },
-    createMultiImage(input) {
-      return create('post.create.multi_image', input);
+
+    async createMultiImage(input) {
+      const prepared = await prepareMultiImageDraft(deps.files, input.draft);
+      return execute(
+        'post.create.multi_image',
+        input,
+        prepared.preview.payloadHash,
+        prepared.preview.payload.media,
+        prepared.files,
+        (context, imageUrns) =>
+          deps.posts.createMultiImagePost({
+            accessToken: context.accessToken,
+            author: `urn:li:person:${context.subject}`,
+            payload: prepared.preview.payload,
+            imageUrns,
+          }),
+      );
     },
   };
 }
