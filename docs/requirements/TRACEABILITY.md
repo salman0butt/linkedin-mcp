@@ -6,7 +6,7 @@
 | R-M00-AUTO — durable autonomous control plane           | M00       | M00 design                                  | M00 plan                             | state/docs/verifier scripts    | framework verifier suites                   | post-merge CI 37469308840 on `dde9bde5`                      | VERIFIED |
 | R-M01-AUTH — OAuth identity/scopes                      | M01       | `2026-10-06-m01-auth-identity-design.md`    | `2026-10-06-m01-auth-identity.md`    | M01.2–M01.8 on PR #2           | 105 deterministic tests + real transports   | closeout evidence; post-merge CI 37739373991 on `3dbf3e2`    | VERIFIED |
 | R-M02-TEXT — text publishing with safe writes           | M02       | `2026-10-08-m02-text-publishing-design.md`  | `2026-10-08-m02-text-publishing.md`  | M02.1–M02.7 on PR #3           | deterministic suite + real transport smokes | merged PR #3; post-merge main CI 37895605908 on `8e3917a`    | VERIFIED |
-| R-M03-MEDIA — image/multi-image publishing              | M03       | `2026-10-09-m03-media-publishing-design.md` | `2026-10-09-m03-media-publishing.md` | M03.1–M03.4 on PR #4           | 370 deterministic tests through M03.4       | M03.4 GREEN CI 38051403134 on `f71e9295`; M03.5–M03.8 remain | ACTIVE   |
+| R-M03-MEDIA — image/multi-image publishing              | M03       | `2026-10-09-m03-media-publishing-design.md` | `2026-10-09-m03-media-publishing.md` | M03.1–M03.5 on PR #4           | 389 deterministic tests through M03.5       | M03.5 GREEN CI 38057237124 on `0eaa01e3`; M03.6–M03.8 remain | ACTIVE   |
 | R-M04-ENGAGE — comments/replies/reactions               | M04       | Pending                                     | Pending                              | Pending                        | Pending                                     | Pending                                                      | PLANNED  |
 | R-M05-POSTSEARCH — post discovery with provenance       | M05       | Pending                                     | Pending                              | Pending                        | Pending                                     | Pending                                                      | PLANNED  |
 | R-M06-JOBS — job discovery/freshness/provenance         | M06       | Pending                                     | Pending                              | Pending                        | Pending                                     | Pending                                                      | PLANNED  |
@@ -29,7 +29,7 @@ account.
 `R-M02-TEXT` is repository-complete through merged PR #3 and post-merge main CI `37895605908`; live member
 text-post availability still requires legitimate configured provider evidence.
 
-`R-M03-MEDIA` is ACTIVE. M03.1–M03.4 are deterministically verified through
-`f71e9295e1e1d710b232859ab57e8e5264eaa0e4` / CI `38051403134`; processing verification, orchestration, MCP
-integration and whole-milestone closeout remain unfinished. No live LinkedIn image upload, image-status read or
-media post has been verified.
+`R-M03-MEDIA` is ACTIVE. M03.1–M03.5 are deterministically verified through
+`0eaa01e31f605a576b2b4456a23605c379f7d3eb` / CI `38057237124`; approval-gated orchestration, MCP integration
+and whole-milestone closeout remain unfinished. No live LinkedIn image upload, image-status read or media post has
+been verified.
