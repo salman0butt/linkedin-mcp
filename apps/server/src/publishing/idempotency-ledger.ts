@@ -75,8 +75,11 @@ export interface CheckpointMediaInput extends ReserveMutationInput {
 
 export interface IdempotencyLedger {
   reserve(input: ReserveMutationInput): Promise<ReserveMutationResult>;
-  checkpointMedia(input: CheckpointMediaInput): Promise<MutationRecord>;
   complete(input: CompleteMutationInput): Promise<MutationRecord>;
+}
+
+export interface MediaIdempotencyLedger extends IdempotencyLedger {
+  checkpointMedia(input: CheckpointMediaInput): Promise<MutationRecord>;
 }
 
 interface PersistedStore {
@@ -321,7 +324,9 @@ function canTransitionMediaState(from: MediaUploadState, to: MediaUploadState): 
   return false;
 }
 
-export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOptions): IdempotencyLedger {
+export function createFileIdempotencyLedger(
+  options: FileIdempotencyLedgerOptions,
+): MediaIdempotencyLedger {
   if (options.filePath.trim() === '') throw new Error('Idempotency ledger file path is required');
 
   const now = options.now ?? (() => new Date());
