@@ -8,7 +8,7 @@
 
 ### External verification gate — live LinkedIn capability availability
 
-M01/M02 deterministic implementation and M03.1–M03.3 deterministic/local behavior are verified through recorded checkpoints, but ordinary CI has no configured LinkedIn developer application/member credentials/product access. Live `profile.me`, `post.create.text`, image upload and media-post availability therefore remain unverified. Native PKCE enablement, programmatic refresh and member/media read verification are access-dependent and must not be converted into VERIFIED live-capability claims without legitimate provider evidence.
+M01/M02 deterministic implementation and M03.1–M03.5 deterministic/local behavior are verified through recorded checkpoints, but ordinary CI has no configured LinkedIn developer application/member credentials/product access. Live `profile.me`, `post.create.text`, image upload and media-post availability therefore remain unverified. Native PKCE enablement, programmatic refresh and member/media read verification are access-dependent and must not be converted into VERIFIED live-capability claims without legitimate provider evidence.
 
 ### Interactive connector/container limitations
 
@@ -40,4 +40,10 @@ M02 whole-milestone skeptical/security review completed on 2026-10-09 with **0 u
 
 M03.2 scoped correctness/security review completed after exact-head GREEN with **0 unresolved Critical findings and 0 unresolved Important findings**.
 
-M03.3 scoped correctness/security re-review completed after bounded-response GREEN with **0 unresolved Critical findings and 0 unresolved Important findings**. Full M03 whole-milestone review remains pending later milestone work.
+M03.3 scoped correctness/security re-review completed after bounded-response GREEN with **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+M03.4 scoped checkpoint/migration review completed after `f71e9295e1e1d710b232859ab57e8e5264eaa0e4` / CI `38051403134` with **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+M03.5 scoped processing-verification review completed after `0eaa01e31f605a576b2b4456a23605c379f7d3eb` / CI `38057237124` with **0 unresolved Critical findings and 0 unresolved Important findings**. Restricted or unavailable image-status reads never fabricate AVAILABLE/FAILED state, 401 remains reauthentication, and polling is bounded with no background continuation.
+
+Full M03 whole-milestone review remains pending orchestration and MCP integration.
