@@ -654,8 +654,9 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
 
     return serializeByLedger(deps.ledger, async () => {
       const context = await providerContext(deps);
+      let approval;
       try {
-        deps.approvals.consume({
+        approval = deps.approvals.consume({
           receiptId: input.approvalReceiptId,
           payloadHash,
           subject: context.subject,
@@ -694,6 +695,21 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
         }
         if (reservation.record.state === 'failed_terminal') throw terminalError(reservation.record);
         throw new MediaPostServiceError('outcome_unknown');
+      }
+
+      if (
+        approval.status === 'replay' &&
+        reservation.status === 'replay' &&
+        reservation.record.state === 'reserved' &&
+        (reservation.record.media === undefined || reservation.record.media.length === 0)
+      ) {
+        return completeFailure(
+          deps,
+          input.idempotencyKey,
+          hash,
+          'outcome_unknown',
+          'interrupted_before_media_checkpoint',
+        );
       }
 
       const processed = await processMedia(
