@@ -1,0 +1,96 @@
+name: M03 Replay Guard Fix
+
+on:
+  push:
+    branches:
+      - feat/m03-media-publishing
+
+permissions:
+  contents: write
+
+jobs:
+  patch-media-replay-guard:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/m03-media-publishing
+          fetch-depth: 0
+      - name: Apply conservative replay guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/server/src/publishing/media-post-service.ts')
+          source = path.read_text()
+          old = """      try {
+        deps.approvals.consume({
+          receiptId: input.approvalReceiptId,
+          payloadHash,
+          subject: context.subject,
+          idempotencyKey: input.idempotencyKey,
+        });
+      } catch (error: unknown) {
+        throw approvalError(error);
+      }
+
+      const author = `urn:li:person:${context.subject}`;
+"""
+          new = """      let approval;
+      try {
+        approval = deps.approvals.consume({
+          receiptId: input.approvalReceiptId,
+          payloadHash,
+          subject: context.subject,
+          idempotencyKey: input.idempotencyKey,
+        });
+      } catch (error: unknown) {
+        throw approvalError(error);
+      }
+
+      const author = `urn:li:person:${context.subject}`;
+"""
+          if old not in source:
+              raise SystemExit('approval consume block not found')
+          source = source.replace(old, new, 1)
+
+          anchor = """      if (reservation.status === 'replay' && reservation.record.state !== 'reserved') {
+"""
+          if anchor not in source:
+              raise SystemExit('reservation replay block not found')
+          guard = """      if (
+        approval.status === 'replay' &&
+        reservation.status === 'replay' &&
+        reservation.record.state === 'reserved' &&
+        (reservation.record.media === undefined || reservation.record.media.length === 0)
+      ) {
+        return completeFailure(
+          deps,
+          input.idempotencyKey,
+          hash,
+          'outcome_unknown',
+          'interrupted_before_media_checkpoint',
+        );
+      }
+
+"""
+          source = source.replace(anchor, anchor + "__M03_REPLAY_GUARD_MARKER__", 1)
+          source = source.replace("__M03_REPLAY_GUARD_MARKER__", "", 1)
+          # Place the guard after terminal replay handling, immediately before media processing.
+          target = """      const processed = await processMedia(
+"""
+          if target not in source:
+              raise SystemExit('processMedia call not found')
+          source = source.replace(target, guard + target, 1)
+          path.write_text(source)
+          PY
+          npx --yes prettier@3.6.2 apps/server/src/publishing/media-post-service.ts --write
+          git fetch origin feat/m03-media-publishing
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/feat/m03-media-publishing)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/server/src/publishing/media-post-service.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(m03): block unsafe replay before media checkpoint"
+          git push origin HEAD:feat/m03-media-publishing
