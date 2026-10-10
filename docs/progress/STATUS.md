@@ -1,19 +1,20 @@
 # Project Status
 
-Last reconciled: 2026-10-09. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-10. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M03 — Media Publishing — **ACTIVE, M03.4 durable media checkpoints and ledger migration next**.
+M03 — Media Publishing — **ACTIVE, M03.5 bounded image processing verification**.
 
 Active branch: `feat/m03-media-publishing`. Active PR: #4 (draft).
-Main: `8e3917a46a4f3b3ce6c598ea7706f4d3feeb623b` (M02 merged).
+Current main: `e006d0d21ee6b3531ec6fcd7a4390bfebf704374`.
 Design: `docs/superpowers/specs/2026-10-09-m03-media-publishing-design.md`.
 Plan: `docs/superpowers/plans/2026-10-09-m03-media-publishing.md`.
 
 ## Verified Evidence
 
-M02 merged through PR #3. Post-merge main CI `37895605908` passed.
+M02 merged through PR #3. Its post-merge main CI `37895605908` passed; later main
+advanced through repository maintenance without changing the M03 integration branch.
 
 M03.1 canonical media contracts GREEN: `875efabef785c5e36cd2b725072643d63cbf0e7f`,
 CI `37900961050` — 326 tests plus format/lint/typecheck/build passed.
@@ -36,12 +37,30 @@ CI `37966563223`, left all 361 existing tests green and failed only two oversize
 successful-response tests.
 
 M03.3 final GREEN: `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`,
-CI `37966842680` — **363/363 tests across 36 files**, format, lint, typecheck and
-build passed. Initialize/status successful JSON is now streamed with a hard 64 KiB
+CI `37966842680` — 363/363 tests across 36 files, format, lint, typecheck and
+build passed. Initialize/status successful JSON is streamed with a hard 64 KiB
 local bound; HTTP error bodies remain unread, upload redirects remain disabled,
 LinkedIn-controlled HTTPS upload hosts are validated, mutation transport uncertainty
 is not retried, and provider errors stay sanitized. Scoped re-review found
-**0 unresolved Critical** and **0 unresolved Important** findings.
+0 unresolved Critical and 0 unresolved Important findings.
+
+M03.4 durable media checkpoint RED was expanded at
+`47c47a01cad9395b9d96a921f47b65070f5e62fd`, CI `38050945859`: formatting passed,
+364 tests passed and six intended checkpoint/migration assertions failed for missing
+schema-v2/checkpoint behavior. Implementation then reached 369/370 tests at
+`51391783ff698ec67d83a5298b5a6f13839d6db6`; the only remaining test failure was
+the intentionally stale v1-new-store assertion. A subsequent typecheck exposed a
+backward-compatibility issue in the public text-only ledger interface, which was
+resolved by introducing a media-capable extension instead of weakening M02 mocks.
+
+M03.4 final GREEN: `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`,
+CI `38051403134` — **370/370 tests across 37 files**, format, lint, typecheck and
+build passed. The ledger reads v1 records unchanged, persists canonical v2 on the
+next mutation, durably checkpoints ordered digest/image-URN state, rejects unknown
+checkpoint fields and digest/URN rebinding, preserves known URNs across terminal
+uncertainty, keeps terminal records immutable, and retains the existing exclusive
+sibling-lock plus atomic replacement boundary. Scoped review found 0 unresolved
+Critical and 0 unresolved Important findings.
 
 ## Blockers and Findings
 
@@ -51,8 +70,9 @@ remains due at closeout.
 
 Live LinkedIn image/multi-image publication remains **unverified/unavailable**
 without legitimate configured provider access. CI uses injected providers and
-synthetic fixtures only; no live image upload or media post has been performed.
+synthetic fixtures only; no live image upload, image-status read or media post has
+been performed.
 
 ## Handoff
 
-Exact next work: **Write M03.4 failing tests for backward-compatible media checkpoints and v1 ledger migration on PR #4, verify intended exact-head RED, then implement the minimum safe v2 checkpoint support.**
+Exact next work: **Write M03.5 RED tests for bounded access-aware image processing verification, verify intended exact-head RED, then implement the injectable verifier without fabricating provider availability.**
