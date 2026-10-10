@@ -1,6 +1,11 @@
-import type { TextPostPayload } from '../../../../packages/core/dist/index.js';
+import type {
+  ImagePostPayload,
+  MultiImagePostPayload,
+  TextPostPayload,
+} from '../../../../packages/core/dist/index.js';
 
 const POSTS_ENDPOINT = 'https://api.linkedin.com/rest/posts';
+const IMAGE_URN_PATTERN = /^urn:li:image:[A-Za-z0-9_-]+$/;
 
 export type LinkedInPostsErrorKind =
   | 'reauthentication_required'
@@ -35,6 +40,20 @@ export interface CreateTextPostInput {
   payload: TextPostPayload;
 }
 
+export interface CreateImagePostInput {
+  accessToken: string;
+  author: string;
+  payload: ImagePostPayload;
+  imageUrn: string;
+}
+
+export interface CreateMultiImagePostInput {
+  accessToken: string;
+  author: string;
+  payload: MultiImagePostPayload;
+  imageUrns: readonly string[];
+}
+
 export interface LinkedInPostCreateResult {
   postUrn: string;
 }
@@ -53,11 +72,22 @@ export interface LinkedInPostReadResult {
 
 export interface LinkedInPostsAdapter {
   createTextPost(input: CreateTextPostInput): Promise<LinkedInPostCreateResult>;
+  createImagePost(input: CreateImagePostInput): Promise<LinkedInPostCreateResult>;
+  createMultiImagePost(input: CreateMultiImagePostInput): Promise<LinkedInPostCreateResult>;
   getTextPost(input: GetTextPostInput): Promise<LinkedInPostReadResult>;
 }
 
 interface LinkedInPostsAdapterDeps {
   fetch?: typeof globalThis.fetch;
+}
+
+interface PostBodyBase {
+  author: string;
+  commentary: string;
+  visibility: TextPostPayload['visibility'];
+  distribution: TextPostPayload['distribution'];
+  lifecycleState: TextPostPayload['lifecycleState'];
+  isReshareDisabled: boolean;
 }
 
 function validateApiVersion(value: string): void {
@@ -66,11 +96,15 @@ function validateApiVersion(value: string): void {
   }
 }
 
-function validateCreateInput(input: CreateTextPostInput): void {
+function validateCreateInput(input: { accessToken: string; author: string }): void {
   if (input.accessToken.trim() === '') throw new Error('LinkedIn access token is required');
   if (!/^urn:li:person:[^\s]+$/.test(input.author)) {
     throw new Error('LinkedIn member author must be a person URN');
   }
+}
+
+function validateImageUrn(value: string): void {
+  if (!IMAGE_URN_PATTERN.test(value)) throw new Error('LinkedIn image URN is invalid');
 }
 
 function validateGetInput(input: GetTextPostInput): void {
@@ -92,6 +126,20 @@ export function isValidLinkedInPostUrn(value: unknown): value is string {
   return typeof value === 'string' && /^urn:li:(?:share|ugcPost):[0-9]+$/.test(value);
 }
 
+function postBodyBase(
+  author: string,
+  payload: TextPostPayload | ImagePostPayload | MultiImagePostPayload,
+): PostBodyBase {
+  return {
+    author,
+    commentary: payload.commentary,
+    visibility: payload.visibility,
+    distribution: payload.distribution,
+    lifecycleState: payload.lifecycleState,
+    isReshareDisabled: payload.isReshareDisabled,
+  };
+}
+
 export function createLinkedInPostsAdapter(
   config: LinkedInPostsConfig,
   deps: LinkedInPostsAdapterDeps = {},
@@ -99,39 +147,83 @@ export function createLinkedInPostsAdapter(
   validateApiVersion(config.apiVersion);
   const fetchImpl = deps.fetch ?? globalThis.fetch;
 
+  async function createPost(body: Record<string, unknown>, accessToken: string) {
+    let response: Response;
+    try {
+      response = await fetchImpl(POSTS_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          'content-type': 'application/json',
+          'linkedin-version': config.apiVersion,
+          'x-restli-protocol-version': '2.0.0',
+        },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      throw new LinkedInPostsError('outcome_unknown');
+    }
+
+    if (response.status !== 201) throw classifyHttpError(response.status);
+
+    const postUrn = response.headers.get('x-restli-id');
+    if (!isValidLinkedInPostUrn(postUrn)) throw new LinkedInPostsError('malformed_success');
+    return { postUrn };
+  }
+
   return {
     async createTextPost(input) {
       validateCreateInput(input);
+      return createPost(postBodyBase(input.author, input.payload), input.accessToken);
+    },
 
-      let response: Response;
-      try {
-        response = await fetchImpl(POSTS_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            authorization: `Bearer ${input.accessToken}`,
-            'content-type': 'application/json',
-            'linkedin-version': config.apiVersion,
-            'x-restli-protocol-version': '2.0.0',
+    async createImagePost(input) {
+      validateCreateInput(input);
+      validateImageUrn(input.imageUrn);
+      if (input.payload.contentKind !== 'image') throw new Error('LinkedIn image payload is invalid');
+
+      return createPost(
+        {
+          ...postBodyBase(input.author, input.payload),
+          content: {
+            media: {
+              id: input.imageUrn,
+              altText: input.payload.media.altText,
+            },
           },
-          body: JSON.stringify({
-            author: input.author,
-            commentary: input.payload.commentary,
-            visibility: input.payload.visibility,
-            distribution: input.payload.distribution,
-            lifecycleState: input.payload.lifecycleState,
-            isReshareDisabled: input.payload.isReshareDisabled,
-          }),
-        });
-      } catch {
-        throw new LinkedInPostsError('outcome_unknown');
+        },
+        input.accessToken,
+      );
+    },
+
+    async createMultiImagePost(input) {
+      validateCreateInput(input);
+      if (input.payload.contentKind !== 'multi_image') {
+        throw new Error('LinkedIn multi-image payload is invalid');
       }
+      if (
+        input.imageUrns.length !== input.payload.media.length ||
+        input.imageUrns.length < 2 ||
+        input.imageUrns.length > 20
+      ) {
+        throw new Error('LinkedIn multi-image URNs must match the payload image count');
+      }
+      for (const imageUrn of input.imageUrns) validateImageUrn(imageUrn);
 
-      if (response.status !== 201) throw classifyHttpError(response.status);
-
-      const postUrn = response.headers.get('x-restli-id');
-      if (!isValidLinkedInPostUrn(postUrn)) throw new LinkedInPostsError('malformed_success');
-
-      return { postUrn };
+      return createPost(
+        {
+          ...postBodyBase(input.author, input.payload),
+          content: {
+            multiImage: {
+              images: input.imageUrns.map((id, index) => ({
+                id,
+                altText: input.payload.media[index]?.altText,
+              })),
+            },
+          },
+        },
+        input.accessToken,
+      );
     },
 
     async getTextPost(input) {
