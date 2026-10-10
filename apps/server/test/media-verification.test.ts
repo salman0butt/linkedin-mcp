@@ -7,10 +7,12 @@ import {
 } from '../src/publishing/linkedin-images.js';
 import { verifyImageProcessing } from '../src/publishing/media-verification.js';
 
+type StatusClient = Pick<LinkedInImagesClient, 'getStatus'>;
+
 const accessToken = 'test-only-token';
 const imageUrn = 'urn:li:image:test-image-123';
 
-function statusClient(...statuses: LinkedInImageStatus[]): Pick<LinkedInImagesClient, 'getStatus'> {
+function statusClient(...statuses: LinkedInImageStatus[]): StatusClient {
   let index = 0;
   return {
     getStatus: vi.fn(async () => {
@@ -22,131 +24,112 @@ function statusClient(...statuses: LinkedInImageStatus[]): Pick<LinkedInImagesCl
   };
 }
 
-function failingClient(
-  kind: ConstructorParameters<typeof LinkedInImagesError>[0],
-): Pick<LinkedInImagesClient, 'getStatus'> {
+function failingClient(kind: ConstructorParameters<typeof LinkedInImagesError>[0]): StatusClient {
   return {
     getStatus: vi.fn(() => Promise.reject(new LinkedInImagesError(kind))),
   };
 }
 
+function input(client: StatusClient, readsEnabled = true) {
+  return { readsEnabled, client, accessToken, imageUrn };
+}
+
 describe('bounded image processing verification', () => {
-  it('returns verification_unavailable without provider access when reads are disabled', async () => {
+  it('skips provider reads when verification is disabled', async () => {
     const client = statusClient('AVAILABLE');
 
-    await expect(
-      verifyImageProcessing({ readsEnabled: false, client, accessToken, imageUrn }),
-    ).resolves.toBe('verification_unavailable');
+    await expect(verifyImageProcessing(input(client, false))).resolves.toBe('verification_unavailable');
     expect(client.getStatus).not.toHaveBeenCalled();
   });
 
   it('returns available immediately for AVAILABLE', async () => {
     const client = statusClient('AVAILABLE');
 
-    await expect(
-      verifyImageProcessing({ readsEnabled: true, client, accessToken, imageUrn }),
-    ).resolves.toBe('available');
+    await expect(verifyImageProcessing(input(client))).resolves.toBe('available');
     expect(client.getStatus).toHaveBeenCalledTimes(1);
   });
 
-  it('returns processing_failed immediately for PROCESSING_FAILED', async () => {
+  it('returns processing_failed immediately', async () => {
     const client = statusClient('PROCESSING_FAILED');
 
-    await expect(
-      verifyImageProcessing({ readsEnabled: true, client, accessToken, imageUrn }),
-    ).resolves.toBe('processing_failed');
+    await expect(verifyImageProcessing(input(client))).resolves.toBe('processing_failed');
     expect(client.getStatus).toHaveBeenCalledTimes(1);
   });
 
-  it('polls WAITING_UPLOAD and PROCESSING no faster than once per second until AVAILABLE', async () => {
+  it('waits at least one second between pending statuses', async () => {
     const client = statusClient('WAITING_UPLOAD', 'PROCESSING', 'AVAILABLE');
     const sleeps: number[] = [];
 
     await expect(
-      verifyImageProcessing(
-        { readsEnabled: true, client, accessToken, imageUrn },
-        {
-          now: () => 0,
-          sleep: async (milliseconds) => {
-            sleeps.push(milliseconds);
-          },
+      verifyImageProcessing(input(client), {
+        now: () => 0,
+        sleep: async (milliseconds) => {
+          sleeps.push(milliseconds);
         },
-      ),
+      }),
     ).resolves.toBe('available');
     expect(client.getStatus).toHaveBeenCalledTimes(3);
     expect(sleeps).toEqual([1_000, 1_000]);
   });
 
-  it('returns pending after at most six processing attempts', async () => {
+  it('returns pending after six attempts', async () => {
     const client = statusClient('PROCESSING');
     const sleeps: number[] = [];
 
     await expect(
-      verifyImageProcessing(
-        { readsEnabled: true, client, accessToken, imageUrn },
-        {
-          now: () => 0,
-          sleep: async (milliseconds) => {
-            sleeps.push(milliseconds);
-          },
+      verifyImageProcessing(input(client), {
+        now: () => 0,
+        sleep: async (milliseconds) => {
+          sleeps.push(milliseconds);
         },
-      ),
+      }),
     ).resolves.toBe('pending');
     expect(client.getStatus).toHaveBeenCalledTimes(6);
     expect(sleeps).toEqual([1_000, 1_000, 1_000, 1_000, 1_000]);
   });
 
-  it('returns pending when the 10-second total verification budget is exhausted', async () => {
+  it('returns pending when the 10-second budget expires', async () => {
     const client = statusClient('PROCESSING');
     let currentTime = 0;
     const sleeps: number[] = [];
 
     await expect(
-      verifyImageProcessing(
-        { readsEnabled: true, client, accessToken, imageUrn },
-        {
-          now: () => currentTime,
-          sleep: async (milliseconds) => {
-            sleeps.push(milliseconds);
-            currentTime += 10_000;
-          },
+      verifyImageProcessing(input(client), {
+        now: () => currentTime,
+        sleep: async (milliseconds) => {
+          sleeps.push(milliseconds);
+          currentTime += 10_000;
         },
-      ),
+      }),
     ).resolves.toBe('pending');
     expect(client.getStatus).toHaveBeenCalledTimes(1);
     expect(sleeps).toEqual([1_000]);
   });
 
-  it(
-    'maps legitimate 403 read restriction to verification_unavailable without fabricating status',
-    async () => {
-      const client = failingClient('permission_required');
+  it('maps a legitimate 403 read restriction to verification_unavailable', async () => {
+    const client = failingClient('permission_required');
 
-      await expect(
-        verifyImageProcessing({ readsEnabled: true, client, accessToken, imageUrn }),
-      ).resolves.toBe('verification_unavailable');
-      expect(client.getStatus).toHaveBeenCalledTimes(1);
-    },
-  );
+    await expect(verifyImageProcessing(input(client))).resolves.toBe('verification_unavailable');
+    expect(client.getStatus).toHaveBeenCalledTimes(1);
+  });
 
   it.each(['rate_limited', 'provider_failure', 'not_found', 'malformed_response'] as const)(
-    'maps non-auth status-read failure %s to verification_unavailable without retrying',
+    'maps non-auth status failure %s to verification_unavailable',
     async (kind) => {
       const client = failingClient(kind);
 
-      await expect(
-        verifyImageProcessing({ readsEnabled: true, client, accessToken, imageUrn }),
-      ).resolves.toBe('verification_unavailable');
+      await expect(verifyImageProcessing(input(client))).resolves.toBe('verification_unavailable');
       expect(client.getStatus).toHaveBeenCalledTimes(1);
     },
   );
 
-  it('propagates 401 reauthentication_required so credential handling can invalidate auth', async () => {
+  it('propagates reauthentication_required', async () => {
     const client = failingClient('reauthentication_required');
 
-    await expect(
-      verifyImageProcessing({ readsEnabled: true, client, accessToken, imageUrn }),
-    ).rejects.toMatchObject({ kind: 'reauthentication_required', retryable: false });
+    await expect(verifyImageProcessing(input(client))).rejects.toMatchObject({
+      kind: 'reauthentication_required',
+      retryable: false,
+    });
     expect(client.getStatus).toHaveBeenCalledTimes(1);
   });
 });
