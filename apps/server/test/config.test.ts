@@ -28,7 +28,6 @@ describe('parseConfig', () => {
       publishingApprovalTtlMs: 300_000,
       memberPostReadEnabled: false,
       mediaMaxBytes: 20 * 1_048_576,
-      imageStatusReadEnabled: false,
     });
   });
 
@@ -50,13 +49,11 @@ describe('parseConfig', () => {
       LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: 'var/posts.json',
       LINKEDIN_MCP_APPROVAL_TTL_MS: '600000',
       LINKEDIN_MCP_MEMBER_POST_READ_ENABLED: 'true',
-      LINKEDIN_MCP_IMAGE_STATUS_READ_ENABLED: 'true',
     });
 
     expect(config.publishingLedgerPath?.startsWith('/')).toBe(true);
     expect(config.publishingApprovalTtlMs).toBe(600_000);
     expect(config.memberPostReadEnabled).toBe(true);
-    expect(config.imageStatusReadEnabled).toBe(true);
   });
 
   it.each(['0', '-1', '1.5', '600001', 'bad'])('rejects invalid approval TTL %s', (ttl) => {
@@ -72,15 +69,6 @@ describe('parseConfig', () => {
   it.each(['yes', '1', 'TRUE', ' false ', ''])('rejects non-exact read flag %j', (readFlag) => {
     expect(() => parseConfig({ LINKEDIN_MCP_MEMBER_POST_READ_ENABLED: readFlag })).toThrow(/true or false/i);
   });
-
-  it.each(['yes', '1', 'TRUE', ' false ', ''])(
-    'rejects non-exact image status read flag %j',
-    (readFlag) => {
-      expect(() => parseConfig({ LINKEDIN_MCP_IMAGE_STATUS_READ_ENABLED: readFlag })).toThrow(
-        /true or false/i,
-      );
-    },
-  );
 
   it('rejects a ledger path that aliases the credential store path', () => {
     expect(() =>
