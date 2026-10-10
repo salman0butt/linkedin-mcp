@@ -526,13 +526,16 @@ async function processMedia(
     }
 
     if (checkpoint?.uploadState === 'uploaded') {
+      const imageUrn = checkpoint.imageUrn;
+      if (imageUrn === undefined) throw new MediaPostServiceError('outcome_unknown');
+
       let verification: ImageProcessingVerification;
       try {
         verification = await verify({
           readsEnabled: deps.imageStatusReadEnabled === true,
           client: deps.images,
           accessToken: context.accessToken,
-          imageUrn: checkpoint.imageUrn as string,
+          imageUrn,
         });
       } catch (error: unknown) {
         if (error instanceof LinkedInImagesError && error.kind === 'reauthentication_required') {
@@ -563,7 +566,7 @@ async function processMedia(
           index,
           checkpoint: {
             sha256: descriptor.sha256,
-            imageUrn: checkpoint.imageUrn,
+            imageUrn,
             uploadState,
           },
         });
