@@ -1,15 +1,17 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M02",
-  "currentIteration": "M02.7",
+  "currentMilestone": "M03",
+  "currentIteration": "M03.6",
   "status": "ACTIVE",
-  "activeBranch": "feat/m02-text-publishing",
-  "activePr": 3,
+  "activeBranch": "feat/m03-media-publishing",
+  "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "1986831bf58fdd48ea5b0da64109898a768bd937",
-  "ciStatus": "GREEN_EXACT_HEAD_37838015911_INSTALL_FORMAT_TEST_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "cc8aa5342a6d72dd73393319471719eaf1f9cf91",
+  "ciStatus": "RED_FORMAT_fef05542b92119a7a2a7411d15facb7038f24aa2_RUN_38088698955_PRETTIER_FAILED_TESTS_SKIPPED",
   "criticalFindings": 0,
-  "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main."
+  "importantFindings": 1,
+  "blockers": [
+    "Image processing verification can hang on stalled getStatus; RED regression test committed at fef05542 but CI 38088698955 failed formatting before tests. Subsequent formatting-only GitHub writes rejected by connector safety checks."
+  ],
+  "exactNextWork": "Correct formatting in apps/server/test/media-verification.test.ts on the existing PR #4 branch, then verify intended behavioral RED in exact-head CI before implementing deadline cancellation."
 }

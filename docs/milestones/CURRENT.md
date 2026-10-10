@@ -1,36 +1,47 @@
 # Current Milestone
 
-Milestone: M02 — Text Publishing
-Status: ACTIVE — M02.7 closeout; whole-milestone review clear, final closeout-head CI pending
-Iteration: M02.7
-Branch: `feat/m02-text-publishing`
-PR: #3 — draft
-Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`
-Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`
-Ledger: `docs/milestones/M02-text-publishing.md`
+Milestone: M03 — Media Publishing
+Status: ACTIVE — M03.6 approval-gated media orchestration
+Iteration: M03.6
+Branch: `feat/m03-media-publishing`
+PR: #4 — draft
+Design: `docs/superpowers/specs/2026-10-09-m03-media-publishing-design.md`
+Plan: `docs/superpowers/plans/2026-10-09-m03-media-publishing.md`
+Ledger: `docs/milestones/M03-media-publishing.md`
 
 ## Recovery
 
-M01 merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge main CI `37739373991` passed format, tests, lint, typecheck and build.
+M02 merged through PR #3; its post-merge main CI `37895605908` passed at
+`8e3917a46a4f3b3ce6c598ea7706f4d3feeb623b`. Current main is
+`e006d0d21ee6b3531ec6fcd7a4390bfebf704374` after later repository maintenance.
 
-M02.1 through M02.4 retain their recorded RED/GREEN evidence in the milestone ledger and committed Superpowers evidence.
+M03.1 contracts GREEN: `875efabef785c5e36cd2b725072643d63cbf0e7f`, CI `37900961050`.
 
-M02.5 exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842` is green after orchestration review fixes.
+M03.2 secure local media reader GREEN: `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`,
+CI `37964060504` — 346/346 tests plus format, lint, typecheck and build passed.
 
-M02.6 exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` is green after downstream-verification review fixes.
+M03.3 official Images adapter final GREEN: `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`,
+CI `37966842680`: 363/363 tests plus format/lint/typecheck/build passed after fixing
+the scoped Important unbounded-provider-response finding. Review is clear.
 
-Task 7 exact checkpoint `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` is green. GitHub Actions completed frozen install, format, tests, lint, typecheck and build. The preceding local checkpoint passed 319 tests across 31 files including built stdio and real HTTP smokes. No live LinkedIn request occurred.
+M03.4 durable checkpoint final GREEN: `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`,
+CI `38051403134`: 370/370 tests plus format/lint/typecheck/build passed. V1 replay,
+canonical v2 migration, ordered digest/image-URN checkpoints, conflict detection,
+terminal immutability and existing cross-process lock/atomic-write behavior are covered.
+Scoped review is clear.
 
-## M02.7 Closeout Review
+M03.5 processing-verification RED: `7bc3392614a853c760b538d7169a95d07e5e97fd`,
+CI `38052598853`: formatting passed, all 370 existing tests stayed green, and only
+the new trusted-read configuration/verifier behavior failed as intended.
 
-Whole-milestone skeptical/security review completed on 2026-10-09. Unresolved Critical findings: 0. Unresolved Important findings: 0. Blocking review threads: 0.
+M03.5 final GREEN: `0eaa01e31f605a576b2b4456a23605c379f7d3eb`,
+CI `38057237124`: **389/389 tests across 39 files**, format, lint, typecheck and build
+passed. Status reads default off, restricted/unavailable reads never masquerade as
+processing state, 401 propagates reauthentication, and polling is bounded to six
+attempts/10 seconds with no background continuation. Scoped review has 0 unresolved
+Critical and 0 unresolved Important findings.
 
-The review re-checked approval payload/subject binding, raw-key/member binding, cross-process reservation locking, restart replay, caller mutation, auth-refresh/invalidation races, one-POST semantics, provider uncertainty, secret-safe errors, strict MCP inputs, shared runtime state, optional read verification and provider provenance.
+No live LinkedIn image upload/status/post verification has occurred; live media
+capability remains conservatively unverified until legitimate provider evidence exists.
 
-The design's success contract is a provider-returned valid post URN plus explicit verification state. No post URL is constructed or represented as verified. Live `post.create.text` availability remains UNAVAILABLE until legitimate configured provider evidence exists.
-
-## Remaining Merge Gate
-
-The closeout documentation commit must receive exact-head green CI. Before merge, re-check PR head/base, mergeability, reviews/threads and concurrent work. If those gates remain clear, mark PR #3 ready and squash-merge under the repository policy, then verify post-merge `main` CI before activating M03.
-
-Exact next work: **Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main.**
+Exact next work: **Write M03.6 RED tests for approval-gated single/multi-image orchestration and Posts payload mapping, verify intended RED, then implement the minimum transaction without duplicate remote mutations.**

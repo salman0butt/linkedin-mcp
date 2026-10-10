@@ -1,58 +1,94 @@
 # Project Status
 
-Last reconciled: 2026-10-09. Actual Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-10. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M02 — Text Publishing — **ACTIVE, M02.7 closeout**.
+M03 — Media Publishing — **ACTIVE, M03.6 approval-gated media orchestration**.
 
-Active branch: `feat/m02-text-publishing`.
-Active PR: #3 — draft pending final closeout-head CI.
-Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`.
-Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`.
+Active branch: `feat/m03-media-publishing`. Active PR: #4 (draft).
+Current main: `e006d0d21ee6b3531ec6fcd7a4390bfebf704374`.
+Design: `docs/superpowers/specs/2026-10-09-m03-media-publishing-design.md`.
+Plan: `docs/superpowers/plans/2026-10-09-m03-media-publishing.md`.
 
-## Verified M02 Checkpoints
+## Verified Evidence
 
-M02.1 canonical text-post contracts: RED `7c193f9adb8049a5849c603a5c5e29bea69ef59d` / CI `37753499633`; GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07` / CI `37753956032`.
+M02 merged through PR #3. Its post-merge main CI `37895605908` passed; later main
+advanced through repository maintenance without changing the M03 integration branch.
 
-M02.2 approval receipts: RED `7b55eb7a09f7010acffd6ba5a6c928b99099f472` / CI `37754698723`; GREEN `5f1870106988c6b5ab365df275a8b3a314c60aa5` / CI `37754858404`.
+M03.1 canonical media contracts GREEN: `875efabef785c5e36cd2b725072643d63cbf0e7f`,
+CI `37900961050` — 326 tests plus format/lint/typecheck/build passed.
 
-M02.3 persistent idempotency: valid RED `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a` / CI `37755801316`; GREEN `c88ae5b909888e796880f0193299cd21e1246648` / CI `37756724053`.
+M03.2 secure media-root configuration and local JPEG/PNG/GIF reader GREEN:
+`16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504` —
+346/346 tests across 34 files plus format/lint/typecheck/build passed. Scoped
+correctness/security review ended with 0 unresolved Critical/Important findings.
 
-M02.4 official Posts adapter: valid RED `7817938bb2efcdc577d04c00b5b8625216ad6d29` / CI `37762083892`; GREEN `90267d9e27bbef705e93b9ec8250548ae815b7ce` / CI `37762622471`.
+M03.3 official LinkedIn Images adapter genuine RED:
+`7af0139a2a7f51a873b584af7270628006180e31`, CI `37965807247` — format passed,
+346 existing tests stayed green and the new adapter suite failed because the adapter
+module was absent.
 
-M02.5 publish orchestration: exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842` green. Scoped Important findings were resolved; historical RED limitations remain explicitly qualified in the committed evidence.
+Initial adapter GREEN `4b4ca8a8618709034132ba36bc41d14ddd92a740`,
+CI `37966349832`, passed 361/361 tests plus format/lint/typecheck/build. Scoped
+security review then found one Important issue: successful provider JSON was parsed
+without a byte bound. Regression RED `982628adaaaa1cc61ad5e717654ca563bcb2c616`,
+CI `37966563223`, left all 361 existing tests green and failed only two oversized
+successful-response tests.
 
-M02.6 downstream verification: exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` green. Creation success and optional read verification remain separate; read confirmation requires trusted enablement plus granted `r_member_social`.
+M03.3 final GREEN: `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`,
+CI `37966842680` — 363/363 tests across 36 files, format, lint, typecheck and
+build passed. Initialize/status successful JSON is streamed with a hard 64 KiB
+local bound; HTTP error bodies remain unread, upload redirects remain disabled,
+LinkedIn-controlled HTTPS upload hosts are validated, mutation transport uncertainty
+is not retried, and provider errors stay sanitized. Scoped re-review found
+0 unresolved Critical and 0 unresolved Important findings.
 
-Task 7 MCP/runtime integration: exact head `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` green. GitHub Actions completed frozen install, format check, tests, lint, typecheck and build. The immediately preceding local checkpoint passed 319 tests across 31 files, including real stdio and loopback HTTP MCP smokes. No live LinkedIn request occurred.
+M03.4 durable media checkpoint RED was expanded at
+`47c47a01cad9395b9d96a921f47b65070f5e62fd`, CI `38050945859`: formatting passed,
+364 tests passed and six intended checkpoint/migration assertions failed for missing
+schema-v2/checkpoint behavior. Implementation then reached 369/370 tests at
+`51391783ff698ec67d83a5298b5a6f13839d6db6`; the only remaining test failure was
+the intentionally stale v1-new-store assertion. A subsequent typecheck exposed a
+backward-compatibility issue in the public text-only ledger interface, which was
+resolved by introducing a media-capable extension instead of weakening M02 mocks.
 
-## M02.7 Whole-Milestone Review
+M03.4 final GREEN: `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`,
+CI `38051403134` — **370/370 tests across 37 files**, format, lint, typecheck and
+build passed. The ledger reads v1 records unchanged, persists canonical v2 on the
+next mutation, durably checkpoints ordered digest/image-URN state, rejects unknown
+checkpoint fields and digest/URN rebinding, preserves known URNs across terminal
+uncertainty, keeps terminal records immutable, and retains the existing exclusive
+sibling-lock plus atomic replacement boundary. Scoped review found 0 unresolved
+Critical and 0 unresolved Important findings.
 
-A fresh skeptical/security closeout review on 2026-10-09 covered approval binding, caller-controlled fields, member-bound idempotency, process/restart races, credential invalidation, provider uncertainty, post-URN validation, optional read verification, MCP result sanitization, provenance and transport/runtime sharing.
+M03.5 bounded image processing verification behavioral RED was established at
+`7bc3392614a853c760b538d7169a95d07e5e97fd`, CI `38052598853`: formatting passed,
+all 370 existing tests remained green, the new image-status configuration assertions
+failed because the trusted flag was absent, and the verifier suite failed because the
+module was absent.
 
-Unresolved Critical findings: **0**.
-Unresolved Important findings: **0**.
-Blocking review threads: **0**.
+M03.5 final GREEN: `0eaa01e31f605a576b2b4456a23605c379f7d3eb`,
+CI `38057237124` — **389/389 tests across 39 files**, format, lint, typecheck and
+build passed. Image-status reads default disabled and require an exact trusted config
+flag; disabled or legitimately restricted reads return `verification_unavailable`,
+AVAILABLE and PROCESSING_FAILED remain explicit provider states, 401 reauthentication
+propagates, other read failures do not fabricate status, polling is bounded to six
+attempts or 10 seconds with at least one second between attempts, and no background
+polling continues after return. Scoped review found 0 unresolved Critical and
+0 unresolved Important findings.
 
-The file ledger uses fail-closed exclusive sibling locks and atomic replacement, preventing independent ledger instances from both returning a new reservation. Approval is bound to canonical payload hash plus authenticated subject and one raw idempotency key. The mutation fingerprint includes authenticated author, successful replay performs no second POST, uncertain remote acceptance remains terminal `outcome_unknown`, and provider/admin credentials, author and read-policy controls are not caller-supplied MCP fields.
+## Blockers and Findings
 
-The M02 design intentionally treats a valid provider-returned post URN as the authoritative creation identifier. It forbids constructing or claiming a verified LinkedIn post URL when the provider has not supplied one. Optional GET confirmation never downgrades durable creation success and does not upgrade live capability availability.
+Unresolved Critical findings: 0 observed. Unresolved Important findings: 0 observed.
+Blocking PR #4 review comments/threads: 0 observed as of the last scoped check. Full
+M03 whole-milestone review remains due at closeout.
 
-Interactive local re-execution in this closeout session was unavailable because that runtime exposed Node 22 rather than the repository-required Node 24, had no pnpm, and could not resolve github.com. Those environment limitations are not counted as verification evidence; the exact-head GitHub Actions run above is authoritative.
-
-## Completed Milestones
-
-M01 — Authentication & Identity merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge CI `37739373991` passed the required quality gates.
-
-M00 foundation/control-plane remains verified from its post-merge main gate.
-
-## Known Carryover
-
-The M00 private package-boundary debt remains Minor and deferred. Live LinkedIn capability availability still depends on legitimate configured developer/member access and must not be inferred from deterministic tests.
+Live LinkedIn image/multi-image publication remains **unverified/unavailable**
+without legitimate configured provider access. CI uses injected providers and
+synthetic fixtures only; no live image upload, image-status read or media post has
+been performed.
 
 ## Handoff
 
-Critical findings: 0. Important findings: 0. Blockers: none.
-
-Exact next work: **Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main.**
+Exact next work: **Write M03.6 RED tests for approval-gated single/multi-image orchestration and Posts payload mapping, verify intended RED, then implement the minimum transaction without duplicate remote mutations.**
