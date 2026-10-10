@@ -76,7 +76,9 @@ describe('parseConfig', () => {
   it.each(['yes', '1', 'TRUE', ' false ', ''])(
     'rejects non-exact image status read flag %j',
     (readFlag) => {
-      expect(() => parseConfig({ LINKEDIN_MCP_IMAGE_STATUS_READ_ENABLED: readFlag })).toThrow(/true or false/i);
+      expect(() => parseConfig({ LINKEDIN_MCP_IMAGE_STATUS_READ_ENABLED: readFlag })).toThrow(
+        /true or false/i,
+      );
     },
   );
 
