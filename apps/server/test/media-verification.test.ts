@@ -22,7 +22,9 @@ function statusClient(...statuses: LinkedInImageStatus[]): Pick<LinkedInImagesCl
   };
 }
 
-function failingClient(kind: ConstructorParameters<typeof LinkedInImagesError>[0]): Pick<LinkedInImagesClient, 'getStatus'> {
+function failingClient(
+  kind: ConstructorParameters<typeof LinkedInImagesError>[0],
+): Pick<LinkedInImagesClient, 'getStatus'> {
   return {
     getStatus: vi.fn(() => Promise.reject(new LinkedInImagesError(kind))),
   };
