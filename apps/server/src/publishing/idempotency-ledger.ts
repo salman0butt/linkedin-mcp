@@ -8,10 +8,13 @@ import {
 } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
-const STORE_VERSION = 1 as const;
+const STORE_VERSION = 2 as const;
+const LEGACY_STORE_VERSION = 1 as const;
 const terminalStates = ['succeeded', 'failed_terminal', 'outcome_unknown'] as const;
+const mediaUploadStates = ['pending', 'uploaded', 'available', 'verification_unavailable'] as const;
 
 export type MutationState = 'reserved' | (typeof terminalStates)[number];
+export type MediaUploadState = (typeof mediaUploadStates)[number];
 export type IdempotencyLedgerErrorKind =
   | 'conflict'
   | 'not_reserved'
@@ -34,6 +37,12 @@ export interface MutationResult {
   errorCode?: string;
 }
 
+export interface MediaCheckpoint {
+  sha256: string;
+  imageUrn?: string;
+  uploadState: MediaUploadState;
+}
+
 export interface MutationRecord {
   idempotencyKey: string;
   payloadHash: string;
@@ -41,6 +50,7 @@ export interface MutationRecord {
   createdAt: string;
   updatedAt: string;
   result?: MutationResult;
+  media?: MediaCheckpoint[];
 }
 
 export interface ReserveMutationInput {
@@ -58,8 +68,14 @@ export interface CompleteMutationInput extends ReserveMutationInput {
   result?: MutationResult;
 }
 
+export interface CheckpointMediaInput extends ReserveMutationInput {
+  index: number;
+  checkpoint: MediaCheckpoint;
+}
+
 export interface IdempotencyLedger {
   reserve(input: ReserveMutationInput): Promise<ReserveMutationResult>;
+  checkpointMedia(input: CheckpointMediaInput): Promise<MutationRecord>;
   complete(input: CompleteMutationInput): Promise<MutationRecord>;
 }
 
@@ -113,6 +129,12 @@ function assertPayloadHash(value: string): void {
   }
 }
 
+function assertExactKeys(candidate: Record<string, unknown>, allowed: readonly string[]): void {
+  if (Object.keys(candidate).some((key) => !allowed.includes(key))) {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+}
+
 function parseIsoDate(value: unknown): string {
   if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) {
     throw new IdempotencyLedgerError('corrupt_store');
@@ -127,10 +149,7 @@ function parseResult(value: unknown): MutationResult | undefined {
   }
 
   const candidate = value as Record<string, unknown>;
-  const keys = Object.keys(candidate);
-  if (keys.some((key) => key !== 'postUrn' && key !== 'errorCode')) {
-    throw new IdempotencyLedgerError('corrupt_store');
-  }
+  assertExactKeys(candidate, ['postUrn', 'errorCode']);
   if (candidate.postUrn !== undefined && typeof candidate.postUrn !== 'string') {
     throw new IdempotencyLedgerError('corrupt_store');
   }
@@ -144,12 +163,48 @@ function parseResult(value: unknown): MutationResult | undefined {
   };
 }
 
-function parseRecord(value: unknown): MutationRecord {
+function parseMediaCheckpoint(value: unknown): MediaCheckpoint {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new IdempotencyLedgerError('corrupt_store');
   }
 
   const candidate = value as Record<string, unknown>;
+  assertExactKeys(candidate, ['sha256', 'imageUrn', 'uploadState']);
+  if (typeof candidate.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(candidate.sha256)) {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+  if (
+    candidate.imageUrn !== undefined &&
+    (typeof candidate.imageUrn !== 'string' || !/^urn:li:image:[^\s]+$/.test(candidate.imageUrn))
+  ) {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+  if (!mediaUploadStates.includes(candidate.uploadState as MediaUploadState)) {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+
+  return {
+    sha256: candidate.sha256,
+    ...(candidate.imageUrn === undefined ? {} : { imageUrn: candidate.imageUrn }),
+    uploadState: candidate.uploadState as MediaUploadState,
+  };
+}
+
+function parseRecord(value: unknown, allowMedia: boolean): MutationRecord {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+
+  const candidate = value as Record<string, unknown>;
+  assertExactKeys(candidate, [
+    'idempotencyKey',
+    'payloadHash',
+    'state',
+    'createdAt',
+    'updatedAt',
+    'result',
+    ...(allowMedia ? ['media'] : []),
+  ]);
   if (
     typeof candidate.idempotencyKey !== 'string' ||
     candidate.idempotencyKey.trim() === '' ||
@@ -164,6 +219,10 @@ function parseRecord(value: unknown): MutationRecord {
   if (candidate.state === 'reserved' && result !== undefined) {
     throw new IdempotencyLedgerError('corrupt_store');
   }
+  if (candidate.media !== undefined && !Array.isArray(candidate.media)) {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+  const media = candidate.media?.map(parseMediaCheckpoint);
 
   return {
     idempotencyKey: candidate.idempotencyKey,
@@ -172,6 +231,7 @@ function parseRecord(value: unknown): MutationRecord {
     createdAt: parseIsoDate(candidate.createdAt),
     updatedAt: parseIsoDate(candidate.updatedAt),
     ...(result === undefined ? {} : { result }),
+    ...(media === undefined ? {} : { media }),
   };
 }
 
@@ -187,11 +247,16 @@ function parseStore(raw: string): PersistedStore {
     throw new IdempotencyLedgerError('corrupt_store');
   }
   const candidate = parsed as Record<string, unknown>;
-  if (candidate.version !== STORE_VERSION || !Array.isArray(candidate.records)) {
+  assertExactKeys(candidate, ['version', 'records']);
+  if (
+    (candidate.version !== LEGACY_STORE_VERSION && candidate.version !== STORE_VERSION) ||
+    !Array.isArray(candidate.records)
+  ) {
     throw new IdempotencyLedgerError('corrupt_store');
   }
 
-  const records = candidate.records.map(parseRecord);
+  const allowMedia = candidate.version === STORE_VERSION;
+  const records = candidate.records.map((record) => parseRecord(record, allowMedia));
   const keys = new Set<string>();
   for (const record of records) {
     if (keys.has(record.idempotencyKey)) throw new IdempotencyLedgerError('corrupt_store');
@@ -199,6 +264,14 @@ function parseStore(raw: string): PersistedStore {
   }
 
   return { version: STORE_VERSION, records };
+}
+
+function cloneCheckpoint(checkpoint: MediaCheckpoint): MediaCheckpoint {
+  return {
+    sha256: checkpoint.sha256,
+    ...(checkpoint.imageUrn === undefined ? {} : { imageUrn: checkpoint.imageUrn }),
+    uploadState: checkpoint.uploadState,
+  };
 }
 
 function cloneRecord(record: MutationRecord): MutationRecord {
@@ -209,6 +282,7 @@ function cloneRecord(record: MutationRecord): MutationRecord {
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     ...(record.result === undefined ? {} : { result: { ...record.result } }),
+    ...(record.media === undefined ? {} : { media: record.media.map(cloneCheckpoint) }),
   };
 }
 
@@ -217,6 +291,34 @@ function validateResult(result: MutationResult | undefined): MutationResult | un
   if (result.postUrn !== undefined) assertNonEmpty(result.postUrn, 'postUrn');
   if (result.errorCode !== undefined) assertNonEmpty(result.errorCode, 'errorCode');
   return { ...result };
+}
+
+function validateCheckpoint(checkpoint: MediaCheckpoint): MediaCheckpoint {
+  if (checkpoint === null || typeof checkpoint !== 'object' || Array.isArray(checkpoint)) {
+    throw new Error('Media checkpoint is invalid');
+  }
+  const candidate = checkpoint as unknown as Record<string, unknown>;
+  const keys = Object.keys(candidate);
+  if (keys.some((key) => key !== 'sha256' && key !== 'imageUrn' && key !== 'uploadState')) {
+    throw new Error('Media checkpoint contains unsupported fields');
+  }
+  if (typeof checkpoint.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(checkpoint.sha256)) {
+    throw new Error('Media checkpoint sha256 must be a lowercase SHA-256 hex digest');
+  }
+  if (checkpoint.imageUrn !== undefined && !/^urn:li:image:[^\s]+$/.test(checkpoint.imageUrn)) {
+    throw new Error('Media checkpoint imageUrn is invalid');
+  }
+  if (!mediaUploadStates.includes(checkpoint.uploadState)) {
+    throw new Error('Media checkpoint uploadState is invalid');
+  }
+  return cloneCheckpoint(checkpoint);
+}
+
+function canTransitionMediaState(from: MediaUploadState, to: MediaUploadState): boolean {
+  if (from === to) return true;
+  if (from === 'pending') return to === 'uploaded';
+  if (from === 'uploaded') return to === 'available' || to === 'verification_unavailable';
+  return false;
 }
 
 export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOptions): IdempotencyLedger {
@@ -278,7 +380,7 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
       directory,
       `.${basename(options.filePath)}.${process.pid}.${randomBytes(8).toString('hex')}.tmp`,
     );
-    const serialized = `${JSON.stringify(store)}\n`;
+    const serialized = `${JSON.stringify({ version: STORE_VERSION, records: store.records })}\n`;
 
     try {
       await filesystem.mkdir(directory, { recursive: true, mode: 0o700 });
@@ -336,6 +438,56 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
           store.records.push(record);
           await persist(store);
           return { status: 'reserved' as const, record: cloneRecord(record) };
+        }),
+      );
+    },
+
+    checkpointMedia(input) {
+      return serialize(() =>
+        withFileLock(async () => {
+          assertNonEmpty(input.idempotencyKey, 'idempotencyKey');
+          assertPayloadHash(input.payloadHash);
+          if (!Number.isInteger(input.index) || input.index < 0) {
+            throw new Error('Media checkpoint index must be a non-negative integer');
+          }
+          const checkpoint = validateCheckpoint(input.checkpoint);
+
+          const store = await load();
+          const existing = store.records.find((record) => record.idempotencyKey === input.idempotencyKey);
+          if (existing === undefined) throw new IdempotencyLedgerError('not_reserved');
+          if (existing.payloadHash !== input.payloadHash) throw new IdempotencyLedgerError('conflict');
+          if (existing.state !== 'reserved') return cloneRecord(existing);
+
+          const media = existing.media ?? [];
+          if (input.index > media.length) throw new IdempotencyLedgerError('conflict');
+          const previous = media[input.index];
+          if (previous !== undefined) {
+            if (previous.sha256 !== checkpoint.sha256) throw new IdempotencyLedgerError('conflict');
+            if (
+              previous.imageUrn !== undefined &&
+              checkpoint.imageUrn !== undefined &&
+              previous.imageUrn !== checkpoint.imageUrn
+            ) {
+              throw new IdempotencyLedgerError('conflict');
+            }
+            if (!canTransitionMediaState(previous.uploadState, checkpoint.uploadState)) {
+              throw new IdempotencyLedgerError('conflict');
+            }
+            media[input.index] = {
+              sha256: previous.sha256,
+              ...(previous.imageUrn === undefined && checkpoint.imageUrn === undefined
+                ? {}
+                : { imageUrn: previous.imageUrn ?? checkpoint.imageUrn }),
+              uploadState: checkpoint.uploadState,
+            };
+          } else {
+            media.push(checkpoint);
+          }
+
+          existing.media = media;
+          existing.updatedAt = now().toISOString();
+          await persist(store);
+          return cloneRecord(existing);
         }),
       );
     },
