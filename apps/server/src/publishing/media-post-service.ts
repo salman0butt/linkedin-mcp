@@ -20,7 +20,7 @@ import {
   isValidLinkedInPostUrn,
   LinkedInPostsError,
   type LinkedInPostCreateResult,
-  type LinkedInPostsAdapter,
+  type MediaLinkedInPostsAdapter,
 } from './linkedin-posts.js';
 import {
   MediaFileError,
@@ -120,7 +120,7 @@ export interface MediaPostService {
   createMultiImage(input: CreateMultiImagePostInput): Promise<MediaPostPublishResult>;
 }
 
-type MediaPostsAdapter = Pick<LinkedInPostsAdapter, 'createImagePost' | 'createMultiImagePost'>;
+type MediaPostsAdapter = Pick<MediaLinkedInPostsAdapter, 'createImagePost' | 'createMultiImagePost'>;
 type AuthProvider = Pick<AuthService, 'getProviderContext' | 'markReauthRequired'>;
 type MediaReader = Pick<MediaFileReader, 'read'>;
 type VerifyImage = (input: VerifyImageProcessingInput) => Promise<ImageProcessingVerification>;

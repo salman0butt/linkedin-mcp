@@ -112,7 +112,7 @@ function buildService(options?: {
   verification?: 'available' | 'processing_failed' | 'pending' | 'verification_unavailable';
   uploadError?: Error;
 }) {
-  const files = new Map([
+  const files = new Map<string, typeof firstFile | typeof secondFile>([
     ['first.png', options?.firstRead ?? firstFile],
     ['second.jpg', secondFile],
   ]);
