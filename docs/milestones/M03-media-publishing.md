@@ -1,6 +1,6 @@
 # M03 — Media Publishing
 
-Status: **ACTIVE — M03.5 access-aware image processing verification**
+Status: **ACTIVE — M03.6 approval-gated media orchestration**
 
 ## Goal
 
@@ -42,8 +42,8 @@ sponsored publishing, image transcoding and unverified live capability claims.
 2. **COMPLETE** — M03.2 media-root configuration and bounded local image reader.
 3. **COMPLETE** — M03.3 official LinkedIn Images adapter.
 4. **COMPLETE** — M03.4 durable media checkpoints and v1 ledger migration.
-5. **ACTIVE** — M03.5 access-aware image processing verification.
-6. **PLANNED** — Approval-gated media orchestration and Posts payload mapping.
+5. **COMPLETE** — M03.5 access-aware image processing verification.
+6. **ACTIVE** — M03.6 approval-gated media orchestration and Posts payload mapping.
 7. **PLANNED** — Strict MCP tool/stdio/HTTP integration.
 8. **PLANNED** — Whole-milestone review, exact-head CI and merge.
 
@@ -89,9 +89,18 @@ Final M03.4 GREEN `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`,
 CI `38051403134`: **370/370 tests across 37 files**, format, lint, typecheck and
 build passed.
 
+M03.5 behavioral RED `7bc3392614a853c760b538d7169a95d07e5e97fd`,
+CI `38052598853`: formatting passed, all 370 existing tests stayed green, seven
+trusted image-status configuration assertions failed because the flag was absent,
+and the verifier suite failed because `media-verification` was absent.
+
+Final M03.5 GREEN `0eaa01e31f605a576b2b4456a23605c379f7d3eb`,
+CI `38057237124`: **389/389 tests across 39 files**, format, lint, typecheck and
+build passed.
+
 ## Integration Test Evidence
 
-M03.1–M03.4 use deterministic tests, synthetic media and injected fetch/providers.
+M03.1–M03.5 use deterministic tests, synthetic media and injected fetch/providers.
 No real LinkedIn image upload, image-status read or media post has been executed
 or verified.
 
@@ -113,19 +122,26 @@ persistence, ordered digest/image-URN binding, rebinding/state-regression confli
 terminal immutability, uncertainty recovery, sibling lock safety and atomic
 replacement. Review has 0 unresolved Critical and 0 unresolved Important findings.
 
-Full M03 review remains pending because processing verification, orchestration and
-MCP integration are unfinished.
+M03.5 scoped review verifies trusted read gating defaults disabled; forbidden or
+otherwise unavailable reads map to `verification_unavailable` rather than fabricated
+provider state; 401 remains a reauthentication signal; AVAILABLE/PROCESSING_FAILED
+remain explicit provider states; polling has a six-attempt/10-second ceiling, sleeps
+at least one second between attempts and never continues in the background. Review
+has 0 unresolved Critical and 0 unresolved Important findings.
+
+Full M03 review remains pending because orchestration and MCP integration are unfinished.
 
 ## Code Review Findings
 
-PR #4 has no blocking review comments/threads observed. M03.2–M03.4 scoped reviews
-are clear, but this does not satisfy the later whole-milestone review gate.
+PR #4 has no blocking review comments/threads observed in the latest scoped checks.
+M03.2–M03.5 scoped reviews are clear, but this does not satisfy the later
+whole-milestone review gate.
 
 ## Fresh Verification Results
 
 Latest implementation GREEN checkpoint:
-`f71e9295e1e1d710b232859ab57e8e5264eaa0e4`, CI `38051403134`.
-The job passed frozen install, Prettier, 370 tests across 37 files, lint,
+`0eaa01e31f605a576b2b4456a23605c379f7d3eb`, CI `38057237124`.
+The job passed frozen install, Prettier, 389 tests across 39 files, lint,
 typecheck and build.
 
 Durable documentation commits after that checkpoint require their own exact-head
@@ -143,9 +159,10 @@ CI before any future merge-readiness claim.
 - [x] M03.2 behavioral RED and exact-head GREEN.
 - [x] M03.3 official Images adapter RED/GREEN and scoped security re-review.
 - [x] M03.4 durable checkpoint migration RED/GREEN and scoped review.
-- [ ] M03.5 processing verification RED/GREEN.
-- [ ] Remaining M03 tasks and whole-milestone security review.
+- [x] M03.5 processing verification RED/GREEN and scoped review.
+- [ ] M03.6 media orchestration RED/GREEN.
+- [ ] Remaining M03 MCP integration and whole-milestone security review.
 - [ ] Exact-final-head CI and merge gates.
 - [ ] Post-merge main CI verified.
 
-Exact next work: **Write M03.5 RED tests for bounded access-aware image processing verification, verify intended exact-head RED, then implement the injectable verifier.**
+Exact next work: **Write M03.6 RED tests for approval-gated single/multi-image orchestration and Posts payload mapping, verify intended RED, then implement the minimum transaction without duplicate remote mutations.**
