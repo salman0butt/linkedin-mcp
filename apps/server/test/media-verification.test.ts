@@ -135,4 +135,35 @@ describe('bounded image processing verification', () => {
     });
     expect(client.getStatus).toHaveBeenCalledTimes(1);
   });
+
+  it('cancels a stalled status read and returns pending within ten seconds', async () => {
+    vi.useFakeTimers();
+    try {
+      const signals: AbortSignal[] = [];
+      const client: StatusClient = {
+        getStatus: vi.fn((request) => {
+          const signal = (request as { signal?: AbortSignal }).signal;
+          if (signal) signals.push(signal);
+          return new Promise<LinkedInImageStatus>(() => {
+            // A provider read that never settles on its own.
+          });
+        }),
+      };
+
+      const verification = verifyImageProcessing(input(client));
+      const watchdog = new Promise<string>((resolve) => {
+        setTimeout(() => resolve('watchdog'), 10_001);
+      });
+
+      const result = Promise.race([verification, watchdog]);
+      await vi.advanceTimersByTimeAsync(10_001);
+      await expect(result).resolves.toBe('pending');
+      expect(signals).toHaveLength(1);
+      expect(signals[0]?.aborted).toBe(true);
+      expect(client.getStatus).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
 });
