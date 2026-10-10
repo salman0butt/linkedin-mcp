@@ -1,0 +1,72 @@
+name: M03 Replay Guard Fix
+
+on:
+  push:
+    branches:
+      - feat/m03-media-publishing
+
+permissions:
+  contents: write
+
+jobs:
+  patch-media-service:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/m03-media-publishing
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply conservative replay guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/server/src/publishing/media-post-service.ts')
+          source = path.read_text()
+          old = "      try {\n        deps.approvals.consume({\n"
+          new = "      let approval;\n      try {\n        approval = deps.approvals.consume({\n"
+          if old not in source:
+              raise SystemExit('approval consume block not found')
+          source = source.replace(old, new, 1)
+
+          target = "      const processed = await processMedia(\n"
+          guard = """      if (
+        approval.status === 'replay' &&
+        reservation.status === 'replay' &&
+        reservation.record.state === 'reserved' &&
+        (reservation.record.media === undefined || reservation.record.media.length === 0)
+      ) {
+        return completeFailure(
+          deps,
+          input.idempotencyKey,
+          hash,
+          'outcome_unknown',
+          'interrupted_before_media_checkpoint',
+        );
+      }
+
+"""
+          if target not in source:
+              raise SystemExit('processMedia call not found')
+          source = source.replace(target, guard + target, 1)
+          path.write_text(source)
+          PY
+          pnpm exec prettier apps/server/src/publishing/media-post-service.ts --write
+          git fetch origin feat/m03-media-publishing
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/feat/m03-media-publishing)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/server/src/publishing/media-post-service.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(m03): block unsafe replay before media checkpoint"
+          git push origin HEAD:feat/m03-media-publishing
