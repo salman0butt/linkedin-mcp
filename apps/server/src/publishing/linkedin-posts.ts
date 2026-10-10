@@ -147,7 +147,7 @@ export function createLinkedInPostsAdapter(
   validateApiVersion(config.apiVersion);
   const fetchImpl = deps.fetch ?? globalThis.fetch;
 
-  async function createPost(body: Record<string, unknown>, accessToken: string) {
+  async function createPost(body: object, accessToken: string) {
     let response: Response;
     try {
       response = await fetchImpl(POSTS_ENDPOINT, {
