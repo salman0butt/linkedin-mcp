@@ -8,11 +8,7 @@ import {
   type MultiImagePostPreview,
 } from '../../../../packages/core/dist/index.js';
 import { AuthServiceError, type AuthService } from '../auth/auth-service.js';
-import {
-  ApprovalServiceError,
-  type ApprovalReceipt,
-  type ApprovalService,
-} from './approval-service.js';
+import { ApprovalServiceError, type ApprovalReceipt, type ApprovalService } from './approval-service.js';
 import {
   IdempotencyLedgerError,
   type MediaIdempotencyLedger,
@@ -167,8 +163,7 @@ const publishQueues = new WeakMap<MediaIdempotencyLedger, Promise<void>>();
 function exactKeys(value: object, expected: readonly string[]): boolean {
   const keys = Reflect.ownKeys(value);
   return (
-    keys.length === expected.length &&
-    keys.every((key) => typeof key === 'string' && expected.includes(key))
+    keys.length === expected.length && keys.every((key) => typeof key === 'string' && expected.includes(key))
   );
 }
 
@@ -211,10 +206,7 @@ function mapPreviewError(error: unknown): MediaPostServiceError {
   return new MediaPostServiceError('invalid_payload');
 }
 
-async function prepareImageDraft(
-  files: MediaReader,
-  draft: ImagePostDraft,
-): Promise<PreparedImageDraft> {
+async function prepareImageDraft(files: MediaReader, draft: ImagePostDraft): Promise<PreparedImageDraft> {
   if (
     draft === null ||
     typeof draft !== 'object' ||
@@ -398,25 +390,13 @@ async function failImageMutation(
       return completeFailure(deps, idempotencyKey, mutationHash, 'failed_terminal', 'reauth_required');
     }
     if (error.kind === 'permission_required') {
-      return completeFailure(
-        deps,
-        idempotencyKey,
-        mutationHash,
-        'failed_terminal',
-        'permission_required',
-      );
+      return completeFailure(deps, idempotencyKey, mutationHash, 'failed_terminal', 'permission_required');
     }
     if (error.kind === 'rate_limited') {
       return completeFailure(deps, idempotencyKey, mutationHash, 'failed_terminal', 'rate_limited');
     }
     if (error.kind === 'provider_failure') {
-      return completeFailure(
-        deps,
-        idempotencyKey,
-        mutationHash,
-        'failed_terminal',
-        'media_upload_failed',
-      );
+      return completeFailure(deps, idempotencyKey, mutationHash, 'failed_terminal', 'media_upload_failed');
     }
   }
   return completeFailure(
@@ -557,13 +537,7 @@ async function processMedia(
       } catch (error: unknown) {
         if (error instanceof LinkedInImagesError && error.kind === 'reauthentication_required') {
           await bestEffortReauth(deps, context);
-          return completeFailure(
-            deps,
-            idempotencyKey,
-            mutationHash,
-            'failed_terminal',
-            'reauth_required',
-          );
+          return completeFailure(deps, idempotencyKey, mutationHash, 'failed_terminal', 'reauth_required');
         }
         verification = 'verification_unavailable';
       }
@@ -627,9 +601,7 @@ function serializeByLedger<T>(ledger: MediaIdempotencyLedger, action: () => Prom
 }
 
 function mutationHash(operation: string, author: string, payloadHash: string): string {
-  return createHash('sha256')
-    .update(JSON.stringify({ operation, author, payloadHash }))
-    .digest('hex');
+  return createHash('sha256').update(JSON.stringify({ operation, author, payloadHash })).digest('hex');
 }
 
 async function handlePostError(
