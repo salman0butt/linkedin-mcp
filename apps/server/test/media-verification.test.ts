@@ -117,14 +117,17 @@ describe('bounded image processing verification', () => {
     expect(sleeps).toEqual([1_000]);
   });
 
-  it('maps legitimate 403 read restriction to verification_unavailable without fabricating status', async () => {
-    const client = failingClient('permission_required');
+  it(
+    'maps legitimate 403 read restriction to verification_unavailable without fabricating status',
+    async () => {
+      const client = failingClient('permission_required');
 
-    await expect(
-      verifyImageProcessing({ readsEnabled: true, client, accessToken, imageUrn }),
-    ).resolves.toBe('verification_unavailable');
-    expect(client.getStatus).toHaveBeenCalledTimes(1);
-  });
+      await expect(
+        verifyImageProcessing({ readsEnabled: true, client, accessToken, imageUrn }),
+      ).resolves.toBe('verification_unavailable');
+      expect(client.getStatus).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it.each(['rate_limited', 'provider_failure', 'not_found', 'malformed_response'] as const)(
     'maps non-auth status-read failure %s to verification_unavailable without retrying',
