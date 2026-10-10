@@ -15,11 +15,11 @@ const imageUrn = 'urn:li:image:test-image-123';
 function statusClient(...statuses: LinkedInImageStatus[]): StatusClient {
   let index = 0;
   return {
-    getStatus: vi.fn(async () => {
+    getStatus: vi.fn(() => {
       const status = statuses[Math.min(index, statuses.length - 1)];
       index += 1;
-      if (status === undefined) throw new Error('No image status configured');
-      return status;
+      if (status === undefined) return Promise.reject(new Error('No image status configured'));
+      return Promise.resolve(status);
     }),
   };
 }
@@ -63,8 +63,9 @@ describe('bounded image processing verification', () => {
     await expect(
       verifyImageProcessing(input(client), {
         now: () => 0,
-        sleep: async (milliseconds) => {
+        sleep: (milliseconds) => {
           sleeps.push(milliseconds);
+          return Promise.resolve();
         },
       }),
     ).resolves.toBe('available');
@@ -79,8 +80,9 @@ describe('bounded image processing verification', () => {
     await expect(
       verifyImageProcessing(input(client), {
         now: () => 0,
-        sleep: async (milliseconds) => {
+        sleep: (milliseconds) => {
           sleeps.push(milliseconds);
+          return Promise.resolve();
         },
       }),
     ).resolves.toBe('pending');
@@ -96,9 +98,10 @@ describe('bounded image processing verification', () => {
     await expect(
       verifyImageProcessing(input(client), {
         now: () => currentTime,
-        sleep: async (milliseconds) => {
+        sleep: (milliseconds) => {
           sleeps.push(milliseconds);
           currentTime += 10_000;
+          return Promise.resolve();
         },
       }),
     ).resolves.toBe('pending');
