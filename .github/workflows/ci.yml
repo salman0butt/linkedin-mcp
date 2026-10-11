@@ -36,12 +36,7 @@ jobs:
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
       - name: Format check
-        run: |
-          if ! pnpm format:check; then
-            echo '--- prettier canonical media-mcp.ts ---'
-            pnpm exec prettier apps/server/src/media-mcp.ts
-            exit 1
-          fi
+        run: pnpm format:check
       - name: Test
         run: pnpm test
       - name: Lint
