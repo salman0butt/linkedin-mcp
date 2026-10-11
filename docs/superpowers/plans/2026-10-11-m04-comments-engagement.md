@@ -35,6 +35,7 @@
 ### Task 1: Canonical engagement contracts and access policy
 
 **Files:**
+
 - Create: `packages/core/src/engagement.ts`
 - Modify: `packages/core/src/index.ts`
 - Modify: capability registry source used by `linkedin.capabilities`
@@ -44,6 +45,7 @@
 - Test: `packages/core/test/capabilities.test.ts`
 
 **Interfaces:**
+
 - Produce strict comment target/comment/page/reply/reaction preview types and canonical hash helpers.
 - Add trusted config flag `LINKEDIN_MCP_ENGAGEMENT_READ_ENABLED`, default false.
 - Capability metadata keeps provider `OFFICIAL_API`, read restriction and live-unverified provenance explicit.
@@ -57,11 +59,13 @@
 ### Task 2: Official Comments read adapter
 
 **Files:**
+
 - Create: `apps/server/src/engagement/linkedin-comments.ts`
 - Test: `apps/server/test/linkedin-comments.test.ts`
 - Test: `apps/server/test/linkedin-comments-response-bounds.test.ts`
 
 **Interfaces:**
+
 - Produce `getComment(...)` and `listComments(...)` using explicit target URNs, bounded paging and canonical results.
 - Consume API version, access token and injected fetch.
 
@@ -75,12 +79,14 @@
 ### Task 3: Nested reply write flow
 
 **Files:**
+
 - Extend: `apps/server/src/engagement/linkedin-comments.ts`
 - Create: `apps/server/src/engagement/engagement-service.ts`
 - Test: `apps/server/test/engagement-service-comments.test.ts`
 - Extend: `apps/server/test/linkedin-comments.test.ts`
 
 **Interfaces:**
+
 - `previewReply`, `approveReply`, `createReply`.
 - Provider actor is derived only from authenticated subject.
 - Reuse existing ApprovalService and IdempotencyLedger.
@@ -95,12 +101,14 @@
 ### Task 4: Reaction add/remove flow
 
 **Files:**
+
 - Create: `apps/server/src/engagement/linkedin-reactions.ts`
 - Extend: `apps/server/src/engagement/engagement-service.ts`
 - Test: `apps/server/test/linkedin-reactions.test.ts`
 - Test: `apps/server/test/engagement-service-reactions.test.ts`
 
 **Interfaces:**
+
 - `previewReactionAdd`, `approveReactionAdd`, `addReaction`.
 - `previewReactionRemove`, `approveReactionRemove`, `removeReaction`.
 - Allowed types: LIKE, PRAISE, EMPATHY, INTEREST, APPRECIATION, ENTERTAINMENT.
@@ -115,10 +123,12 @@
 ### Task 5: Explicit-thread unanswered inbox/context
 
 **Files:**
+
 - Create: `apps/server/src/engagement/comment-inbox.ts`
 - Test: `apps/server/test/comment-inbox.test.ts`
 
 **Interfaces:**
+
 - Consume authenticated subject plus comment-list function and 1–20 explicit thread URNs.
 - Produce unanswered top-level comments plus direct reply context; preserve explicit unavailable states.
 
@@ -131,6 +141,7 @@
 ### Task 6: MCP and transport integration
 
 **Files:**
+
 - Create: `apps/server/src/engagement-mcp.ts`
 - Modify: `apps/server/src/runtime.ts`
 - Modify: shared server registration as required
@@ -139,6 +150,7 @@
 - Extend: `tests/contract/http-smoke.test.ts`
 
 **Interfaces:**
+
 - Register strict read/reply/reaction/inbox tools from the design.
 - Preserve current M00–M03 tools unchanged.
 
@@ -151,6 +163,7 @@
 ### Task 7: Whole-milestone closeout
 
 **Files:**
+
 - Update: `docs/milestones/M04-comments-engagement.md`
 - Update: `docs/progress/project-state.json`
 - Update: `docs/progress/STATUS.md`
