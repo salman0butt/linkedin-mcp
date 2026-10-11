@@ -33,7 +33,7 @@ afterEach(async () => {
 });
 
 describe('M03.4 durable media checkpoints', () => {
-  it('replays v1 text records unchanged and migrates to v3 on the next mutation', async () => {
+  it('replays v1 text records unchanged and migrates to v2 on the next mutation', async () => {
     const filePath = await createLedgerPath();
     const record = {
       idempotencyKey: 'legacy-text',
@@ -56,46 +56,8 @@ describe('M03.4 durable media checkpoints', () => {
       version: number;
       records: unknown[];
     };
-    expect(stored.version).toBe(3);
+    expect(stored.version).toBe(2);
     expect(stored.records[0]).toEqual(record);
-  });
-
-  it('replays v2 media records and migrates them when the post mutation is claimed', async () => {
-    const filePath = await createLedgerPath();
-    const record = {
-      idempotencyKey: 'legacy-media',
-      payloadHash,
-      state: 'reserved',
-      createdAt: '2026-10-10T09:20:00.000Z',
-      updatedAt: '2026-10-10T09:21:00.000Z',
-      media: [
-        {
-          sha256: imageDigest,
-          imageUrn: 'urn:li:image:legacy',
-          uploadState: 'available',
-        },
-      ],
-    };
-    await writeFile(filePath, JSON.stringify({ version: 2, records: [record] }));
-    const ledger = createFileIdempotencyLedger({ filePath });
-
-    await expect(ledger.reserve({ idempotencyKey: 'legacy-media', payloadHash })).resolves.toEqual({
-      status: 'replay',
-      record,
-    });
-    await expect(
-      ledger.claimPostMutation({ idempotencyKey: 'legacy-media', payloadHash }),
-    ).resolves.toMatchObject({
-      status: 'claimed',
-      record: { postMutation: 'pending' },
-    });
-
-    const stored = JSON.parse(await readFile(filePath, 'utf8')) as {
-      version: number;
-      records: Array<{ postMutation?: string }>;
-    };
-    expect(stored.version).toBe(3);
-    expect(stored.records[0]?.postMutation).toBe('pending');
   });
 
   it('durably checkpoints ordered image URNs and replays them after restart', async () => {
@@ -136,19 +98,29 @@ describe('M03.4 durable media checkpoints', () => {
       },
     });
     const persisted = await readFile(filePath, 'utf8');
-    expect(JSON.parse(persisted)).toMatchObject({ version: 3 });
+    expect(JSON.parse(persisted)).toMatchObject({ version: 2 });
     expect(persisted).not.toContain('sourcePath');
     expect(persisted).not.toContain('uploadUrl');
     expect(persisted).not.toContain('altText');
   });
 
-  it('allows only one durable post mutation claim across independent ledger instances', async () => {
+  it('allows only one runtime to finalize the same uploaded media checkpoint', async () => {
     const filePath = await createLedgerPath();
     const first = createFileIdempotencyLedger({ filePath });
     const second = createFileIdempotencyLedger({ filePath });
-    await first.reserve({ idempotencyKey: 'post-claim', payloadHash });
+    await first.reserve({ idempotencyKey: 'media-post', payloadHash });
     await first.checkpointMedia({
-      idempotencyKey: 'post-claim',
+      idempotencyKey: 'media-post',
+      payloadHash,
+      index: 0,
+      checkpoint: {
+        sha256: imageDigest,
+        imageUrn: 'urn:li:image:123',
+        uploadState: 'uploaded',
+      },
+    });
+    await first.checkpointMedia({
+      idempotencyKey: 'media-post',
       payloadHash,
       index: 0,
       checkpoint: {
@@ -158,18 +130,20 @@ describe('M03.4 durable media checkpoints', () => {
       },
     });
 
-    await expect(
-      first.claimPostMutation({ idempotencyKey: 'post-claim', payloadHash }),
-    ).resolves.toMatchObject({
-      status: 'claimed',
-      record: { state: 'reserved', postMutation: 'pending' },
-    });
-    await expect(
-      second.claimPostMutation({ idempotencyKey: 'post-claim', payloadHash }),
-    ).resolves.toMatchObject({
-      status: 'replay',
-      record: { state: 'reserved', postMutation: 'pending' },
-    });
+    await expectLedgerError(
+      () =>
+        second.checkpointMedia({
+          idempotencyKey: 'media-post',
+          payloadHash,
+          index: 0,
+          checkpoint: {
+            sha256: imageDigest,
+            imageUrn: 'urn:li:image:123',
+            uploadState: 'available',
+          },
+        }),
+      'conflict',
+    );
   });
 
   it('rejects rebinding a checkpoint slot to a different image digest', async () => {
