@@ -24,8 +24,7 @@ afterEach(async () => {
 const targetUrn = 'urn:li:comment:(urn:li:activity:6305471423192264704,6308007194273021952)';
 const rootUrn = 'urn:li:share:6305471423242596352';
 const createdCommentId = '6636062862760562688';
-const createdCommentUrn =
-  'urn:li:comment:(urn:li:activity:6305471423192264704,6636062862760562688)';
+const createdCommentUrn = 'urn:li:comment:(urn:li:activity:6305471423192264704,6636062862760562688)';
 const draft = {
   targetUrn,
   rootUrn,
@@ -297,34 +296,37 @@ describe('engagement service comment replies', () => {
     ['reauthentication_required', 'reauth_required'],
     ['permission_required', 'permission_required'],
     ['rate_limited', 'rate_limited'],
-  ] as const)('persists terminal provider classification %s without retry', async (providerKind, serviceKind) => {
-    const filePath = await ledgerPath();
-    const auth = authHarness();
-    const approvals = approvalHarness();
-    let providerCalls = 0;
-    const service = createEngagementService({
-      auth: auth.auth,
-      approvals,
-      ledger: createFileIdempotencyLedger({ filePath }),
-      comments: {
-        createReply: () => {
-          providerCalls += 1;
-          return Promise.reject(new LinkedInCommentsError(providerKind));
+  ] as const)(
+    'persists terminal provider classification %s without retry',
+    async (providerKind, serviceKind) => {
+      const filePath = await ledgerPath();
+      const auth = authHarness();
+      const approvals = approvalHarness();
+      let providerCalls = 0;
+      const service = createEngagementService({
+        auth: auth.auth,
+        approvals,
+        ledger: createFileIdempotencyLedger({ filePath }),
+        comments: {
+          createReply: () => {
+            providerCalls += 1;
+            return Promise.reject(new LinkedInCommentsError(providerKind));
+          },
         },
-      },
-    });
-    const preview = service.previewReply(draft);
-    const receipt = await service.approveReply({ payloadHash: preview.payloadHash });
-    const input = {
-      draft,
-      payloadHash: preview.payloadHash,
-      approvalReceiptId: receipt.receiptId,
-      idempotencyKey: `reply-key-${providerKind}`,
-    };
+      });
+      const preview = service.previewReply(draft);
+      const receipt = await service.approveReply({ payloadHash: preview.payloadHash });
+      const input = {
+        draft,
+        payloadHash: preview.payloadHash,
+        approvalReceiptId: receipt.receiptId,
+        idempotencyKey: `reply-key-${providerKind}`,
+      };
 
-    await expect(service.createReply(input)).rejects.toMatchObject({ kind: serviceKind });
-    await expect(service.createReply(input)).rejects.toMatchObject({ kind: serviceKind });
-    expect(providerCalls).toBe(1);
-    if (providerKind === 'reauthentication_required') expect(auth.reauthCalls()).toBe(1);
-  });
+      await expect(service.createReply(input)).rejects.toMatchObject({ kind: serviceKind });
+      await expect(service.createReply(input)).rejects.toMatchObject({ kind: serviceKind });
+      expect(providerCalls).toBe(1);
+      if (providerKind === 'reauthentication_required') expect(auth.reauthCalls()).toBe(1);
+    },
+  );
 });

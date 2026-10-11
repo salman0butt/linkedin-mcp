@@ -163,18 +163,27 @@ describe('official LinkedIn Comments reply adapter', () => {
       status: 201,
       headers: { 'x-restli-id': '9999999999999999999' },
     }),
-    Response.json({ ...successfulReplyBody(), actor: 'urn:li:person:other-member' }, {
-      status: 201,
-      headers: { 'x-restli-id': commentId },
-    }),
-    Response.json({ ...successfulReplyBody(), object: 'urn:li:share:999' }, {
-      status: 201,
-      headers: { 'x-restli-id': commentId },
-    }),
-    Response.json({ ...successfulReplyBody(), parentComment: undefined }, {
-      status: 201,
-      headers: { 'x-restli-id': commentId },
-    }),
+    Response.json(
+      { ...successfulReplyBody(), actor: 'urn:li:person:other-member' },
+      {
+        status: 201,
+        headers: { 'x-restli-id': commentId },
+      },
+    ),
+    Response.json(
+      { ...successfulReplyBody(), object: 'urn:li:share:999' },
+      {
+        status: 201,
+        headers: { 'x-restli-id': commentId },
+      },
+    ),
+    Response.json(
+      { ...successfulReplyBody(), parentComment: undefined },
+      {
+        status: 201,
+        headers: { 'x-restli-id': commentId },
+      },
+    ),
   ])('rejects malformed or mismatched successful reply responses', async (response) => {
     const recorded = recorder(response);
     const client = createLinkedInCommentsClient({ apiVersion: '202610' }, { fetch: recorded.fetch });
