@@ -61,6 +61,7 @@ export interface UploadImageInput {
 export interface GetImageStatusInput {
   accessToken: string;
   imageUrn: string;
+  signal?: AbortSignal;
 }
 
 export interface LinkedInImagesClient {
@@ -285,6 +286,7 @@ export function createLinkedInImagesClient(
         response = await fetchImpl(`${IMAGES_ENDPOINT}/${encodeURIComponent(input.imageUrn)}`, {
           method: 'GET',
           headers: versionedHeaders(input.accessToken, config.apiVersion),
+          ...(input.signal === undefined ? {} : { signal: input.signal }),
         });
       } catch {
         throw new LinkedInImagesError('provider_failure');
