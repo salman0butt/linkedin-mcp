@@ -38,7 +38,7 @@ Arbitrary URL fetch, browser fallback, video/document media, organization or spo
 7. **ACTIVE** — M03.7 strict MCP tool/stdio/HTTP integration.
 8. **PLANNED** — M03.8 whole-milestone review, exact-head CI and merge.
 
-## TDD / Verification Evidence
+## TDD Evidence
 
 - M03.1 GREEN `875efabef785c5e36cd2b725072643d63cbf0e7f`, CI `37900961050`.
 - M03.2 GREEN `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`.
@@ -49,6 +49,13 @@ Arbitrary URL fetch, browser fallback, video/document media, organization or spo
 - M03.6 deadline regression RED `4b92d8d8ea2c44f94c39d0e1483ab01bf2390e36`, CI `38127429915`: 409 tests passed and only the stalled-status assertion failed as intended.
 - M03.6 adapter cancellation RED `3c6ee6476bce750377a9b371698c2431985ebf0d`, CI `38127891256`: 410 tests passed and only signal forwarding failed as intended.
 - M03.6 final reviewed GREEN `e21bf679846564eacdc025de2fa7657e4dc25018`, CI `38127969036`: **411/411 tests across 43 files**, format, lint, typecheck and build passed.
+- M03.7 MCP contract RED is in progress on PR #4; exact behavioral RED is not recorded until unrelated framework guards are green.
+
+## Integration Test Evidence
+
+- M03.6 deterministic integration coverage exercises official Images and Posts adapters through injected providers without live account claims.
+- Existing real stdio and loopback HTTP smoke suites remain green through the M03.7 RED setup and are the required transport gates for the M03.7 implementation.
+- M03.7 must expose the six media tools through the same shared runtime used by both transports while preserving M00–M02 behavior.
 
 ## Security Review
 
@@ -59,6 +66,32 @@ M03.6 scoped review verifies subject-bound approval, current-file re-hash before
 No live LinkedIn image upload/status/post verification has occurred. Deterministic implementation evidence must not be represented as live account capability.
 
 Full M03 review remains pending M03.7 MCP integration and M03.8 closeout.
+
+## Code Review Findings
+
+- M03.3 unbounded successful provider-response handling was fixed before checkpoint closeout.
+- M03.6 stalled status reads and missing real-fetch abort forwarding were fixed and re-reviewed.
+- Current unresolved Critical findings: 0.
+- Current unresolved Important findings: 0.
+- M03.7 and whole-milestone review remain pending.
+
+## Fresh Verification Results
+
+- Latest fully verified implementation checkpoint: `e21bf679846564eacdc025de2fa7657e4dc25018`, CI `38127969036` — 411/411 tests across 43 files plus frozen install, format, lint, typecheck and build.
+- Later M03.7 test-only commits intentionally move exact-head CI to RED while the strict MCP surface is developed; they do not supersede `e21bf679...` as the latest GREEN implementation checkpoint until a new exact-head GREEN run is observed.
+
+## Durable Recovery Sources
+
+- `docs/progress/project-state.json`
+- `docs/progress/STATUS.md`
+- `docs/progress/KNOWN-ISSUES.md`
+- `docs/milestones/CURRENT.md`
+- this milestone ledger
+- `docs/requirements/TRACEABILITY.md`
+- `docs/product/CAPABILITY-MATRIX.md`
+- `docs/superpowers/specs/2026-10-09-m03-media-publishing-design.md`
+- `docs/superpowers/plans/2026-10-09-m03-media-publishing.md`
+- PR #4 source/tests/reviews and exact-SHA GitHub Actions evidence
 
 ## Completion Checklist
 
@@ -72,4 +105,4 @@ Full M03 review remains pending M03.7 MCP integration and M03.8 closeout.
 - [ ] M03.8 whole-milestone security review, exact-final-head CI and merge gates.
 - [ ] Post-merge main CI verified.
 
-Exact next work: **Write M03.7 RED tests for strict media MCP contracts and shared-runtime stdio/HTTP exposure, verify intended RED, then wire the existing media service without weakening M00–M02 behavior or capability provenance.**
+Exact next work: **Verify a clean M03.7 MCP behavioral RED with repository framework guards green, then wire the existing media service without weakening M00–M02 behavior or capability provenance.**
