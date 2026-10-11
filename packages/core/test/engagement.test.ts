@@ -76,14 +76,7 @@ describe('engagement contracts', () => {
   });
 
   it('allows only current supported reaction types and rejects MAYBE', () => {
-    expect(reactionTypes).toEqual([
-      'LIKE',
-      'PRAISE',
-      'EMPATHY',
-      'INTEREST',
-      'APPRECIATION',
-      'ENTERTAINMENT',
-    ]);
+    expect(reactionTypes).toEqual(['LIKE', 'PRAISE', 'EMPATHY', 'INTEREST', 'APPRECIATION', 'ENTERTAINMENT']);
 
     for (const reactionType of reactionTypes) {
       const preview = createReactionPreview({
