@@ -107,8 +107,7 @@ describe('official LinkedIn Comments read client', () => {
   });
 
   it('lists an explicit nested comment thread with bounded paging', async () => {
-    const nestedTarget =
-      'urn:li:comment:(urn:li:activity:6273189577469632512,6275822846992351232)';
+    const nestedTarget = 'urn:li:comment:(urn:li:activity:6273189577469632512,6275822846992351232)';
     const recorded = recorder(
       Response.json({
         elements: [commentBody],
@@ -243,9 +242,9 @@ describe('official LinkedIn Comments read client', () => {
     const recorded = recorder(Response.json(commentBody));
     const client = createLinkedInCommentsClient(config, { fetch: recorded.fetch });
 
-    await expect(
-      client.getComment({ accessToken: '', targetUrn: shareUrn, commentId: '1' }),
-    ).rejects.toThrow(/access token/i);
+    await expect(client.getComment({ accessToken: '', targetUrn: shareUrn, commentId: '1' })).rejects.toThrow(
+      /access token/i,
+    );
     await expect(
       client.getComment({ accessToken: 'token', targetUrn: 'urn:li:person:bad', commentId: '1' }),
     ).rejects.toThrow(/comment target/i);
