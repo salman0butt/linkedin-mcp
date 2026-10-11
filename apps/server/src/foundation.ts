@@ -10,9 +10,20 @@ interface FoundationDeps {
   now: () => Date;
 }
 
+type AuditOperation =
+  | 'post.preview.text'
+  | 'post.approve.text'
+  | 'post.create.text'
+  | 'post.preview.image'
+  | 'post.approve.image'
+  | 'post.create.image'
+  | 'post.preview.multi_image'
+  | 'post.approve.multi_image'
+  | 'post.create.multi_image';
+
 export interface LocalAuditResultOptions<T> extends FoundationDeps {
   status: ToolResultStatus;
-  operation: 'post.preview.text' | 'post.approve.text' | 'post.create.text';
+  operation: AuditOperation;
   provider?: 'LOCAL_ONLY' | 'OFFICIAL_API';
   data?: T;
   payloadHash?: string;
