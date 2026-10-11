@@ -97,6 +97,16 @@ function parsePng(bytes: Buffer): ParsedImage {
   if (bytes.readUInt32BE(8) !== 13 || bytes.toString('ascii', 12, 16) !== 'IHDR') {
     fail('media_malformed', 'PNG header is malformed');
   }
+
+  const iendOffset = bytes.length - 12;
+  if (
+    iendOffset < 33 ||
+    bytes.readUInt32BE(iendOffset) !== 0 ||
+    bytes.toString('ascii', iendOffset + 4, iendOffset + 8) !== 'IEND'
+  ) {
+    fail('media_malformed', 'PNG structure is malformed');
+  }
+
   const width = bytes.readUInt32BE(16);
   const height = bytes.readUInt32BE(20);
   validateDimensions(width, height);
@@ -104,6 +114,10 @@ function parsePng(bytes: Buffer): ParsedImage {
 }
 
 function parseJpeg(bytes: Buffer): ParsedImage {
+  if (bytes.length < 4 || bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9) {
+    fail('media_malformed', 'JPEG structure is malformed');
+  }
+
   let cursor = 2;
   while (cursor < bytes.length) {
     if (bytes[cursor] !== 0xff) fail('media_malformed', 'JPEG structure is malformed');
