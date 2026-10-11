@@ -1,6 +1,6 @@
 # M04 — Comments & Engagement
 
-Status: **ACTIVE — M04.1 contracts and access policy**
+Status: **ACTIVE — M04.2 bounded official Comments read adapter**
 
 ## Goal
 
@@ -8,7 +8,7 @@ Support capability-aware member comment reading/replies, reactions and bounded c
 
 ## Dependencies
 
-M03 merged and post-merge verified at `6713bfe79c261021ac39b75599509cd843e95f6d`, CI `38137131522`.
+M03 merged and post-merge verified, including cross-runtime final-media ownership hotfix PR #7. Current verified main is `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`, CI `38153987423`.
 
 ## In Scope
 
@@ -31,8 +31,8 @@ Organization engagement, broad feed discovery, BATCH_GET, comment edit/delete/im
 
 ## Tasks / Iterations
 
-1. **ACTIVE** — M04.1 canonical contracts, capability/access policy and trusted read configuration.
-2. **PLANNED** — M04.2 official bounded Comments read adapter.
+1. **GREEN** — M04.1 canonical contracts, capability/access policy and trusted read configuration.
+2. **ACTIVE** — M04.2 official bounded Comments read adapter.
 3. **PLANNED** — M04.3 approval/idempotency-gated nested reply flow.
 4. **PLANNED** — M04.4 reaction add/remove flow.
 5. **PLANNED** — M04.5 explicit-thread unanswered inbox/context derivation.
@@ -41,27 +41,33 @@ Organization engagement, broad feed discovery, BATCH_GET, comment edit/delete/im
 
 ## TDD Evidence
 
-Pending M04.1 behavioral RED.
+M04.1 behavioral RED: `b1c746ff87dba531d091c3172e4888d2be7f7ba4`, CI `38154909898`. Formatting passed; failures were exactly the absent engagement module, missing trusted engagement read config and incomplete M04 capability registry.
+
+M04.1 GREEN: `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`. 439/439 tests across 47 files plus frozen install, format, lint, typecheck and build passed.
 
 ## Integration Test Evidence
 
-Pending.
+M04.1 is contract/config-only; no live LinkedIn request is made. Existing real stdio/HTTP MCP smoke suites remain green.
 
 ## Security Review
 
 Primary boundaries: restricted read entitlements, subject-derived actor identity, no bulk engagement, no mutation retry after uncertain remote outcome, bounded provider responses/paging, cross-runtime idempotency and explicit capability provenance.
 
+M04.1 enforces actor-free canonical reply/reaction payload identity, excludes deprecated `MAYBE`, rejects unsupported caller fields, defaults engagement reads OFF and keeps live capabilities unavailable.
+
 ## Code Review Findings
 
-None yet.
+M04.1: no unresolved Critical or Important finding observed in the scoped contract/config review.
 
 ## Fresh Verification Results
 
-M04 base is post-merge verified main `6713bfe79c261021ac39b75599509cd843e95f6d`, CI `38137131522`: 426/426 tests across 46 files plus all quality gates.
+Verified main after M03 hotfix: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`, CI `38153987423`: 427/427 tests across 46 files plus all quality gates.
+
+M04.1 exact head: `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`: 439/439 tests across 47 files plus all quality gates.
 
 ## Durable Recovery Sources
 
-`AGENTS.md`, `CODEX-START-HERE.md`, `docs/AUTONOMOUS-DEVELOPMENT.md`, project state/status/known issues, this ledger, PRD/traceability/capability matrix, M04 spec/plan, active PR and exact-SHA CI.
+`AGENTS.md`, `CODEX-START-HERE.md`, `docs/AUTONOMOUS-DEVELOPMENT.md`, project state/status/known issues, this ledger, PRD/traceability/capability matrix, M04 spec/plan, PR #6 and exact-SHA CI.
 
 ## Completion Checklist
 
@@ -69,4 +75,4 @@ M04 base is post-merge verified main `6713bfe79c261021ac39b75599509cd843e95f6d`,
 - [ ] Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Establish M04.1 behavioral RED for contracts/access policy before implementation.**
+Exact next work: **Establish M04.2 behavioral RED for the bounded official Comments get/list adapter.**

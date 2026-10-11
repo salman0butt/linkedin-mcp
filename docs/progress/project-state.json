@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M04",
-  "currentIteration": "M04.1",
+  "currentIteration": "M04.2",
   "status": "ACTIVE",
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "6713bfe79c261021ac39b75599509cd843e95f6d",
-  "ciStatus": "GREEN_POST_MERGE_RUN_38137131522_426_TESTS_46_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "latestVerifiedSha": "2b80391f943907218a29fd39d4d6535cf0837e8f",
+  "ciStatus": "GREEN_RUN_38155192287_439_TESTS_47_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish M04.1 behavioral RED for canonical engagement contracts, current Community Management access policy, trusted member-read gating and truthful capability metadata."
+  "exactNextWork": "Establish M04.2 behavioral RED for the bounded official Comments get/list adapter: versioned requests, explicit target encoding, paging, restricted-access taxonomy, malformed responses and response-size bounds."
 }
