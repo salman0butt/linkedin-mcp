@@ -19,9 +19,10 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
     now,
   };
   const server = createBaseLinkedInMcpServer(normalizedDeps);
+  const mediaPostService = normalizedDeps.publishing?.mediaPostService;
 
   registerMediaPostTools(server, {
-    mediaPostService: normalizedDeps.publishing?.mediaPostService,
+    ...(mediaPostService === undefined ? {} : { mediaPostService }),
     createRequestId,
     now,
   });
