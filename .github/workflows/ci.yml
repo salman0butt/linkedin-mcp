@@ -35,8 +35,11 @@ jobs:
           cache: pnpm
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile
-      - name: Format check
-        run: pnpm format:check
+      - name: Format diagnostic
+        run: |
+          pnpm exec prettier --write apps/server/src/engagement/linkedin-comments.ts
+          git diff -- apps/server/src/engagement/linkedin-comments.ts
+          exit 1
       - name: Test
         run: pnpm test
       - name: Lint
