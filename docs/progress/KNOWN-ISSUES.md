@@ -18,8 +18,14 @@ GitHub Actions remains authoritative exact-SHA execution evidence when an intera
 
 ## Resolved during M03
 
-M03 merged through PR #4 at `6713bfe79c261021ac39b75599509cd843e95f6d`; post-merge CI `38137131522` passed 426/426 tests across 46 files plus format/lint/typecheck/build. Whole-milestone review resolved all Critical/Important findings, including bounded provider responses, stalled status cancellation, truncated image terminal validation and cross-runtime duplicate media initialization.
+M03 merged through PR #4 at `6713bfe79c261021ac39b75599509cd843e95f6d`; the later cross-runtime final-media ownership defect was repaired on main through hotfix PR #7 at `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`. Post-hotfix CI `38153987423` passed 427/427 tests across 46 files plus format/lint/typecheck/build. Whole-milestone review resolved all Critical/Important findings.
 
 ## Review state
 
-M03 whole-milestone review completed with **0 unresolved Critical findings and 0 unresolved Important findings** before merge. M04 review state starts clean; each iteration requires scoped review and the milestone requires a fresh whole-branch correctness/security/provenance review before merge.
+M03 whole-milestone review completed with **0 unresolved Critical findings and 0 unresolved Important findings** before merge, with the later ownership defect separately regression-fixed and verified on main.
+
+M04.1 scoped contract/config review completed with **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+M04.2 scoped Comments read-adapter review completed after exact-head GREEN `26ecce969e4d4935ddcd7babd93c6b46085a03b1` / CI `38160896542` with **0 unresolved Critical findings and 0 unresolved Important findings**. The adapter validates/encodes canonical targets, bounds paging and successful JSON bodies, leaves HTTP error bodies unread, sanitizes failures, uses no BATCH_GET and performs no automatic retries.
+
+Full M04 whole-branch correctness/security/provenance review remains required before merge.

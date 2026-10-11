@@ -7,7 +7,7 @@
 | R-M01-AUTH — OAuth identity/scopes                      | M01       | `2026-10-06-m01-auth-identity-design.md`       | `2026-10-06-m01-auth-identity.md`       | M01.2–M01.8                    | deterministic + real transports   | post-merge CI 37739373991 on `3dbf3e2`  | VERIFIED |
 | R-M02-TEXT — text publishing with safe writes           | M02       | `2026-10-08-m02-text-publishing-design.md`     | `2026-10-08-m02-text-publishing.md`     | M02.1–M02.7                    | deterministic + real transports   | post-merge CI 37895605908 on `8e3917a`  | VERIFIED |
 | R-M03-MEDIA — image/multi-image publishing              | M03       | `2026-10-09-m03-media-publishing-design.md`    | `2026-10-09-m03-media-publishing.md`    | M03.1–M03.8                    | 426 tests + real transports       | post-merge CI 38137131522 on `6713bfe7` | VERIFIED |
-| R-M04-ENGAGE — comments/replies/reactions               | M04       | `2026-10-11-m04-comments-engagement-design.md` | `2026-10-11-m04-comments-engagement.md` | M04.1 active                   | RED pending                       | base main CI 38137131522 on `6713bfe7`  | ACTIVE   |
+| R-M04-ENGAGE — comments/replies/reactions               | M04       | `2026-10-11-m04-comments-engagement-design.md` | `2026-10-11-m04-comments-engagement.md` | M04.1–M04.2                    | 450 deterministic tests           | M04.2 CI 38160896542 on `26ecce96`       | ACTIVE   |
 | R-M05-POSTSEARCH — post discovery with provenance       | M05       | Pending                                        | Pending                                 | Pending                        | Pending                           | Pending                                 | PLANNED  |
 | R-M06-JOBS — job discovery/freshness/provenance         | M06       | Pending                                        | Pending                                 | Pending                        | Pending                           | Pending                                 | PLANNED  |
 | R-M07-JOBINTEL — job analysis/comparison                | M07       | Pending                                        | Pending                                 | Pending                        | Pending                           | Pending                                 | PLANNED  |
@@ -24,6 +24,6 @@
 
 `VERIFIED` means scoped deterministic implementation plus repository merge/post-merge CI gates were verified. It does not itself claim live LinkedIn capability for a particular app/account.
 
-M03 is repository-verified after squash merge `6713bfe79c261021ac39b75599509cd843e95f6d` and post-merge CI `38137131522` (426/426 tests across 46 files plus all quality gates). Live media entitlement remains unverified.
+M03 is repository-verified after squash merge `6713bfe79c261021ac39b75599509cd843e95f6d` plus cross-runtime final-media hotfix `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`; post-hotfix main CI `38153987423` passed 427/427 tests. Live media entitlement remains unverified.
 
-M04 is active from that verified base. Current provider documentation makes member reads restricted and Community Management access vetted, so M04 implementation/CI cannot by itself upgrade live engagement availability.
+M04 is ACTIVE through M04.2 deterministic verification at `26ecce969e4d4935ddcd7babd93c6b46085a03b1` / CI `38160896542`. Member reads remain restricted and Community Management access vetted, so implementation/CI cannot by itself upgrade live engagement availability. M04.3 write orchestration and later milestone work remain unfinished.

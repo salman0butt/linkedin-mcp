@@ -1,6 +1,6 @@
 # M04 — Comments & Engagement
 
-Status: **ACTIVE — M04.2 bounded official Comments read adapter**
+Status: **ACTIVE — M04.3 approval/idempotency-gated nested reply flow**
 
 ## Goal
 
@@ -32,8 +32,8 @@ Organization engagement, broad feed discovery, BATCH_GET, comment edit/delete/im
 ## Tasks / Iterations
 
 1. **GREEN** — M04.1 canonical contracts, capability/access policy and trusted read configuration.
-2. **ACTIVE** — M04.2 official bounded Comments read adapter.
-3. **PLANNED** — M04.3 approval/idempotency-gated nested reply flow.
+2. **GREEN** — M04.2 official bounded Comments read adapter.
+3. **ACTIVE** — M04.3 approval/idempotency-gated nested reply flow.
 4. **PLANNED** — M04.4 reaction add/remove flow.
 5. **PLANNED** — M04.5 explicit-thread unanswered inbox/context derivation.
 6. **PLANNED** — M04.6 strict MCP/stdio/HTTP integration.
@@ -45,9 +45,13 @@ M04.1 behavioral RED: `b1c746ff87dba531d091c3172e4888d2be7f7ba4`, CI `3815490989
 
 M04.1 GREEN: `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`. 439/439 tests across 47 files plus frozen install, format, lint, typecheck and build passed.
 
+M04.2 behavioral RED: `5b035386e10f2704964d6313984080c38ec51873`, CI `38160678343`. Formatting passed, all 439 existing tests stayed green and the two new Comments suites failed only because `apps/server/src/engagement/linkedin-comments.ts` was absent.
+
+M04.2 final GREEN: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`. 450/450 tests across 49 files plus frozen install, format, lint, typecheck and build passed.
+
 ## Integration Test Evidence
 
-M04.1 is contract/config-only; no live LinkedIn request is made. Existing real stdio/HTTP MCP smoke suites remain green.
+M04.1–M04.2 use deterministic injected-provider tests only; no live LinkedIn Community Management request has been performed. Existing real stdio/HTTP MCP smoke suites remain green.
 
 ## Security Review
 
@@ -55,15 +59,19 @@ Primary boundaries: restricted read entitlements, subject-derived actor identity
 
 M04.1 enforces actor-free canonical reply/reaction payload identity, excludes deprecated `MAYBE`, rejects unsupported caller fields, defaults engagement reads OFF and keeps live capabilities unavailable.
 
+M04.2 validates canonical targets before URL construction, fully encodes explicit targets, restricts request paging to 1–100 items, stream-bounds successful provider JSON to 64 KiB before parsing, validates normalized comment/paging fields, never reads HTTP error bodies, sanitizes transport/provider failures, performs no BATCH_GET and never retries reads. Scoped review found 0 unresolved Critical findings and 0 unresolved Important findings.
+
 ## Code Review Findings
 
-M04.1: no unresolved Critical or Important finding observed in the scoped contract/config review.
+M04.1–M04.2 scoped reviews have 0 unresolved Critical findings and 0 unresolved Important findings. Full whole-milestone review remains pending later work.
 
 ## Fresh Verification Results
 
 Verified main after M03 hotfix: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`, CI `38153987423`: 427/427 tests across 46 files plus all quality gates.
 
 M04.1 exact head: `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`: 439/439 tests across 47 files plus all quality gates.
+
+M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 450/450 tests across 49 files plus all quality gates.
 
 ## Durable Recovery Sources
 
@@ -75,4 +83,4 @@ M04.1 exact head: `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`: 
 - [ ] Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Establish M04.2 behavioral RED for the bounded official Comments get/list adapter.**
+Exact next work: **Establish M04.3 behavioral RED for approval/idempotency-gated nested replies.**
