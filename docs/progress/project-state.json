@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M03",
-  "currentIteration": "M03.7",
+  "currentIteration": "M03.8",
   "status": "ACTIVE",
   "activeBranch": "feat/m03-media-publishing",
   "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "e21bf679846564eacdc025de2fa7657e4dc25018",
-  "ciStatus": "GREEN_RUN_38127969036_411_TESTS_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "latestVerifiedSha": "7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8",
+  "ciStatus": "GREEN_RUN_38136409125_426_TESTS_46_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Write M03.7 RED tests for strict image/multi-image MCP contracts and shared-runtime stdio/HTTP exposure, verify intended exact-head RED, then wire the existing MediaPostService without exposing custom author or privileged path/token/read-control inputs."
+  "exactNextWork": "Verify exact-final-head CI after the M03.8 closeout documentation commit, then squash-merge PR #4 if the head, review threads, mergeability, findings, traceability and main branch remain unchanged."
 }
