@@ -27,6 +27,13 @@ try {
   const publish = await client.callTool({ name: 'linkedin.post.create.text', arguments: {
     payload: previewData.payload, idempotencyKey: 'http-smoke-key',
   } });
+  const mediaPreview = await client.callTool({
+    name: 'linkedin.post.preview.image',
+    arguments: {
+      text: 'HTTP media preview',
+      image: { sourcePath: 'missing.png', altText: 'Missing HTTP image' },
+    },
+  });
   const capabilities = await client.callTool({ name: 'linkedin.capabilities', arguments: {} });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
@@ -36,6 +43,7 @@ try {
     preview: preview.structuredContent,
     approval: approval.structuredContent,
     publish: publish.structuredContent,
+    mediaPreview: mediaPreview.structuredContent,
     capabilities: capabilities.structuredContent,
   }));
 } finally {
@@ -62,7 +70,7 @@ function callBuiltHttpServer(): unknown {
 }
 
 describe('built HTTP server', () => {
-  it('exposes local health and the M01 auth status contract through real loopback HTTP', () => {
+  it('exposes health, auth, text publishing, and media discovery through real loopback HTTP', () => {
     const result = callBuiltHttpServer() as {
       toolNames: string[];
       toolCount: number;
@@ -72,6 +80,7 @@ describe('built HTTP server', () => {
       preview: unknown;
       approval: unknown;
       publish: unknown;
+      mediaPreview: unknown;
     };
     expect(result).toMatchObject({
       health: {
@@ -93,7 +102,7 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 10,
+      toolCount: 16,
       preview: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
@@ -108,12 +117,31 @@ describe('built HTTP server', () => {
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
         error: { code: 'approval_required' },
       },
+      mediaPreview: {
+        status: 'permission_required',
+        provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
+        error: { code: 'publishing_not_configured' },
+      },
     });
     expect(result.toolNames).toContain('linkedin.post.preview.text');
     expect(result.toolNames).toContain('linkedin.post.approve.text');
     expect(result.toolNames).toContain('linkedin.post.create.text');
+    expect(result.toolNames).toEqual(
+      expect.arrayContaining([
+        'linkedin.post.preview.image',
+        'linkedin.post.approve.image',
+        'linkedin.post.create.image',
+        'linkedin.post.preview.multi_image',
+        'linkedin.post.approve.multi_image',
+        'linkedin.post.create.multi_image',
+      ]),
+    );
     expect(
       result.capabilities.data.capabilities.find((capability) => capability.id === 'post.create.text')
+        ?.availability,
+    ).toBe('UNAVAILABLE');
+    expect(
+      result.capabilities.data.capabilities.find((capability) => capability.id === 'post.create.image')
         ?.availability,
     ).toBe('UNAVAILABLE');
   });

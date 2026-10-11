@@ -1,58 +1,50 @@
 # Project Status
 
-Last reconciled: 2026-10-09. Actual Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-11. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M02 — Text Publishing — **ACTIVE, M02.7 closeout**.
+M03 — Media Publishing — **ACTIVE, M03.8 whole-milestone closeout**.
 
-Active branch: `feat/m02-text-publishing`.
-Active PR: #3 — draft pending final closeout-head CI.
-Design: `docs/superpowers/specs/2026-10-08-m02-text-publishing-design.md`.
-Plan: `docs/superpowers/plans/2026-10-08-m02-text-publishing.md`.
+Active branch: `feat/m03-media-publishing`. Active PR: #4 (draft pending final closeout CI).
+Current main: `e006d0d21ee6b3531ec6fcd7a4390bfebf704374`.
+Design: `docs/superpowers/specs/2026-10-09-m03-media-publishing-design.md`.
+Plan: `docs/superpowers/plans/2026-10-09-m03-media-publishing.md`.
 
-## Verified M02 Checkpoints
+## Verified Evidence
 
-M02.1 canonical text-post contracts: RED `7c193f9adb8049a5849c603a5c5e29bea69ef59d` / CI `37753499633`; GREEN `c1dab02097f0e7c816ab0d80b6485024d4cbea07` / CI `37753956032`.
+M03.1 canonical contracts GREEN: `875efabef785c5e36cd2b725072643d63cbf0e7f`, CI `37900961050`.
 
-M02.2 approval receipts: RED `7b55eb7a09f7010acffd6ba5a6c928b99099f472` / CI `37754698723`; GREEN `5f1870106988c6b5ab365df275a8b3a314c60aa5` / CI `37754858404`.
+M03.2 secure local media reader GREEN: `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504` — 346/346 tests plus format/lint/typecheck/build; scoped review clear.
 
-M02.3 persistent idempotency: valid RED `a99a0d59d66c37ac120d6efe4ac2ab364cf4aa0a` / CI `37755801316`; GREEN `c88ae5b909888e796880f0193299cd21e1246648` / CI `37756724053`.
+M03.3 official Images adapter final GREEN: `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`, CI `37966842680` — 363/363 tests plus all quality gates after fixing the Important unbounded-success-response finding.
 
-M02.4 official Posts adapter: valid RED `7817938bb2efcdc577d04c00b5b8625216ad6d29` / CI `37762083892`; GREEN `90267d9e27bbef705e93b9ec8250548ae815b7ce` / CI `37762622471`.
+M03.4 durable media checkpoint final GREEN: `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`, CI `38051403134` — 370/370 tests plus all quality gates; scoped review clear.
 
-M02.5 publish orchestration: exact checkpoint `84b36492da74961965ba3ae2cfb6e9c8a4c239e6` / CI `37793478842` green. Scoped Important findings were resolved; historical RED limitations remain explicitly qualified in the committed evidence.
+M03.5 bounded processing verification final GREEN: `0eaa01e31f605a576b2b4456a23605c379f7d3eb`, CI `38057237124` — 389/389 tests plus all quality gates; scoped review clear.
 
-M02.6 downstream verification: exact checkpoint `1a2cef29d88f7032d5befe18efb627736e49da16` / CI `37832719872` green. Creation success and optional read verification remain separate; read confirmation requires trusted enablement plus granted `r_member_social`.
+M03.6 approval-gated media orchestration and Posts mapping final reviewed GREEN: `e21bf679846564eacdc025de2fa7657e4dc25018`, CI `38127969036` — 411/411 tests across 43 files plus format/lint/typecheck/build. The review fixed stalled status reads and real provider abort forwarding.
 
-Task 7 MCP/runtime integration: exact head `1986831bf58fdd48ea5b0da64109898a768bd937` / CI `37838015911` green. GitHub Actions completed frozen install, format check, tests, lint, typecheck and build. The immediately preceding local checkpoint passed 319 tests across 31 files, including real stdio and loopback HTTP MCP smokes. No live LinkedIn request occurred.
+M03.7 strict MCP/transport integration final GREEN: `5851b9dc1c5b97094ec22cf2e40da71ba6f99118`, CI `38129813482` — 423 deterministic tests plus format/lint/typecheck/build. The six image/multi-image preview, approval and create tools are registered through the shared runtime used by stdio and loopback HTTP; strict schemas exclude custom author/token/admin-path/read-control inputs.
 
-## M02.7 Whole-Milestone Review
+M03.8 whole-milestone review found two Important issues and resolved both through regression coverage:
 
-A fresh skeptical/security closeout review on 2026-10-09 covered approval binding, caller-controlled fields, member-bound idempotency, process/restart races, credential invalidation, provider uncertainty, post-URN validation, optional read verification, MCP result sanitization, provenance and transport/runtime sharing.
+- Truncated PNG/JPEG files with valid dimension headers were previously accepted. Behavioral RED `77cc6c5706dee48777773b247946459fed35d4c2`, CI `38133439691`; final parser fix GREEN `06505689a070f02a3d86a6c550a922b5028e45de`, CI `38135585804` — 424/424 tests plus all quality gates. PNG now requires terminal `IEND`; JPEG requires terminal EOI.
+- Separate runtimes sharing one durable ledger could both initialize the same remote image before a checkpoint existed. Behavioral RED `0394ae1ffcf725076a0674583c6464c0b7b7f9fa`, CI `38135863252`, proved duplicate `initializeUpload`. The in-flight replay guard at `0150f157c1af71387bd40f28f28941a41a19a8b5` blocks a replay with a reserved record and no media checkpoint before any remote media mutation. A second uploaded-before-post concurrency probe passed, showing the same guard already protects that boundary; it is not recorded as RED.
 
-Unresolved Critical findings: **0**.
-Unresolved Important findings: **0**.
-Blocking review threads: **0**.
+Latest fully verified implementation head: `7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8`, CI `38136409125` — **426/426 tests across 46 files**, frozen install, format, lint, typecheck and build all passed. Whole-milestone correctness/security/provenance review has **0 unresolved Critical findings and 0 unresolved Important findings**.
 
-The file ledger uses fail-closed exclusive sibling locks and atomic replacement, preventing independent ledger instances from both returning a new reservation. Approval is bound to canonical payload hash plus authenticated subject and one raw idempotency key. The mutation fingerprint includes authenticated author, successful replay performs no second POST, uncertain remote acceptance remains terminal `outcome_unknown`, and provider/admin credentials, author and read-policy controls are not caller-supplied MCP fields.
+## Capability Provenance
 
-The M02 design intentionally treats a valid provider-returned post URN as the authoritative creation identifier. It forbids constructing or claiming a verified LinkedIn post URL when the provider has not supplied one. Optional GET confirmation never downgrades durable creation success and does not upgrade live capability availability.
+No live LinkedIn image upload, image-status read, single-image post or multi-image post has been verified with legitimate provider access. Deterministic implementation evidence does not upgrade live availability. `post.create.image` and `post.create.multi_image` remain official-API implementations with live availability unverified/unavailable until legitimate provider evidence exists.
 
-Interactive local re-execution in this closeout session was unavailable because that runtime exposed Node 22 rather than the repository-required Node 24, had no pnpm, and could not resolve github.com. Those environment limitations are not counted as verification evidence; the exact-head GitHub Actions run above is authoritative.
+## Blockers and Findings
 
-## Completed Milestones
-
-M01 — Authentication & Identity merged through PR #2 at `3dbf3e2ced5303b52fc27303de9c086a998835c7`; post-merge CI `37739373991` passed the required quality gates.
-
-M00 foundation/control-plane remains verified from its post-merge main gate.
-
-## Known Carryover
-
-The M00 private package-boundary debt remains Minor and deferred. Live LinkedIn capability availability still depends on legitimate configured developer/member access and must not be inferred from deterministic tests.
+Unresolved Critical findings: 0.
+Unresolved Important findings: 0.
+Blocking PR #4 review threads: 0 observed at the latest closeout check.
+External live-capability verification remains a non-merge-blocking product-access gate and is not represented as verified.
 
 ## Handoff
 
-Critical findings: 0. Important findings: 0. Blockers: none.
-
-Exact next work: **Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main.**
+Exact next work: **Verify exact-final-head CI after this M03.8 closeout documentation commit, then squash-merge PR #4 only if the final head, review threads, mergeability, findings, traceability and main branch remain unchanged; verify post-merge `main` before activating M04.**

@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M02",
-  "currentIteration": "M02.7",
+  "currentMilestone": "M03",
+  "currentIteration": "M03.8",
   "status": "ACTIVE",
-  "activeBranch": "feat/m02-text-publishing",
-  "activePr": 3,
+  "activeBranch": "feat/m03-media-publishing",
+  "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "1986831bf58fdd48ea5b0da64109898a768bd937",
-  "ciStatus": "GREEN_EXACT_HEAD_37838015911_INSTALL_FORMAT_TEST_LINT_TYPECHECK_BUILD",
+  "latestVerifiedSha": "7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8",
+  "ciStatus": "GREEN_RUN_38136409125_426_TESTS_46_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Verify the M02 closeout-docs pushed-head CI; if green with stable remote heads and clean reviews, mark PR #3 ready and squash-merge it, then verify post-merge main."
+  "exactNextWork": "Verify exact-final-head CI after the M03.8 closeout documentation commit, then squash-merge PR #4 if the head, review threads, mergeability, findings, traceability and main branch remain unchanged."
 }

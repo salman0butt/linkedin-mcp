@@ -107,9 +107,11 @@ const descriptors: CapabilityDescriptor[] = [
     provider: 'OFFICIAL_API',
     availability: 'UNAVAILABLE',
     milestone: 'M03',
-    status: 'PLANNED',
+    status: 'ACTIVE',
     accessNote: 'Requires authenticated media and publishing permission.',
     approvalRequired: true,
+    evidence:
+      'M03 canonical single-image contract is under deterministic CI verification; live media publication remains unverified.',
   },
   {
     id: 'post.create.multi_image',
@@ -117,9 +119,11 @@ const descriptors: CapabilityDescriptor[] = [
     provider: 'OFFICIAL_API',
     availability: 'UNAVAILABLE',
     milestone: 'M03',
-    status: 'PLANNED',
+    status: 'ACTIVE',
     accessNote: 'Requires authenticated media and publishing permission.',
     approvalRequired: true,
+    evidence:
+      'M03 canonical multi-image contract is under deterministic CI verification; live media publication remains unverified.',
   },
   {
     id: 'comments.list',

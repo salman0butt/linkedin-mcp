@@ -62,7 +62,7 @@ describe('M02 persistent idempotency ledger', () => {
     });
 
     const stored = JSON.parse(await readFile(filePath, 'utf8')) as { version: number; records: unknown[] };
-    expect(stored.version).toBe(1);
+    expect(stored.version).toBe(2);
     expect(stored.records).toHaveLength(1);
     expect((await stat(filePath)).mode & 0o777).toBe(0o600);
   });
