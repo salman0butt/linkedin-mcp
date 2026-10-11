@@ -121,7 +121,9 @@ describe('engagement contracts', () => {
     expect(add.canonicalJson).toBe(
       JSON.stringify({ operation: 'add', targetUrn: shareUrn, reactionType: 'PRAISE' }),
     );
-    expect(remove.canonicalJson).toBe(JSON.stringify({ operation: 'remove', targetUrn: shareUrn }));
+    expect(remove.canonicalJson).toBe(
+      JSON.stringify({ operation: 'remove', targetUrn: shareUrn }),
+    );
     expect(add.canonicalJson).not.toContain('actor');
     expect(remove.canonicalJson).not.toContain('actor');
   });
