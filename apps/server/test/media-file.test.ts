@@ -141,6 +141,15 @@ describe('MediaFileReader', () => {
     }
   });
 
+  it('rejects PNG and JPEG files truncated after their dimension headers', async () => {
+    const reader = new MediaFileReader({ root });
+    await writeFile(join(root, 'header-only.png'), png().subarray(0, 33));
+    await writeFile(join(root, 'header-only.jpg'), jpeg().subarray(0, -2));
+
+    await expect(reader.read('header-only.png')).rejects.toMatchObject({ code: 'media_malformed' });
+    await expect(reader.read('header-only.jpg')).rejects.toMatchObject({ code: 'media_malformed' });
+  });
+
   it('rejects zero or excessive pixel dimensions and too many GIF frames', async () => {
     const reader = new MediaFileReader({ root });
     await writeFile(join(root, 'zero.png'), png(0, 3));
