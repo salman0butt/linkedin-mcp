@@ -106,7 +106,7 @@ function serializeByLedger<T>(ledger: IdempotencyLedger, action: () => Promise<T
   return result;
 }
 
-function assertNonEmpty(value: unknown, label: string): asserts value is string {
+function assertNonEmpty(value: unknown): asserts value is string {
   if (typeof value !== 'string' || value.trim() === '') {
     throw new EngagementServiceError('invalid_payload');
   }
@@ -303,14 +303,14 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
         return Promise.reject(new EngagementServiceError('invalid_payload'));
       }
       assertPayloadHash(input.payloadHash);
-      assertNonEmpty(input.approvalReceiptId, 'approvalReceiptId');
-      assertNonEmpty(input.idempotencyKey, 'idempotencyKey');
+      assertNonEmpty(input.approvalReceiptId);
+      assertNonEmpty(input.idempotencyKey);
 
       let preview: ReplyPreview;
       try {
         preview = previewFor(input.draft);
       } catch (error: unknown) {
-        return Promise.reject(error);
+        return Promise.reject(error instanceof Error ? error : new EngagementServiceError('invalid_payload'));
       }
       if (preview.payloadHash !== input.payloadHash) {
         return Promise.reject(new EngagementServiceError('approval_mismatch'));
