@@ -156,7 +156,10 @@ const publishResultSchema = z
       .string()
       .regex(/^urn:li:(?:share|ugcPost):[0-9]+$/)
       .refine(isValidLinkedInPostUrn),
-    imageUrns: z.array(z.string().regex(/^urn:li:image:[A-Za-z0-9_-]+$/)).min(1).max(20),
+    imageUrns: z
+      .array(z.string().regex(/^urn:li:image:[A-Za-z0-9_-]+$/))
+      .min(1)
+      .max(20),
     processing: z.array(processingSchema).min(1).max(20),
     replay: z.boolean(),
   })
@@ -207,7 +210,10 @@ const mediaOutputSchema = z
       z.object({ type: z.literal('OFFICIAL_API'), name: z.literal('LinkedIn') }).strict(),
     ]),
     warnings: z.array(z.string()).optional(),
-    error: z.object({ code: z.string(), message: z.string(), retryable: z.boolean() }).strict().optional(),
+    error: z
+      .object({ code: z.string(), message: z.string(), retryable: z.boolean() })
+      .strict()
+      .optional(),
     metadata: auditMetadataSchema,
   })
   .strict();
@@ -335,7 +341,8 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
   server.registerTool(
     'linkedin.post.preview.image',
     {
-      description: 'Build a local canonical preview for a single-image member post without publishing it.',
+      description:
+        'Build a local canonical preview for a single-image member post without publishing it.',
       inputSchema: imageDraftSchema,
       outputSchema: mediaOutputSchema,
     },
@@ -364,7 +371,8 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
   server.registerTool(
     'linkedin.post.approve.image',
     {
-      description: 'Issue a short-lived subject-bound approval receipt for a previously previewed image post.',
+      description:
+        'Issue a short-lived subject-bound approval receipt for a previously previewed image post.',
       inputSchema: approveMediaInputSchema,
       outputSchema: mediaOutputSchema,
     },
@@ -393,7 +401,8 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
   server.registerTool(
     'linkedin.post.create.image',
     {
-      description: 'Publish an approved single-image member post using the existing approval and idempotency boundaries.',
+      description:
+        'Publish an approved single-image member post using the existing approval and idempotency boundaries.',
       inputSchema: createImageInputSchema,
       outputSchema: mediaOutputSchema,
     },
@@ -430,7 +439,8 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
   server.registerTool(
     'linkedin.post.preview.multi_image',
     {
-      description: 'Build a local canonical preview for an ordered 2–20 image member post without publishing it.',
+      description:
+        'Build a local canonical preview for an ordered 2–20 image member post without publishing it.',
       inputSchema: multiImageDraftSchema,
       outputSchema: mediaOutputSchema,
     },
@@ -459,7 +469,8 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
   server.registerTool(
     'linkedin.post.approve.multi_image',
     {
-      description: 'Issue a short-lived subject-bound approval receipt for a previously previewed multi-image post.',
+      description:
+        'Issue a short-lived subject-bound approval receipt for a previously previewed multi-image post.',
       inputSchema: approveMediaInputSchema,
       outputSchema: mediaOutputSchema,
     },
@@ -488,7 +499,8 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
   server.registerTool(
     'linkedin.post.create.multi_image',
     {
-      description: 'Publish an approved ordered 2–20 image member post using approval and idempotency boundaries.',
+      description:
+        'Publish an approved ordered 2–20 image member post using approval and idempotency boundaries.',
       inputSchema: createMultiImageInputSchema,
       outputSchema: mediaOutputSchema,
     },
