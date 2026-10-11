@@ -93,8 +93,7 @@ describe('official LinkedIn Comments read client', () => {
 
     expect(recorded.calls).toEqual([
       {
-        input:
-          `https://api.linkedin.com/rest/socialActions/${encodeURIComponent(shareUrn)}/comments/6636062862760562688`,
+        input: `https://api.linkedin.com/rest/socialActions/${encodeURIComponent(shareUrn)}/comments/6636062862760562688`,
         init: {
           method: 'GET',
           headers: {
@@ -108,7 +107,8 @@ describe('official LinkedIn Comments read client', () => {
   });
 
   it('lists an explicit nested comment thread with bounded paging', async () => {
-    const nestedTarget = 'urn:li:comment:(urn:li:activity:6273189577469632512,6275822846992351232)';
+    const nestedTarget =
+      'urn:li:comment:(urn:li:activity:6273189577469632512,6275822846992351232)';
     const recorded = recorder(
       Response.json({
         elements: [commentBody],
