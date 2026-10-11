@@ -318,7 +318,7 @@ function validateCheckpoint(checkpoint: MediaCheckpoint): MediaCheckpoint {
 }
 
 function canTransitionMediaState(from: MediaUploadState, to: MediaUploadState): boolean {
-  if (from === to) return true;
+  if (from === to) return from === 'pending' || from === 'uploaded';
   if (from === 'pending') return to === 'uploaded';
   if (from === 'uploaded') return to === 'available' || to === 'verification_unavailable';
   return false;
