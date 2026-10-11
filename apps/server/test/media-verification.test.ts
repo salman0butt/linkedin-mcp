@@ -165,5 +165,4 @@ describe('bounded image processing verification', () => {
       vi.useRealTimers();
     }
   });
-
 });
