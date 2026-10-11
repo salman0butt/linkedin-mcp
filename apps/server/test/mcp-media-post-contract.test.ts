@@ -288,8 +288,8 @@ describe('M03 media-post MCP contract', () => {
     });
     expect(service.previewMultiImage).toHaveBeenCalledWith(multiDraft);
     const serialized = JSON.stringify(result.structuredContent);
-    expect(serialized).not.toContain(multiDraft.images[0].sourcePath);
-    expect(serialized).not.toContain(multiDraft.images[1].sourcePath);
+    expect(serialized).not.toContain(multiDraft.images[0]!.sourcePath);
+    expect(serialized).not.toContain(multiDraft.images[1]!.sourcePath);
   });
 
   it('returns structured not-configured behavior instead of attempting media filesystem/provider work', async () => {
