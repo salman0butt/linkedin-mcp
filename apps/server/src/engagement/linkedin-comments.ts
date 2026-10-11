@@ -1,0 +1,337 @@
+import {
+  parseCommentTarget,
+  type CanonicalComment,
+  type CommentPage,
+  type CommentTarget,
+} from '../../../../packages/core/dist/index.js';
+
+const SOCIAL_ACTIONS_ENDPOINT = 'https://api.linkedin.com/rest/socialActions';
+const MAX_PROVIDER_JSON_BYTES = 64 * 1024;
+const COMMENT_URN_PATTERN = /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
+const ACTOR_URN_PATTERN = /^urn:li:(?:person:[^\s]+|organization:\d+)$/;
+
+export type LinkedInCommentsErrorKind =
+  | 'reauthentication_required'
+  | 'permission_required'
+  | 'rate_limited'
+  | 'provider_failure'
+  | 'not_found'
+  | 'malformed_response';
+
+export class LinkedInCommentsError extends Error {
+  readonly kind: LinkedInCommentsErrorKind;
+  readonly retryable: boolean;
+
+  constructor(kind: LinkedInCommentsErrorKind, retryable = false) {
+    super(`LinkedIn Comments request failed: ${kind}`);
+    this.name = 'LinkedInCommentsError';
+    this.kind = kind;
+    this.retryable = retryable;
+  }
+}
+
+export interface LinkedInCommentsConfig {
+  apiVersion: string;
+}
+
+export interface GetCommentInput {
+  accessToken: string;
+  targetUrn: CommentTarget;
+  commentId: string;
+}
+
+export interface ListCommentsInput {
+  accessToken: string;
+  targetUrn: CommentTarget;
+  start?: number;
+  count?: number;
+}
+
+export interface LinkedInCommentsClient {
+  getComment(input: GetCommentInput): Promise<CanonicalComment>;
+  listComments(input: ListCommentsInput): Promise<CommentPage>;
+}
+
+interface LinkedInCommentsClientDeps {
+  fetch?: typeof globalThis.fetch;
+}
+
+function validateApiVersion(value: string): void {
+  if (!/^\d{4}(0[1-9]|1[0-2])$/.test(value)) {
+    throw new Error('LinkedIn API version must use YYYYMM format');
+  }
+}
+
+function validateAccessToken(value: string): void {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error('LinkedIn access token is required');
+  }
+}
+
+function validateTargetUrn(value: unknown): CommentTarget {
+  if (typeof value !== 'string') throw new Error('LinkedIn comment target is invalid');
+  try {
+    return parseCommentTarget(value);
+  } catch {
+    throw new Error('LinkedIn comment target is invalid');
+  }
+}
+
+function validateCommentId(value: unknown): string {
+  if (typeof value !== 'string' || !/^\d+$/.test(value)) {
+    throw new Error('LinkedIn comment id must be numeric');
+  }
+  return value;
+}
+
+function validateStart(value: unknown): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 0) {
+    throw new Error('LinkedIn comment page start must be a non-negative safe integer');
+  }
+  return value as number;
+}
+
+function validateCount(value: unknown): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 1 || (value as number) > 100) {
+    throw new Error('LinkedIn comment page count must be between 1 and 100');
+  }
+  return value as number;
+}
+
+function versionedHeaders(accessToken: string, apiVersion: string): Record<string, string> {
+  return {
+    authorization: `Bearer ${accessToken}`,
+    'linkedin-version': apiVersion,
+    'x-restli-protocol-version': '2.0.0',
+  };
+}
+
+function classifyHttpError(status: number): LinkedInCommentsError {
+  if (status === 401) return new LinkedInCommentsError('reauthentication_required');
+  if (status === 403) return new LinkedInCommentsError('permission_required');
+  if (status === 404) return new LinkedInCommentsError('not_found');
+  if (status === 429) return new LinkedInCommentsError('rate_limited');
+  return new LinkedInCommentsError('provider_failure');
+}
+
+async function readBoundedJson(response: Response): Promise<unknown> {
+  const body = response.body;
+  if (body === null) throw new LinkedInCommentsError('malformed_response');
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value === undefined) continue;
+      total += value.byteLength;
+      if (total > MAX_PROVIDER_JSON_BYTES) {
+        await reader.cancel().catch(() => undefined);
+        throw new LinkedInCommentsError('malformed_response');
+      }
+      chunks.push(value);
+    }
+  } catch (error: unknown) {
+    if (error instanceof LinkedInCommentsError) throw error;
+    throw new LinkedInCommentsError('malformed_response');
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  try {
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+}
+
+function parseActorUrn(value: unknown): string {
+  if (typeof value !== 'string' || !ACTOR_URN_PATTERN.test(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  return value;
+}
+
+function parseCommentUrn(value: unknown): string {
+  if (typeof value !== 'string' || !COMMENT_URN_PATTERN.test(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  return value;
+}
+
+function parseTimestampContainer(value: unknown): string {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  const candidate = value as Record<string, unknown>;
+  parseActorUrn(candidate.actor);
+  if (!Number.isSafeInteger(candidate.time) || (candidate.time as number) < 0) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  const date = new Date(candidate.time as number);
+  if (!Number.isFinite(date.getTime())) throw new LinkedInCommentsError('malformed_response');
+  return date.toISOString();
+}
+
+function parseTotalLikes(value: unknown): number {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  const totalLikes = (value as Record<string, unknown>).totalLikes;
+  if (!Number.isSafeInteger(totalLikes) || (totalLikes as number) < 0) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  return totalLikes as number;
+}
+
+function parseMessageText(value: unknown): string {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  const text = (value as Record<string, unknown>).text;
+  if (typeof text !== 'string' || text.trim() === '') {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  return text;
+}
+
+function parseCanonicalComment(value: unknown): CanonicalComment {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  const candidate = value as Record<string, unknown>;
+  if (typeof candidate.id !== 'string' || !/^\d+$/.test(candidate.id)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+
+  let objectUrn: CommentTarget;
+  try {
+    objectUrn = validateTargetUrn(candidate.object);
+  } catch {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+
+  const parentCommentUrn =
+    candidate.parentComment === undefined ? undefined : parseCommentUrn(candidate.parentComment);
+
+  return {
+    id: candidate.id,
+    commentUrn: parseCommentUrn(candidate.commentUrn),
+    actorUrn: parseActorUrn(candidate.actor),
+    objectUrn,
+    ...(parentCommentUrn === undefined ? {} : { parentCommentUrn }),
+    text: parseMessageText(candidate.message),
+    createdAt: parseTimestampContainer(candidate.created),
+    lastModifiedAt: parseTimestampContainer(candidate.lastModified),
+    totalLikes: parseTotalLikes(candidate.likesSummary),
+  };
+}
+
+function parsePaging(value: unknown): CommentPage['paging'] {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  const candidate = value as Record<string, unknown>;
+  if (
+    !Number.isSafeInteger(candidate.start) ||
+    (candidate.start as number) < 0 ||
+    !Number.isSafeInteger(candidate.count) ||
+    (candidate.count as number) < 1 ||
+    (candidate.total !== undefined &&
+      (!Number.isSafeInteger(candidate.total) || (candidate.total as number) < 0))
+  ) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+
+  const start = candidate.start as number;
+  const count = candidate.count as number;
+  const total = candidate.total as number | undefined;
+  const nextStart = total !== undefined && start + count < total ? start + count : undefined;
+
+  return {
+    start,
+    count,
+    ...(total === undefined ? {} : { total }),
+    ...(nextStart === undefined ? {} : { nextStart }),
+  };
+}
+
+function parseCommentPage(value: unknown): CommentPage {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  const candidate = value as Record<string, unknown>;
+  if (!Array.isArray(candidate.elements)) throw new LinkedInCommentsError('malformed_response');
+
+  return {
+    elements: candidate.elements.map((element) => parseCanonicalComment(element)),
+    paging: parsePaging(candidate.paging),
+    provider: 'OFFICIAL_API',
+  };
+}
+
+export function createLinkedInCommentsClient(
+  config: LinkedInCommentsConfig,
+  deps: LinkedInCommentsClientDeps = {},
+): LinkedInCommentsClient {
+  validateApiVersion(config.apiVersion);
+  const fetchImpl = deps.fetch ?? globalThis.fetch;
+
+  return {
+    async getComment(input) {
+      validateAccessToken(input.accessToken);
+      const targetUrn = validateTargetUrn(input.targetUrn);
+      const commentId = validateCommentId(input.commentId);
+
+      let response: Response;
+      try {
+        response = await fetchImpl(
+          `${SOCIAL_ACTIONS_ENDPOINT}/${encodeURIComponent(targetUrn)}/comments/${commentId}`,
+          {
+            method: 'GET',
+            headers: versionedHeaders(input.accessToken, config.apiVersion),
+          },
+        );
+      } catch {
+        throw new LinkedInCommentsError('provider_failure');
+      }
+
+      if (response.status !== 200) throw classifyHttpError(response.status);
+      return parseCanonicalComment(await readBoundedJson(response));
+    },
+
+    async listComments(input) {
+      validateAccessToken(input.accessToken);
+      const targetUrn = validateTargetUrn(input.targetUrn);
+      const start = input.start === undefined ? 0 : validateStart(input.start);
+      const count = input.count === undefined ? 10 : validateCount(input.count);
+
+      let response: Response;
+      try {
+        response = await fetchImpl(
+          `${SOCIAL_ACTIONS_ENDPOINT}/${encodeURIComponent(targetUrn)}/comments?start=${start}&count=${count}`,
+          {
+            method: 'GET',
+            headers: versionedHeaders(input.accessToken, config.apiVersion),
+          },
+        );
+      } catch {
+        throw new LinkedInCommentsError('provider_failure');
+      }
+
+      if (response.status !== 200) throw classifyHttpError(response.status);
+      return parseCommentPage(await readBoundedJson(response));
+    },
+  };
+}
