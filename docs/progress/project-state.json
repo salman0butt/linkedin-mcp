@@ -1,17 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M03",
-  "currentIteration": "M03.6",
+  "currentIteration": "M03.7",
   "status": "ACTIVE",
   "activeBranch": "feat/m03-media-publishing",
   "activePr": 4,
   "baseBranch": "main",
-  "latestVerifiedSha": "cc8aa5342a6d72dd73393319471719eaf1f9cf91",
-  "ciStatus": "RED_FORMAT_fef05542b92119a7a2a7411d15facb7038f24aa2_RUN_38088698955_PRETTIER_FAILED_TESTS_SKIPPED",
+  "latestVerifiedSha": "e21bf679846564eacdc025de2fa7657e4dc25018",
+  "ciStatus": "GREEN_RUN_38127969036_411_TESTS_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
-  "importantFindings": 1,
-  "blockers": [
-    "Image processing verification can hang on stalled getStatus; RED regression test committed at fef05542 but CI 38088698955 failed formatting before tests. Subsequent formatting-only GitHub writes rejected by connector safety checks."
-  ],
-  "exactNextWork": "Correct formatting in apps/server/test/media-verification.test.ts on the existing PR #4 branch, then verify intended behavioral RED in exact-head CI before implementing deadline cancellation."
+  "importantFindings": 0,
+  "blockers": [],
+  "exactNextWork": "Write M03.7 RED tests for strict image/multi-image MCP contracts and shared-runtime stdio/HTTP exposure, verify intended exact-head RED, then wire the existing MediaPostService without exposing custom author or privileged path/token/read-control inputs."
 }

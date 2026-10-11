@@ -1,38 +1,29 @@
 # M03 — Media Publishing
 
-Status: **ACTIVE — M03.6 approval-gated media orchestration**
+Status: **ACTIVE — M03.7 strict MCP/transport integration**
 
 ## Goal
 
-Add safe, approval-gated member single-image and multi-image publishing with
-accessible alt text, bounded local file validation, durable checkpoints and
-conservative official LinkedIn API provenance.
+Add safe, approval-gated member single-image and multi-image publishing with accessible alt text, bounded local file validation, durable checkpoints and conservative official LinkedIn API provenance.
 
 ## Dependencies
 
-M02 merged; its post-merge main CI `37895605908` passed at
-`8e3917a46a4f3b3ce6c598ea7706f4d3feeb623b`. Current main is
-`e006d0d21ee6b3531ec6fcd7a4390bfebf704374` after later repository maintenance.
+M02 is merged. Current `main` is `e006d0d21ee6b3531ec6fcd7a4390bfebf704374` after later repository maintenance.
 
 ## In Scope
 
-Canonical media contracts, safe media-root configuration, JPEG/PNG/GIF
-validation, official Images adapter, processing-status verification, durable
-media idempotency, approval-gated single/multi-image Posts and MCP integration.
+Canonical media contracts, safe media-root configuration, JPEG/PNG/GIF validation, official Images adapter, processing-status verification, durable media idempotency, approval-gated single/multi-image Posts and MCP integration.
 
 ## Out of Scope
 
-Arbitrary URL fetch, browser fallback, video/document media, organization or
-sponsored publishing, image transcoding and unverified live capability claims.
+Arbitrary URL fetch, browser fallback, video/document media, organization or sponsored publishing, image transcoding and unverified live capability claims.
 
 ## Acceptance Criteria
 
 - Relative local media paths remain inside a dedicated configured root.
 - Unsupported/malformed/oversized files fail closed without path leakage.
-- Alt text and ordered 2–20 multi-image descriptors are canonical and bound
-  to explicit subject-bound approval and durable idempotency.
-- Upload/checkpoint/restart and uncertain remote outcomes never silently
-  duplicate mutations.
+- Alt text and ordered 2–20 multi-image descriptors are canonical and bound to explicit subject-bound approval and durable idempotency.
+- Upload/checkpoint/restart and uncertain remote outcomes never silently duplicate mutations.
 - Provider read restrictions never masquerade as verified image processing.
 - Deterministic CI does not claim live LinkedIn member write access.
 
@@ -43,115 +34,31 @@ sponsored publishing, image transcoding and unverified live capability claims.
 3. **COMPLETE** — M03.3 official LinkedIn Images adapter.
 4. **COMPLETE** — M03.4 durable media checkpoints and v1 ledger migration.
 5. **COMPLETE** — M03.5 access-aware image processing verification.
-6. **ACTIVE** — M03.6 approval-gated media orchestration and Posts payload mapping.
-7. **PLANNED** — Strict MCP tool/stdio/HTTP integration.
-8. **PLANNED** — Whole-milestone review, exact-head CI and merge.
+6. **COMPLETE** — M03.6 approval-gated media orchestration and Posts payload mapping.
+7. **ACTIVE** — M03.7 strict MCP tool/stdio/HTTP integration.
+8. **PLANNED** — M03.8 whole-milestone review, exact-head CI and merge.
 
-## TDD Evidence
+## TDD / Verification Evidence
 
-M03.1 initial tests-only RED `17f55d6aeda31fc593bf1ad96eb4cd8c2a5a06c8`,
-CI `37896584192`. GREEN `875efabef785c5e36cd2b725072643d63cbf0e7f`,
-CI `37900961050`: 326 tests passed, format, lint, typecheck, build passed.
-
-M03.2 behavioral RED `4024ea449cdd3fe5eada2d9de38dad9420030ce2`,
-CI `37919800880`, led to final GREEN
-`16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`:
-346/346 tests across 34 files plus format/lint/typecheck/build passed.
-
-M03.3 behavioral RED `7af0139a2a7f51a873b584af7270628006180e31`,
-CI `37965807247`: format passed, all 346 existing tests remained green, and the
-new Images adapter suite failed only because the adapter module was absent.
-
-Initial adapter GREEN `4b4ca8a8618709034132ba36bc41d14ddd92a740`,
-CI `37966349832`, passed 361/361 tests plus format/lint/typecheck/build. Scoped
-review then found one Important issue: successful provider response JSON was not
-bounded. Regression RED `982628adaaaa1cc61ad5e717654ca563bcb2c616`,
-CI `37966563223`, preserved all 361 existing tests and failed only the two new
-oversized-response assertions.
-
-Final M03.3 GREEN `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`,
-CI `37966842680`: 363/363 tests across 36 files, format, lint, typecheck and
-build passed. Successful provider JSON is streamed with a hard 64 KiB local bound.
-
-M03.4 initial RED at `22cdfe906d3eb69dbc05e35f5c4c2ae732a1dd2e`,
-CI `38035751980`, proved the v1-to-v2 migration and missing checkpoint API. The
-expanded behavioral RED at `47c47a01cad9395b9d96a921f47b65070f5e62fd`,
-CI `38050945859`, passed formatting and 364 tests while six intended assertions
-failed for migration/checkpoint behavior.
-
-Implementation at `51391783ff698ec67d83a5298b5a6f13839d6db6` made all seven
-new checkpoint tests pass and left one intentionally stale M02 schema-version
-assertion. Updating that assertion exposed a typecheck-only compatibility issue in
-text-service mocks, fixed by preserving `IdempotencyLedger` as the text-only
-reserve/complete contract and adding `MediaIdempotencyLedger` for checkpointing.
-
-Final M03.4 GREEN `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`,
-CI `38051403134`: **370/370 tests across 37 files**, format, lint, typecheck and
-build passed.
-
-M03.5 behavioral RED `7bc3392614a853c760b538d7169a95d07e5e97fd`,
-CI `38052598853`: formatting passed, all 370 existing tests stayed green, seven
-trusted image-status configuration assertions failed because the flag was absent,
-and the verifier suite failed because `media-verification` was absent.
-
-Final M03.5 GREEN `0eaa01e31f605a576b2b4456a23605c379f7d3eb`,
-CI `38057237124`: **389/389 tests across 39 files**, format, lint, typecheck and
-build passed.
-
-## Integration Test Evidence
-
-M03.1–M03.5 use deterministic tests, synthetic media and injected fetch/providers.
-No real LinkedIn image upload, image-status read or media post has been executed
-or verified.
+- M03.1 GREEN `875efabef785c5e36cd2b725072643d63cbf0e7f`, CI `37900961050`.
+- M03.2 GREEN `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`.
+- M03.3 final GREEN `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`, CI `37966842680` after bounded-response regression RED.
+- M03.4 final GREEN `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`, CI `38051403134`.
+- M03.5 final GREEN `0eaa01e31f605a576b2b4456a23605c379f7d3eb`, CI `38057237124`.
+- M03.6 Posts payload/orchestration TDD began with RED commits `07b1ae793052719e26eb4c05f3ef646b62c88a43` and `04d67275c6727e400db2efe4001e23be5fcc2fb5`; implementation and safety regressions followed on the same PR branch.
+- M03.6 deadline regression RED `4b92d8d8ea2c44f94c39d0e1483ab01bf2390e36`, CI `38127429915`: 409 tests passed and only the stalled-status assertion failed as intended.
+- M03.6 adapter cancellation RED `3c6ee6476bce750377a9b371698c2431985ebf0d`, CI `38127891256`: 410 tests passed and only signal forwarding failed as intended.
+- M03.6 final reviewed GREEN `e21bf679846564eacdc025de2fa7657e4dc25018`, CI `38127969036`: **411/411 tests across 43 files**, format, lint, typecheck and build passed.
 
 ## Security Review
 
-M03.2 scoped review found 0 unresolved Critical/Important findings after
-containment, symlink, bounded-read, replacement, format and error-sanitization checks.
+M03.2–M03.5 scoped reviews are clear after their recorded fixes.
 
-M03.3 scoped review checks official versioned endpoints, member-only ownership,
-strict image URNs, HTTPS LinkedIn-controlled upload hosts, disabled redirects,
-exact-byte uploads, no automatic mutation retries, sanitized errors, unread HTTP
-error bodies and bounded successful JSON parsing. One Important unbounded-response
-finding was fixed through RED `982628ad...` and final GREEN `f5f4a7d9...`.
-Re-review has 0 unresolved Critical findings and 0 unresolved Important findings.
+M03.6 scoped review verifies subject-bound approval, current-file re-hash before mutation, 2–20 ordered media/alt-text binding, durable digest/image-URN checkpoints, replay and same-key serialization, no upload URL persistence, fail-closed uncertainty, provider 401 invalidation, bounded status reads and actual abort propagation into provider fetch. The resolved stalled-read/cancellation finding is recorded in `docs/progress/KNOWN-ISSUES.md`. M03.6 has 0 unresolved Critical and 0 unresolved Important findings.
 
-M03.4 scoped review verifies v1 read compatibility, canonical v2-on-mutation
-migration, exact checkpoint-field parsing, no source path/bytes/alt text/upload URL
-persistence, ordered digest/image-URN binding, rebinding/state-regression conflicts,
-terminal immutability, uncertainty recovery, sibling lock safety and atomic
-replacement. Review has 0 unresolved Critical and 0 unresolved Important findings.
+No live LinkedIn image upload/status/post verification has occurred. Deterministic implementation evidence must not be represented as live account capability.
 
-M03.5 scoped review verifies trusted read gating defaults disabled; forbidden or
-otherwise unavailable reads map to `verification_unavailable` rather than fabricated
-provider state; 401 remains a reauthentication signal; AVAILABLE/PROCESSING_FAILED
-remain explicit provider states; polling has a six-attempt/10-second ceiling, sleeps
-at least one second between attempts and never continues in the background. Review
-has 0 unresolved Critical and 0 unresolved Important findings.
-
-Full M03 review remains pending because orchestration and MCP integration are unfinished.
-
-## Code Review Findings
-
-PR #4 has no blocking review comments/threads observed in the latest scoped checks.
-M03.2–M03.5 scoped reviews are clear, but this does not satisfy the later
-whole-milestone review gate.
-
-## Fresh Verification Results
-
-Latest implementation GREEN checkpoint:
-`0eaa01e31f605a576b2b4456a23605c379f7d3eb`, CI `38057237124`.
-The job passed frozen install, Prettier, 389 tests across 39 files, lint,
-typecheck and build.
-
-Durable documentation commits after that checkpoint require their own exact-head
-CI before any future merge-readiness claim.
-
-## Durable Recovery Sources
-
-`AGENTS.md`, `CODEX-START-HERE.md`, `docs/AUTONOMOUS-DEVELOPMENT.md`,
-`docs/progress/project-state.json`, `docs/progress/STATUS.md`,
-`docs/milestones/CURRENT.md`, M03 spec/plan, PR #4 and exact-SHA CI.
+Full M03 review remains pending M03.7 MCP integration and M03.8 closeout.
 
 ## Completion Checklist
 
@@ -160,9 +67,9 @@ CI before any future merge-readiness claim.
 - [x] M03.3 official Images adapter RED/GREEN and scoped security re-review.
 - [x] M03.4 durable checkpoint migration RED/GREEN and scoped review.
 - [x] M03.5 processing verification RED/GREEN and scoped review.
-- [ ] M03.6 media orchestration RED/GREEN.
-- [ ] Remaining M03 MCP integration and whole-milestone security review.
-- [ ] Exact-final-head CI and merge gates.
+- [x] M03.6 media orchestration RED/GREEN and scoped review.
+- [ ] M03.7 strict MCP/stdio/HTTP integration.
+- [ ] M03.8 whole-milestone security review, exact-final-head CI and merge gates.
 - [ ] Post-merge main CI verified.
 
-Exact next work: **Write M03.6 RED tests for approval-gated single/multi-image orchestration and Posts payload mapping, verify intended RED, then implement the minimum transaction without duplicate remote mutations.**
+Exact next work: **Write M03.7 RED tests for strict media MCP contracts and shared-runtime stdio/HTTP exposure, verify intended RED, then wire the existing media service without weakening M00–M02 behavior or capability provenance.**
