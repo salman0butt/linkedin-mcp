@@ -83,7 +83,9 @@ describe('M03.4 durable media checkpoints', () => {
       status: 'replay',
       record,
     });
-    await expect(ledger.claimPostMutation({ idempotencyKey: 'legacy-media', payloadHash })).resolves.toMatchObject({
+    await expect(
+      ledger.claimPostMutation({ idempotencyKey: 'legacy-media', payloadHash }),
+    ).resolves.toMatchObject({
       status: 'claimed',
       record: { postMutation: 'pending' },
     });
@@ -156,11 +158,15 @@ describe('M03.4 durable media checkpoints', () => {
       },
     });
 
-    await expect(first.claimPostMutation({ idempotencyKey: 'post-claim', payloadHash })).resolves.toMatchObject({
+    await expect(
+      first.claimPostMutation({ idempotencyKey: 'post-claim', payloadHash }),
+    ).resolves.toMatchObject({
       status: 'claimed',
       record: { state: 'reserved', postMutation: 'pending' },
     });
-    await expect(second.claimPostMutation({ idempotencyKey: 'post-claim', payloadHash })).resolves.toMatchObject({
+    await expect(
+      second.claimPostMutation({ idempotencyKey: 'post-claim', payloadHash }),
+    ).resolves.toMatchObject({
       status: 'replay',
       record: { state: 'reserved', postMutation: 'pending' },
     });
