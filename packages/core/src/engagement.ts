@@ -91,8 +91,7 @@ export interface ReactionPreview {
 }
 
 const simpleTargetPattern = /^urn:li:(?:share|ugcPost|activity):\d+$/;
-const commentTargetPattern =
-  /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
+const commentTargetPattern = /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
 const replyKeys = new Set(['targetUrn', 'rootUrn', 'parentCommentUrn', 'text']);
 const reactionKeys = new Set(['operation', 'targetUrn', 'reactionType']);
 
@@ -100,21 +99,14 @@ function hashCanonicalJson(canonicalJson: string): string {
   return createHash('sha256').update(canonicalJson).digest('hex');
 }
 
-function assertExactKeys(
-  value: Record<string, unknown>,
-  allowed: ReadonlySet<string>,
-  label: string,
-): void {
+function assertExactKeys(value: Record<string, unknown>, allowed: ReadonlySet<string>, label: string): void {
   for (const key of Object.keys(value)) {
     if (!allowed.has(key)) throw new Error(`Unsupported ${label} field: ${key}`);
   }
 }
 
 export function parseCommentTarget(value: string): CommentTarget {
-  if (
-    typeof value !== 'string' ||
-    (!simpleTargetPattern.test(value) && !commentTargetPattern.test(value))
-  ) {
+  if (typeof value !== 'string' || (!simpleTargetPattern.test(value) && !commentTargetPattern.test(value))) {
     throw new Error('Comment target must be a canonical LinkedIn share, ugcPost, activity, or comment URN');
   }
   return value;
