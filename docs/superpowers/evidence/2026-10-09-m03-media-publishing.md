@@ -11,16 +11,14 @@ M03 implements canonical single-image/multi-image contracts, bounded local JPEG/
 
 ## Verified checkpoints
 
-| Iteration | Verified checkpoint | CI | Evidence |
-| --- | --- | --- | --- |
-| M03.1 | `875efabef785c5e36cd2b725072643d63cbf0e7f` | `37900961050` | canonical media contracts/capabilities |
-| M03.2 | `16d6fa2ffd6088d8973001fece18c2d5ab331ebd` | `37964060504` | secure local media root/reader |
-| M03.3 | `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f` | `37966842680` | official Images adapter with bounded successful JSON |
-| M03.4 | `f71e9295e1e1d710b232859ab57e8e5264eaa0e4` | `38051403134` | durable checkpoints and v1 compatibility |
-| M03.5 | `0eaa01e31f605a576b2b4456a23605c379f7d3eb` | `38057237124` | bounded access-aware processing verification |
-| M03.6 | `e21bf679846564eacdc025de2fa7657e4dc25018` | `38127969036` | approval-gated orchestration; 411/411 tests |
-| M03.7 | `5851b9dc1c5b97094ec22cf2e40da71ba6f99118` | `38129813482` | strict MCP/stdio/HTTP integration; 423 tests |
-| M03.8 reviewed implementation | `7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8` | `38136409125` | 426/426 tests across 46 files + format/lint/typecheck/build |
+- M03.1: `875efabef785c5e36cd2b725072643d63cbf0e7f`, CI `37900961050` — canonical media contracts/capabilities.
+- M03.2: `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504` — secure local media root/reader.
+- M03.3: `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f`, CI `37966842680` — official Images adapter with bounded successful JSON.
+- M03.4: `f71e9295e1e1d710b232859ab57e8e5264eaa0e4`, CI `38051403134` — durable checkpoints and v1 compatibility.
+- M03.5: `0eaa01e31f605a576b2b4456a23605c379f7d3eb`, CI `38057237124` — bounded access-aware processing verification.
+- M03.6: `e21bf679846564eacdc025de2fa7657e4dc25018`, CI `38127969036` — approval-gated orchestration; 411/411 tests.
+- M03.7: `5851b9dc1c5b97094ec22cf2e40da71ba6f99118`, CI `38129813482` — strict MCP/stdio/HTTP integration; 423 tests.
+- M03.8 reviewed implementation: `7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8`, CI `38136409125` — 426/426 tests across 46 files plus format/lint/typecheck/build.
 
 ## M03.8 whole-milestone findings
 
