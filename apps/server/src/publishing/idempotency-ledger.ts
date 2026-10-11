@@ -34,6 +34,8 @@ export class IdempotencyLedgerError extends Error {
 
 export interface MutationResult {
   postUrn?: string;
+  resourceUrn?: string;
+  resourceId?: string;
   errorCode?: string;
 }
 
@@ -152,8 +154,14 @@ function parseResult(value: unknown): MutationResult | undefined {
   }
 
   const candidate = value as Record<string, unknown>;
-  assertExactKeys(candidate, ['postUrn', 'errorCode']);
+  assertExactKeys(candidate, ['postUrn', 'resourceUrn', 'resourceId', 'errorCode']);
   if (candidate.postUrn !== undefined && typeof candidate.postUrn !== 'string') {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+  if (candidate.resourceUrn !== undefined && typeof candidate.resourceUrn !== 'string') {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+  if (candidate.resourceId !== undefined && typeof candidate.resourceId !== 'string') {
     throw new IdempotencyLedgerError('corrupt_store');
   }
   if (candidate.errorCode !== undefined && typeof candidate.errorCode !== 'string') {
@@ -162,6 +170,8 @@ function parseResult(value: unknown): MutationResult | undefined {
 
   return {
     ...(candidate.postUrn === undefined ? {} : { postUrn: candidate.postUrn }),
+    ...(candidate.resourceUrn === undefined ? {} : { resourceUrn: candidate.resourceUrn }),
+    ...(candidate.resourceId === undefined ? {} : { resourceId: candidate.resourceId }),
     ...(candidate.errorCode === undefined ? {} : { errorCode: candidate.errorCode }),
   };
 }
@@ -292,6 +302,8 @@ function cloneRecord(record: MutationRecord): MutationRecord {
 function validateResult(result: MutationResult | undefined): MutationResult | undefined {
   if (result === undefined) return undefined;
   if (result.postUrn !== undefined) assertNonEmpty(result.postUrn, 'postUrn');
+  if (result.resourceUrn !== undefined) assertNonEmpty(result.resourceUrn, 'resourceUrn');
+  if (result.resourceId !== undefined) assertNonEmpty(result.resourceId, 'resourceId');
   if (result.errorCode !== undefined) assertNonEmpty(result.errorCode, 'errorCode');
   return { ...result };
 }

@@ -9,6 +9,7 @@ const SOCIAL_ACTIONS_ENDPOINT = 'https://api.linkedin.com/rest/socialActions';
 const MAX_PROVIDER_JSON_BYTES = 64 * 1024;
 const COMMENT_URN_PATTERN = /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
 const ACTOR_URN_PATTERN = /^urn:li:(?:person:[^\s]+|organization:\d+)$/;
+const MEMBER_ACTOR_URN_PATTERN = /^urn:li:person:[^\s]+$/;
 
 export type LinkedInCommentsErrorKind =
   | 'reauthentication_required'
@@ -16,7 +17,9 @@ export type LinkedInCommentsErrorKind =
   | 'rate_limited'
   | 'provider_failure'
   | 'not_found'
-  | 'malformed_response';
+  | 'malformed_response'
+  | 'malformed_success'
+  | 'outcome_unknown';
 
 export class LinkedInCommentsError extends Error {
   readonly kind: LinkedInCommentsErrorKind;
@@ -47,9 +50,19 @@ export interface ListCommentsInput {
   count?: number;
 }
 
+export interface CreateReplyInput {
+  accessToken: string;
+  targetUrn: CommentTarget;
+  actorUrn: string;
+  objectUrn: CommentTarget;
+  parentCommentUrn: string;
+  text: string;
+}
+
 export interface LinkedInCommentsClient {
   getComment(input: GetCommentInput): Promise<CanonicalComment>;
   listComments(input: ListCommentsInput): Promise<CommentPage>;
+  createReply(input: CreateReplyInput): Promise<CanonicalComment>;
 }
 
 interface LinkedInCommentsClientDeps {
@@ -84,6 +97,27 @@ function validateCommentId(value: unknown): string {
   return value;
 }
 
+function validateMemberActorUrn(value: unknown): string {
+  if (typeof value !== 'string' || !MEMBER_ACTOR_URN_PATTERN.test(value)) {
+    throw new Error('LinkedIn comment actor must be a member person URN');
+  }
+  return value;
+}
+
+function validateParentCommentUrn(value: unknown): string {
+  if (typeof value !== 'string' || !COMMENT_URN_PATTERN.test(value)) {
+    throw new Error('LinkedIn parent comment must be a canonical comment URN');
+  }
+  return value;
+}
+
+function validateReplyText(value: unknown): string {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error('LinkedIn reply text must be non-empty');
+  }
+  return value;
+}
+
 function validateStart(value: unknown): number {
   if (!Number.isSafeInteger(value) || (value as number) < 0) {
     throw new Error('LinkedIn comment page start must be a non-negative safe integer');
@@ -114,9 +148,19 @@ function classifyHttpError(status: number): LinkedInCommentsError {
   return new LinkedInCommentsError('provider_failure');
 }
 
-async function readBoundedJson(response: Response): Promise<unknown> {
+function classifyCreateHttpError(status: number): LinkedInCommentsError {
+  if (status === 401) return new LinkedInCommentsError('reauthentication_required');
+  if (status === 403) return new LinkedInCommentsError('permission_required');
+  if (status === 429) return new LinkedInCommentsError('rate_limited');
+  return new LinkedInCommentsError('outcome_unknown');
+}
+
+async function readBoundedJson(
+  response: Response,
+  malformedKind: 'malformed_response' | 'malformed_success' = 'malformed_response',
+): Promise<unknown> {
   const body = response.body;
-  if (body === null) throw new LinkedInCommentsError('malformed_response');
+  if (body === null) throw new LinkedInCommentsError(malformedKind);
 
   const reader = body.getReader();
   const chunks: Uint8Array[] = [];
@@ -130,13 +174,13 @@ async function readBoundedJson(response: Response): Promise<unknown> {
       total += value.byteLength;
       if (total > MAX_PROVIDER_JSON_BYTES) {
         await reader.cancel().catch(() => undefined);
-        throw new LinkedInCommentsError('malformed_response');
+        throw new LinkedInCommentsError(malformedKind);
       }
       chunks.push(value);
     }
   } catch (error: unknown) {
     if (error instanceof LinkedInCommentsError) throw error;
-    throw new LinkedInCommentsError('malformed_response');
+    throw new LinkedInCommentsError(malformedKind);
   } finally {
     reader.releaseLock();
   }
@@ -152,7 +196,7 @@ async function readBoundedJson(response: Response): Promise<unknown> {
     const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
     return JSON.parse(text) as unknown;
   } catch {
-    throw new LinkedInCommentsError('malformed_response');
+    throw new LinkedInCommentsError(malformedKind);
   }
 }
 
@@ -236,6 +280,24 @@ function parseCanonicalComment(value: unknown): CanonicalComment {
     lastModifiedAt: parseTimestampContainer(candidate.lastModified),
     totalLikes: parseTotalLikes(candidate.likesSummary),
   };
+}
+
+function parseReplySuccess(value: unknown, expected: Omit<CreateReplyInput, 'accessToken'>): CanonicalComment {
+  let comment: CanonicalComment;
+  try {
+    comment = parseCanonicalComment(value);
+  } catch {
+    throw new LinkedInCommentsError('malformed_success');
+  }
+  if (
+    comment.actorUrn !== expected.actorUrn ||
+    comment.objectUrn !== expected.objectUrn ||
+    comment.parentCommentUrn !== expected.parentCommentUrn ||
+    comment.text !== expected.text
+  ) {
+    throw new LinkedInCommentsError('malformed_success');
+  }
+  return comment;
 }
 
 function parsePaging(value: unknown): CommentPage['paging'] {
@@ -332,6 +394,53 @@ export function createLinkedInCommentsClient(
 
       if (response.status !== 200) throw classifyHttpError(response.status);
       return parseCommentPage(await readBoundedJson(response));
+    },
+
+    async createReply(input) {
+      validateAccessToken(input.accessToken);
+      const targetUrn = validateTargetUrn(input.targetUrn);
+      const actorUrn = validateMemberActorUrn(input.actorUrn);
+      const objectUrn = validateTargetUrn(input.objectUrn);
+      const parentCommentUrn = validateParentCommentUrn(input.parentCommentUrn);
+      const text = validateReplyText(input.text);
+      if (!COMMENT_URN_PATTERN.test(targetUrn) || parentCommentUrn !== targetUrn) {
+        throw new Error('LinkedIn reply target must match its parent comment');
+      }
+
+      let response: Response;
+      try {
+        response = await fetchImpl(`${SOCIAL_ACTIONS_ENDPOINT}/${encodeURIComponent(targetUrn)}/comments`, {
+          method: 'POST',
+          headers: {
+            ...versionedHeaders(input.accessToken, config.apiVersion),
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            actor: actorUrn,
+            object: objectUrn,
+            message: { text },
+            parentComment: parentCommentUrn,
+          }),
+        });
+      } catch {
+        throw new LinkedInCommentsError('outcome_unknown');
+      }
+
+      if (response.status !== 201) throw classifyCreateHttpError(response.status);
+      const returnedId = response.headers.get('x-restli-id');
+      if (returnedId === null || !/^\d+$/.test(returnedId)) {
+        throw new LinkedInCommentsError('malformed_success');
+      }
+
+      const comment = parseReplySuccess(await readBoundedJson(response, 'malformed_success'), {
+        targetUrn,
+        actorUrn,
+        objectUrn,
+        parentCommentUrn,
+        text,
+      });
+      if (comment.id !== returnedId) throw new LinkedInCommentsError('malformed_success');
+      return comment;
     },
   };
 }
