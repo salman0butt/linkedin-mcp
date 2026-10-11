@@ -9,15 +9,15 @@ const activeHandlers: Array<ReturnType<typeof createMcpHandler>> = [];
 
 const imageDraft = {
   text: 'Ship the image safely',
-  image: { sourcePath: 'launch.png', altText: 'Product launch graphic' },
+  image: { sourcePath: 'assets/launch.png', altText: 'Product launch graphic' },
   visibility: 'PUBLIC' as const,
   disableReshare: false,
 };
 const multiDraft = {
   text: 'Ship the carousel safely',
   images: [
-    { sourcePath: 'one.png', altText: 'First panel' },
-    { sourcePath: 'two.png', altText: 'Second panel' },
+    { sourcePath: 'assets/one.png', altText: 'First panel' },
+    { sourcePath: 'assets/two.png', altText: 'Second panel' },
   ],
   visibility: 'CONNECTIONS' as const,
   disableReshare: true,
@@ -252,7 +252,7 @@ describe('M03 media-post MCP contract', () => {
     const serialized = JSON.stringify(result.structuredContent);
     expect(serialized).not.toContain('receipt-private');
     expect(serialized).not.toContain('key-private');
-    expect(serialized).not.toContain('launch.png');
+    expect(serialized).not.toContain(imageDraft.image.sourcePath);
     expect(serialized).not.toContain('uploadUrl');
   });
 
@@ -288,8 +288,8 @@ describe('M03 media-post MCP contract', () => {
     });
     expect(service.previewMultiImage).toHaveBeenCalledWith(multiDraft);
     const serialized = JSON.stringify(result.structuredContent);
-    expect(serialized).not.toContain('one.png');
-    expect(serialized).not.toContain('two.png');
+    expect(serialized).not.toContain(multiDraft.images[0].sourcePath);
+    expect(serialized).not.toContain(multiDraft.images[1].sourcePath);
   });
 
   it('returns structured not-configured behavior instead of attempting media filesystem/provider work', async () => {
