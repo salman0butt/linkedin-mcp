@@ -1,8 +1,19 @@
 import { createAuthService, type AuthService } from './auth/auth-service.js';
 import type { ServerConfig } from './config.js';
 import { createApprovalService, type ApprovalService } from './publishing/approval-service.js';
-import { createFileIdempotencyLedger, type IdempotencyLedger } from './publishing/idempotency-ledger.js';
-import { createLinkedInPostsAdapter, type LinkedInPostsAdapter } from './publishing/linkedin-posts.js';
+import {
+  createFileIdempotencyLedger,
+  type IdempotencyLedger,
+  type MediaIdempotencyLedger,
+} from './publishing/idempotency-ledger.js';
+import { createLinkedInImagesClient } from './publishing/linkedin-images.js';
+import {
+  createLinkedInPostsAdapter,
+  type LinkedInPostsAdapter,
+  type MediaLinkedInPostsAdapter,
+} from './publishing/linkedin-posts.js';
+import { MediaFileReader } from './publishing/media-file.js';
+import { createMediaPostService, type MediaPostService } from './publishing/media-post-service.js';
 import { createTextPostService, type TextPostService } from './publishing/text-post-service.js';
 
 export interface LinkedInRuntime {
@@ -11,6 +22,7 @@ export interface LinkedInRuntime {
   publishing: {
     approvals: ApprovalService;
     textPostService?: TextPostService;
+    mediaPostService?: MediaPostService;
   };
 }
 
@@ -20,6 +32,19 @@ export interface LinkedInRuntimeOverrides {
   ledger?: IdempotencyLedger;
   posts?: LinkedInPostsAdapter;
   now?: () => Date;
+}
+
+function isMediaLedger(ledger: IdempotencyLedger): ledger is MediaIdempotencyLedger {
+  return 'checkpointMedia' in ledger && typeof ledger.checkpointMedia === 'function';
+}
+
+function isMediaPostsAdapter(posts: LinkedInPostsAdapter): posts is MediaLinkedInPostsAdapter {
+  return (
+    'createImagePost' in posts &&
+    typeof posts.createImagePost === 'function' &&
+    'createMultiImagePost' in posts &&
+    typeof posts.createMultiImagePost === 'function'
+  );
 }
 
 export function createLinkedInRuntime(
@@ -41,6 +66,7 @@ export function createLinkedInRuntime(
     });
 
   let textPostService: TextPostService | undefined;
+  let mediaPostService: MediaPostService | undefined;
   if (config.linkedinApiVersion !== undefined && config.publishingLedgerPath !== undefined) {
     const ledger =
       overrides.ledger ??
@@ -56,6 +82,21 @@ export function createLinkedInRuntime(
       posts,
       memberPostReadEnabled: config.memberPostReadEnabled,
     });
+
+    if (config.mediaRoot !== undefined && isMediaLedger(ledger) && isMediaPostsAdapter(posts)) {
+      mediaPostService = createMediaPostService({
+        auth: authService,
+        approvals,
+        ledger,
+        files: new MediaFileReader({
+          root: config.mediaRoot,
+          maxBytes: config.mediaMaxBytes,
+        }),
+        images: createLinkedInImagesClient({ apiVersion: config.linkedinApiVersion }),
+        posts,
+        imageStatusReadEnabled: config.imageStatusReadEnabled,
+      });
+    }
   }
 
   return {
@@ -64,6 +105,7 @@ export function createLinkedInRuntime(
     publishing: {
       approvals,
       ...(textPostService === undefined ? {} : { textPostService }),
+      ...(mediaPostService === undefined ? {} : { mediaPostService }),
     },
   };
 }
