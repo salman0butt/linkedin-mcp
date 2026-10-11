@@ -104,6 +104,48 @@ describe('M03.4 durable media checkpoints', () => {
     expect(persisted).not.toContain('altText');
   });
 
+  it('allows only one runtime to finalize the same uploaded media checkpoint', async () => {
+    const filePath = await createLedgerPath();
+    const first = createFileIdempotencyLedger({ filePath });
+    const second = createFileIdempotencyLedger({ filePath });
+    await first.reserve({ idempotencyKey: 'media-post', payloadHash });
+    await first.checkpointMedia({
+      idempotencyKey: 'media-post',
+      payloadHash,
+      index: 0,
+      checkpoint: {
+        sha256: imageDigest,
+        imageUrn: 'urn:li:image:123',
+        uploadState: 'uploaded',
+      },
+    });
+    await first.checkpointMedia({
+      idempotencyKey: 'media-post',
+      payloadHash,
+      index: 0,
+      checkpoint: {
+        sha256: imageDigest,
+        imageUrn: 'urn:li:image:123',
+        uploadState: 'available',
+      },
+    });
+
+    await expectLedgerError(
+      () =>
+        second.checkpointMedia({
+          idempotencyKey: 'media-post',
+          payloadHash,
+          index: 0,
+          checkpoint: {
+            sha256: imageDigest,
+            imageUrn: 'urn:li:image:123',
+            uploadState: 'available',
+          },
+        }),
+      'conflict',
+    );
+  });
+
   it('rejects rebinding a checkpoint slot to a different image digest', async () => {
     const filePath = await createLedgerPath();
     const ledger = createFileIdempotencyLedger({ filePath });
