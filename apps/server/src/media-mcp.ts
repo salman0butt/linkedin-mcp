@@ -142,12 +142,7 @@ const approvalReceiptSchema = z
     provider: z.literal('LOCAL_ONLY'),
   })
   .strict();
-const processingSchema = z.enum([
-  'available',
-  'processing_failed',
-  'pending',
-  'verification_unavailable',
-]);
+const processingSchema = z.enum(['available', 'processing_failed', 'pending', 'verification_unavailable']);
 const publishResultSchema = z
   .object({
     state: z.literal('succeeded'),
@@ -210,10 +205,7 @@ const mediaOutputSchema = z
       z.object({ type: z.literal('OFFICIAL_API'), name: z.literal('LinkedIn') }).strict(),
     ]),
     warnings: z.array(z.string()).optional(),
-    error: z
-      .object({ code: z.string(), message: z.string(), retryable: z.boolean() })
-      .strict()
-      .optional(),
+    error: z.object({ code: z.string(), message: z.string(), retryable: z.boolean() }).strict().optional(),
     metadata: auditMetadataSchema,
   })
   .strict();
@@ -341,8 +333,7 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
   server.registerTool(
     'linkedin.post.preview.image',
     {
-      description:
-        'Build a local canonical preview for a single-image member post without publishing it.',
+      description: 'Build a local canonical preview for a single-image member post without publishing it.',
       inputSchema: imageDraftSchema,
       outputSchema: mediaOutputSchema,
     },
