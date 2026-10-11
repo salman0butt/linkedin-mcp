@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M03",
-  "currentIteration": "M03.8",
+  "currentMilestone": "M04",
+  "currentIteration": "M04.1",
   "status": "ACTIVE",
-  "activeBranch": "feat/m03-media-publishing",
-  "activePr": 4,
+  "activeBranch": "feat/m04-comments-engagement",
+  "activePr": null,
   "baseBranch": "main",
-  "latestVerifiedSha": "7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8",
-  "ciStatus": "GREEN_RUN_38136409125_426_TESTS_46_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "latestVerifiedSha": "6713bfe79c261021ac39b75599509cd843e95f6d",
+  "ciStatus": "GREEN_POST_MERGE_RUN_38137131522_426_TESTS_46_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Verify exact-final-head CI after the M03.8 closeout documentation commit, then squash-merge PR #4 if the head, review threads, mergeability, findings, traceability and main branch remain unchanged."
+  "exactNextWork": "Establish M04.1 behavioral RED for canonical engagement contracts, current Community Management access policy, trusted member-read gating and truthful capability metadata."
 }
