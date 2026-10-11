@@ -39,7 +39,7 @@ Arbitrary URL fetch, browser fallback, video/document media, organization or spo
 7. **COMPLETE** — M03.7 strict MCP tool/stdio/HTTP integration.
 8. **ACTIVE** — M03.8 whole-milestone review, final exact-head CI, merge and post-merge verification.
 
-## TDD / Verification Evidence
+## TDD Evidence
 
 - M03.1 GREEN `875efabef785c5e36cd2b725072643d63cbf0e7f`, CI `37900961050`.
 - M03.2 GREEN `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`.
@@ -56,7 +56,7 @@ Arbitrary URL fetch, browser fallback, video/document media, organization or spo
 
 M03.7 registers six media tools through the shared MCP server used by both real StdioClientTransport and loopback HTTP smokes. Existing M00–M02 tool behavior stays green. Provider calls remain deterministic/injected in CI; no real LinkedIn media mutation is claimed.
 
-## Security / Correctness Review
+## Security Review
 
 Scoped M03.2–M03.6 reviews are clear after recorded fixes. M03.8 whole-milestone review covered local path containment, malformed/truncated/oversized image handling, provider URL and response bounds, secret/error sanitization, status-read cancellation, approval binding, current-file rehash, ordered media checkpoints, cross-process locking/replay, mutation uncertainty, strict MCP schemas, real transport registration and capability provenance.
 
@@ -68,6 +68,21 @@ Whole-milestone review found and resolved two Important issues:
 At `7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8` / CI `38136409125`, unresolved Critical findings: **0**; unresolved Important findings: **0**. PR #4 review threads were empty at the latest closeout check.
 
 No live LinkedIn image upload/status/post verification has occurred. Deterministic implementation evidence must not be represented as live account capability.
+
+## Code Review Findings
+
+- M03.3 Important unbounded successful-provider-response handling was fixed before checkpoint closeout.
+- M03.6 Important stalled status-read deadline and missing real-fetch abort forwarding were fixed and re-reviewed.
+- M03.8 Important truncated-image terminal validation and cross-runtime duplicate initialization were fixed with regression coverage.
+- Current unresolved Critical findings: **0**.
+- Current unresolved Important findings: **0**.
+- Blocking PR #4 review threads: **0** at the latest closeout check.
+
+## Fresh Verification Results
+
+Reviewed implementation head `7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8`, CI `38136409125`: **426/426 tests across 46 files**, frozen install, format, lint, typecheck and build passed.
+
+Closeout documentation commits after that implementation checkpoint require their own exact-final-head GREEN CI before merge. CI `38136898018` on `55c98105b1a6478668ad613bc7f907ec4482ee02` passed formatting and 425/426 tests but correctly failed the framework guard because this ledger had renamed mandatory section headings; this commit restores those exact required sections. No production behavior changed.
 
 ## Completion Checklist
 
@@ -87,4 +102,4 @@ No live LinkedIn image upload/status/post verification has occurred. Determinist
 
 `docs/progress/project-state.json`, `docs/progress/STATUS.md`, `docs/progress/KNOWN-ISSUES.md`, `docs/milestones/CURRENT.md`, this ledger, `docs/requirements/TRACEABILITY.md`, `docs/product/CAPABILITY-MATRIX.md`, the active spec/plan, M03 evidence file, PR #4, source/tests/reviews and exact-SHA GitHub Actions evidence.
 
-Exact next work: **Verify exact-final-head CI after the closeout documentation commit, then squash-merge PR #4 only if all merge gates remain satisfied; verify post-merge `main` before activating M04.**
+Exact next work: **Verify exact-final-head CI after this ledger repair, then squash-merge PR #4 only if all merge gates remain satisfied; verify post-merge `main` before activating M04.**
