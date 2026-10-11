@@ -282,7 +282,10 @@ function parseCanonicalComment(value: unknown): CanonicalComment {
   };
 }
 
-function parseReplySuccess(value: unknown, expected: Omit<CreateReplyInput, 'accessToken'>): CanonicalComment {
+function parseReplySuccess(
+  value: unknown,
+  expected: Omit<CreateReplyInput, 'accessToken'>,
+): CanonicalComment {
   let comment: CanonicalComment;
   try {
     comment = parseCanonicalComment(value);
