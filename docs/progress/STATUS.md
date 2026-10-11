@@ -4,7 +4,7 @@ Last reconciled: 2026-10-11. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M04 — Comments & Engagement — **ACTIVE, M04.2 bounded official Comments read adapter**.
+M04 — Comments & Engagement — **ACTIVE, M04.3 approval/idempotency-gated nested reply flow**.
 
 Active branch: `feat/m04-comments-engagement`. Draft PR #6 is the milestone integration boundary.
 Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
@@ -13,10 +13,14 @@ Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
 
 ## Latest Verified Checkpoint
 
-M04.1 — canonical engagement contracts and access policy — **GREEN** at `2b80391f943907218a29fd39d4d6535cf0837e8f`.
-CI `38155192287`: **439/439 tests across 47 files**, frozen install, format, lint, typecheck and build passed.
-Behavioral RED was verified at `b1c746ff87dba531d091c3172e4888d2be7f7ba4`, CI `38154909898`: formatting passed; failures were limited to the absent engagement contracts, trusted read gate and M04 capability metadata.
-M04.1 keeps all remote engagement capabilities `UNAVAILABLE` until legitimate live Community Management evidence exists.
+M04.2 — bounded official Comments get/list adapter — **GREEN** at `26ecce969e4d4935ddcd7babd93c6b46085a03b1`.
+CI `38160896542`: **450/450 tests across 49 files**, frozen install, format, lint, typecheck and build passed.
+Behavioral RED was verified at `5b035386e10f2704964d6313984080c38ec51873`, CI `38160678343`: formatting passed, all 439 pre-existing tests stayed green, and only the two new Comments suites failed because `linkedin-comments` was absent.
+The implementation uses versioned official GET requests, canonical encoded targets, bounded paging, a 64 KiB streamed success-body limit, sanitized 401/403/404/429/provider taxonomy, unread HTTP error bodies, no BATCH_GET and no automatic retries.
+Scoped correctness/security review found 0 unresolved Critical findings and 0 unresolved Important findings.
+
+M04.1 — canonical engagement contracts and access policy — **GREEN** at `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`.
+M04 keeps all remote engagement capabilities live-unverified until legitimate Community Management evidence exists.
 
 ## Latest Verified Mainline
 
@@ -37,4 +41,4 @@ No repository blocker is active. Legitimate Community Management product/scope a
 
 ## Handoff
 
-Exact next work: **Establish M04.2 behavioral RED for the bounded official Comments get/list adapter, then implement the minimum versioned read client without BATCH_GET or retries.**
+Exact next work: **Establish M04.3 behavioral RED for subject-derived, approval/idempotency-gated nested replies, then implement the minimum official Comments mutation flow without automatic mutation retry.**
