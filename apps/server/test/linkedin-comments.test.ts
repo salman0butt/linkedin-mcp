@@ -148,10 +148,12 @@ describe('official LinkedIn Comments read client', () => {
 
     await client.listComments({ accessToken: 'access-token-secret', targetUrn: shareUrn });
 
-    const url = String(recorded.calls[0]?.input);
-    expect(url).toContain('?start=0&count=10');
-    expect(url).not.toContain('ids=List');
-    expect(url).not.toContain('BATCH_GET');
+    const requestInput = recorded.calls[0]?.input;
+    expect(requestInput).toBeTypeOf('string');
+    if (typeof requestInput !== 'string') throw new Error('Expected Comments request URL string');
+    expect(requestInput).toContain('?start=0&count=10');
+    expect(requestInput).not.toContain('ids=List');
+    expect(requestInput).not.toContain('BATCH_GET');
   });
 
   it('classifies read HTTP failures without reading provider error bodies', async () => {
