@@ -3,6 +3,11 @@ import { LinkedInImagesError, type LinkedInImagesClient } from './linkedin-image
 const MAX_ATTEMPTS = 6;
 const MAX_DURATION_MS = 10_000;
 const POLL_INTERVAL_MS = 1_000;
+const STATUS_READ_TIMEOUT = Symbol('status_read_timeout');
+
+type AbortableStatusRequest = Parameters<LinkedInImagesClient['getStatus']>[0] & {
+  signal?: AbortSignal;
+};
 
 export type ImageProcessingVerification =
   | 'available'
@@ -39,17 +44,35 @@ export async function verifyImageProcessing(
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     if (attempt > 0 && now() - startedAt >= MAX_DURATION_MS) return 'pending';
 
+    const remainingMs = MAX_DURATION_MS - (now() - startedAt);
+    if (remainingMs <= 0) return 'pending';
+
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<typeof STATUS_READ_TIMEOUT>((resolve) => {
+      timeoutId = setTimeout(() => {
+        resolve(STATUS_READ_TIMEOUT);
+        controller.abort();
+      }, remainingMs);
+    });
+
     let status;
     try {
-      status = await input.client.getStatus({
+      const request: AbortableStatusRequest = {
         accessToken: input.accessToken,
         imageUrn: input.imageUrn,
-      });
+        signal: controller.signal,
+      };
+      const result = await Promise.race([input.client.getStatus(request), timeout]);
+      if (result === STATUS_READ_TIMEOUT) return 'pending';
+      status = result;
     } catch (error: unknown) {
       if (error instanceof LinkedInImagesError && error.kind === 'reauthentication_required') {
         throw error;
       }
       return 'verification_unavailable';
+    } finally {
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
     }
 
     if (status === 'AVAILABLE') return 'available';
