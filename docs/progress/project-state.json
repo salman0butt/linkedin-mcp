@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M04",
-  "currentIteration": "M04.2",
+  "currentIteration": "M04.3",
   "status": "ACTIVE",
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "2b80391f943907218a29fd39d4d6535cf0837e8f",
-  "ciStatus": "GREEN_RUN_38155192287_439_TESTS_47_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "latestVerifiedSha": "26ecce969e4d4935ddcd7babd93c6b46085a03b1",
+  "ciStatus": "GREEN_RUN_38160896542_450_TESTS_49_FILES_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [],
-  "exactNextWork": "Establish M04.2 behavioral RED for the bounded official Comments get/list adapter: versioned requests, explicit target encoding, paging, restricted-access taxonomy, malformed responses and response-size bounds."
+  "exactNextWork": "Establish M04.3 behavioral RED for approval/idempotency-gated nested comment replies, then implement the minimum subject-derived official Comments write flow without automatic mutation retry."
 }
