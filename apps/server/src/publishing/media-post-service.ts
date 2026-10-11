@@ -698,18 +698,11 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
       }
 
       if (
-        approval.status === 'replay' &&
         reservation.status === 'replay' &&
         reservation.record.state === 'reserved' &&
         (reservation.record.media === undefined || reservation.record.media.length === 0)
       ) {
-        return completeFailure(
-          deps,
-          input.idempotencyKey,
-          hash,
-          'outcome_unknown',
-          'interrupted_before_media_checkpoint',
-        );
+        throw new MediaPostServiceError('outcome_unknown');
       }
 
       const processed = await processMedia(
