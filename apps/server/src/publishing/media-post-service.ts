@@ -654,9 +654,8 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
 
     return serializeByLedger(deps.ledger, async () => {
       const context = await providerContext(deps);
-      let approval;
       try {
-        approval = deps.approvals.consume({
+        deps.approvals.consume({
           receiptId: input.approvalReceiptId,
           payloadHash,
           subject: context.subject,
