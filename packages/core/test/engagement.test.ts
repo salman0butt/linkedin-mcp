@@ -10,8 +10,7 @@ import {
 const shareUrn = 'urn:li:share:6305471423242596352';
 const ugcPostUrn = 'urn:li:ugcPost:70161431162413057';
 const activityUrn = 'urn:li:activity:6631349431612559360';
-const commentUrn =
-  'urn:li:comment:(urn:li:activity:6631349431612559360,6636062862760562688)';
+const commentUrn = 'urn:li:comment:(urn:li:activity:6631349431612559360,6636062862760562688)';
 
 describe('engagement contracts', () => {
   it('accepts conservative explicit comment targets', () => {
