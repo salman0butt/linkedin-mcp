@@ -19,6 +19,8 @@ M04.2 Comments read adapter behavioral RED: `5b035386e10f2704964d6313984080c38ec
 
 M04.2 final GREEN: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542` — 450/450 tests across 49 files plus frozen install, format, lint, typecheck and build passed. The adapter uses canonical target encoding, bounded paging, 64 KiB streamed success-response limits, sanitized access/provider failures, unread HTTP error bodies, no BATCH_GET and no retries. Scoped review has 0 unresolved Critical/Important findings.
 
+M04.3 prerequisite lock regression resolved at `cbcc2c72124299a548f0caf5d7ba41a445c8288d`, exact-head CI `38312220154` — 474/474 tests across 52 files, frozen install, format, lint, typecheck and build green. Completion-only bounded `EEXIST` retry preserves reservation/media fail-closed behavior; no external mutation retries.
+
 M04 provider access remains entitlement-sensitive: member writes use `w_member_social_feed`; member reads use restricted `r_member_social_feed`; Community Management is vetted and Development tier disallows BATCH_GET. Deterministic CI must not represent those live entitlements as verified.
 
 Exact next work: **Establish M04.3 behavioral RED for approval/idempotency-gated nested replies, then implement the minimum subject-derived Comments write flow without automatic mutation retry.**

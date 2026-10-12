@@ -1,6 +1,6 @@
 # Project Status
 
-Last reconciled: 2026-10-12. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-13. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
@@ -10,6 +10,10 @@ Active branch: `feat/m04-comments-engagement`. Draft PR #6 is the milestone inte
 Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
 Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`.
 Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
+
+## Latest Verified Recovery
+
+M04.3 prerequisite completion-lock regression repaired at `cbcc2c72124299a548f0caf5d7ba41a445c8288d`, exact-head CI `38312220154`: **474/474 tests across 52 files**, frozen install, format, lint, typecheck and build passed. Completion alone retries transient local `EEXIST` contention (at most 8 lock attempts); reservation and media checkpoints remain immediate fail-closed, and no remote LinkedIn mutation is retried. Regression coverage includes transient contention, persistent lock ownership and non-contention failures. The earlier source-write blocker is resolved.
 
 ## Latest Verified Checkpoint
 
@@ -37,8 +41,8 @@ Current LinkedIn Community Management documentation exposes comments and reactio
 
 Unresolved Critical findings: 0.
 Unresolved Important findings: 0.
-Active branch source HEAD `ed78bb3145c6f7d6543c4209d3b6e062e4940edb` failed CI run `38285934219` (completion-lock handoff regression). Local completion-only bounded `EEXIST` retry plus two regression tests were freshly verified RED→GREEN: 474/474 tests across 52 files and format/lint/typecheck/build under Node 24.11.1/pnpm 12.9.1 with canonicalized macOS TMPDIR. The GitHub connector rejected the production source update through safety checks, so the remote source remains red and must not be merged. Legitimate Community Management product/scope access remains an external live-verification gate.
+No active repository CI blocker. The completion-lock regression is resolved on the M04 branch at `cbcc2c72124299a548f0caf5d7ba41a445c8288d` / CI `38312220154`. Legitimate Community Management product/scope access remains an external live-verification gate.
 
 ## Handoff
 
-Exact next work: **Persist the locally RED/GREEN-verified completion-only `EEXIST` retry and regression tests through an authorized GitHub source write on the existing branch, then obtain exact-head green CI before resuming M04.3.**
+Exact next work: **Establish M04.3 behavioral RED for subject-derived, approval/idempotency-gated nested replies, then implement the minimum official Comments mutation flow without automatic mutation retry.**

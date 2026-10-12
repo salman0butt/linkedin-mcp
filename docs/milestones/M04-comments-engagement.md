@@ -49,6 +49,8 @@ M04.2 behavioral RED: `5b035386e10f2704964d6313984080c38ec51873`, CI `3816067834
 
 M04.2 final GREEN: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`. 450/450 tests across 49 files plus frozen install, format, lint, typecheck and build passed.
 
+M04.3 prerequisite completion-lock recovery: original behavioral RED at `733e37cb549b75701953c21f5a51d5fa4bd0569b`, CI `38162905039`; completion-only bounded lock retry and persistent-contention/non-contention regression coverage GREEN at `cbcc2c72124299a548f0caf5d7ba41a445c8288d`, CI `38312220154` — 474/474 tests across 52 files plus all quality gates. M04.3 nested reply flow remains unfinished.
+
 ## Integration Test Evidence
 
 M04.1–M04.2 use deterministic injected-provider tests only; no live LinkedIn Community Management request has been performed. Existing real stdio/HTTP MCP smoke suites remain green.

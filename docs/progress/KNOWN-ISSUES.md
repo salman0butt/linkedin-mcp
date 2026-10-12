@@ -2,10 +2,6 @@
 
 ## Current unresolved issues
 
-### Blocking — completion-lock regression on active M04 branch
-
-PR #6 source HEAD `733e37cb549b75701953c21f5a51d5fa4bd0569b` failed CI `38162905039` (471/472 tests): a known remote outcome could not be completed after transient sibling `EEXIST` lock contention. The existing regression is RED on remote. A completion-only bounded retry (without changing reservation/media fail-closed semantics or retrying remote LinkedIn writes) plus persistent-contention and permission-failure tests passed locally (474/474 tests and format/lint/typecheck/build), but the GitHub connector rejected the source update through safety checks. Source remains uncommitted locally; remote CI is not green. Do not merge until the correction is safely persisted and exact-final-head CI passes.
-
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
@@ -19,6 +15,10 @@ M04 adds another explicit access boundary: current Community Management APIs are
 ### Interactive connector/container limitations
 
 GitHub Actions remains authoritative exact-SHA execution evidence when an interactive local environment cannot reproduce the repository's Node/pnpm/network setup. This does not relax exact-head, review, concurrency or security gates.
+
+## Resolved during M04
+
+The M04 completion-lock handoff regression first observed at `733e37cb549b75701953c21f5a51d5fa4bd0569b` / CI `38162905039` was repaired by completion-only bounded `EEXIST` lock retries and two additional fail-closed tests. Verified at `cbcc2c72124299a548f0caf5d7ba41a445c8288d` / CI `38312220154`: **474/474 tests across 52 files**, frozen install, format, lint, typecheck and build green. Reservations/media checkpoints still fail closed immediately; no remote LinkedIn mutation retry was added.
 
 ## Resolved during M03
 
