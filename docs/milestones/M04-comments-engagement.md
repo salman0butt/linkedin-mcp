@@ -65,7 +65,7 @@ M04.2 validates canonical targets before URL construction, fully encodes explici
 
 ## Code Review Findings
 
-M04.1–M04.2 scoped reviews have 0 unresolved Critical findings and 0 unresolved Important findings. Full whole-milestone review remains pending later work.
+M04.1–M04.2 scoped reviews have 0 unresolved Critical findings and 0 unresolved Important findings. M04.3 scoped review identified **2 unresolved Important findings**: inconsistent successful composite reply URN/ID can be accepted, and malformed successful provider replies leave a reserved ledger entry rather than terminal `outcome_unknown`. Both require RED regression and repair. Full whole-milestone review remains pending later work.
 
 ## Fresh Verification Results
 
@@ -85,4 +85,4 @@ M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 
 - [ ] Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Establish M04.3 behavioral RED for approval/idempotency-gated nested replies.**
+Exact next work: **Add RED regressions for the two M04.3 Important findings and implement verified corrections before closeout.**

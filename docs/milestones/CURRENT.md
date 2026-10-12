@@ -23,4 +23,6 @@ M04.3 prerequisite lock regression resolved at `cbcc2c72124299a548f0caf5d7ba41a4
 
 M04 provider access remains entitlement-sensitive: member writes use `w_member_social_feed`; member reads use restricted `r_member_social_feed`; Community Management is vetted and Development tier disallows BATCH_GET. Deterministic CI must not represent those live entitlements as verified.
 
-Exact next work: **Establish M04.3 behavioral RED for approval/idempotency-gated nested replies, then implement the minimum subject-derived Comments write flow without automatic mutation retry.**
+M04.3 scoped review has **2 unresolved Important findings**: reply composite URN/ID inconsistency and nonterminal reservation after malformed provider success. The behavioral RED test write was blocked by connector safety checks. Do not mark M04.3 complete or merge until fixed and verified.
+
+Exact next work: **Add RED regressions for both reply-identity/outcome-persistence findings and implement verified fixes.**

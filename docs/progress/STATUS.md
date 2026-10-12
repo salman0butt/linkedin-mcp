@@ -40,9 +40,9 @@ Current LinkedIn Community Management documentation exposes comments and reactio
 ## Findings / Blockers
 
 Unresolved Critical findings: 0.
-Unresolved Important findings: 0.
-No active repository CI blocker. The completion-lock regression is resolved on the M04 branch at `cbcc2c72124299a548f0caf5d7ba41a445c8288d` / CI `38312220154`. Legitimate Community Management product/scope access remains an external live-verification gate.
+Unresolved Important findings: 2 (M04.3 scoped code review).
+No active CI failure. Two M04.3 Important findings block closeout: the reply adapter accepts a composite comment URN inconsistent with the returned numeric ID/object, and service-side validation failure after provider success leaves the ledger reserved instead of recording terminal `outcome_unknown`. Both remain fail-closed against duplicate external writes, but require behavioral RED regressions and corrections. The attempt to commit those tests was rejected by connector safety checks on 2026-10-13. The completion-lock regression is resolved on the M04 branch at `cbcc2c72124299a548f0caf5d7ba41a445c8288d` / CI `38312220154`. Legitimate Community Management product/scope access remains an external live-verification gate.
 
 ## Handoff
 
-Exact next work: **Establish M04.3 behavioral RED for subject-derived, approval/idempotency-gated nested replies, then implement the minimum official Comments mutation flow without automatic mutation retry.**
+Exact next work: **Add behavioral RED regressions for the two M04.3 reply-identity/outcome-persistence findings through an authorized GitHub source write, then implement and verify the fixes before M04.3 closeout.**

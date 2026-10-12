@@ -6,10 +6,14 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "cbcc2c72124299a548f0caf5d7ba41a445c8288d",
-  "ciStatus": "GREEN_HEAD_cbcc2c72124299a548f0caf5d7ba41a445c8288d_RUN_38312220154_474_TESTS",
+  "latestVerifiedSha": "ed55ccaf3dad2fc8d7715901a51a39717adb7559",
+  "ciStatus": "GREEN_HEAD_ed55ccaf3dad2fc8d7715901a51a39717adb7559_RUN_38312460348_474_TESTS",
   "criticalFindings": 0,
-  "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Establish M04.3 behavioral RED for subject-derived, approval/idempotency-gated nested replies, then implement the minimum official Comments mutation flow without automatic mutation retry."
+  "importantFindings": 2,
+  "blockers": [
+    "M04.3 Important: LinkedIn Comments successful reply parser does not verify the returned composite comment URN agrees with the numeric comment ID/object, so a mismatched identifier can be durably recorded.",
+    "M04.3 Important: engagement-service validateProviderReply failure after provider success bypasses ledger.complete, leaving the mutation reserved rather than durably terminal outcome_unknown. This remains fail-closed against duplicate POSTs.",
+    "2026-10-13: attempt to commit behavioral RED tests for both findings was rejected by connector safety checks; no test/source change was persisted."
+  ],
+  "exactNextWork": "Add behavioral RED regressions for the two M04.3 reply-identity/outcome-persistence findings through an authorized GitHub source write, then implement and verify the fixes before M04.3 closeout."
 }

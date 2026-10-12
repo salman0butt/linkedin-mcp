@@ -2,6 +2,14 @@
 
 ## Current unresolved issues
 
+### Important — inconsistent reply identity can be accepted after HTTP 201
+
+`apps/server/src/engagement/linkedin-comments.ts` validates the response `id` against `x-restli-id` and validates the shape of `commentUrn`, but does not verify the composite URN identifies that same ID/object. An inconsistent canonical result can therefore be persisted and replayed as success. Add a RED regression, reject inconsistent successful identities without exposing provider data, and reverify. Live provider entitlement remains unverified.
+
+### Important — malformed provider success is not terminally recorded
+
+`apps/server/src/engagement/engagement-service.ts` invokes `validateProviderReply` after the provider POST succeeds but outside the failure-completion path. A validation error leaves the ledger `reserved` instead of durably recording terminal `outcome_unknown`. This prevents duplicate automatic POSTs but violates the M04 durable outcome policy. Add a RED regression and persist terminal uncertainty through the existing ledger; do not retry the remote mutation. An attempted test write on 2026-10-13 was rejected by connector safety checks.
+
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
