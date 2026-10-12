@@ -7,6 +7,7 @@ import {
   writeFile as fsWriteFile,
 } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 const STORE_VERSION = 2 as const;
 const LEGACY_STORE_VERSION = 1 as const;
@@ -348,16 +349,29 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
   const lockPath = join(directory, `.${basename(options.filePath)}.lock`);
   let queue: Promise<void> = Promise.resolve();
 
-  async function withFileLock<T>(action: () => Promise<T>): Promise<T> {
+  async function withFileLock<T>(action: () => Promise<T>, retryCompletionContention = false): Promise<T> {
     try {
       await filesystem.mkdir(directory, { recursive: true, mode: 0o700 });
-      await filesystem.writeFile(lockPath, '', {
-        encoding: 'utf8',
-        mode: 0o600,
-        flag: 'wx',
-      });
     } catch {
       throw new IdempotencyLedgerError('store_unavailable');
+    }
+
+    // Only completion of a known remote outcome may wait for another local writer.
+    // Reservation and media checkpoints retain immediate fail-closed behavior.
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await filesystem.writeFile(lockPath, '', {
+          encoding: 'utf8',
+          mode: 0o600,
+          flag: 'wx',
+        });
+        break;
+      } catch (error: unknown) {
+        if (!retryCompletionContention || !isErrno(error, 'EEXIST') || attempt >= 7) {
+          throw new IdempotencyLedgerError('store_unavailable');
+        }
+        await delay(25);
+      }
     }
 
     let result: T;
@@ -526,7 +540,7 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
           if (result !== undefined) existing.result = result;
           await persist(store);
           return cloneRecord(existing);
-        }),
+        }, true),
       );
     },
   };
