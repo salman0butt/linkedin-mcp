@@ -1,6 +1,6 @@
 # Project Status
 
-Last reconciled: 2026-10-11. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-12. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
@@ -37,8 +37,8 @@ Current LinkedIn Community Management documentation exposes comments and reactio
 
 Unresolved Critical findings: 0.
 Unresolved Important findings: 0.
-No repository blocker is active. Legitimate Community Management product/scope access is an external live-verification gate, not a blocker for deterministic implementation.
+Active branch HEAD `733e37cb549b75701953c21f5a51d5fa4bd0569b` failed CI run `38162905039` (471 passed, 1 failed): transient `EEXIST` contention in idempotency completion-lock handoff. Local completion-only bounded retry and regression tests passed 474/474 tests plus format/lint/typecheck/build under Node 24.11.1/pnpm 12.9.1, but source persistence was rejected by GitHub connector safety checks. The branch therefore remains red; do not merge. Legitimate Community Management product/scope access remains an external live-verification gate.
 
 ## Handoff
 
-Exact next work: **Establish M04.3 behavioral RED for subject-derived, approval/idempotency-gated nested replies, then implement the minimum official Comments mutation flow without automatic mutation retry.**
+Exact next work: **Persist the locally verified completion-only bounded `EEXIST` retry and three regression tests through an authorized GitHub write on the existing branch, obtain exact-head green CI, then resume M04.3.**
