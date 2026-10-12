@@ -2,6 +2,10 @@
 
 ## Current unresolved issues
 
+### Blocking — completion-lock regression on active M04 branch
+
+PR #6 source HEAD `733e37cb549b75701953c21f5a51d5fa4bd0569b` failed CI `38162905039` (471/472 tests): a known remote outcome could not be completed after transient sibling `EEXIST` lock contention. The existing regression is RED on remote. A completion-only bounded retry (without changing reservation/media fail-closed semantics or retrying remote LinkedIn writes) plus persistent-contention and permission-failure tests passed locally (474/474 tests and format/lint/typecheck/build), but the GitHub connector rejected the source update through safety checks. Source remains uncommitted locally; remote CI is not green. Do not merge until the correction is safely persisted and exact-final-head CI passes.
+
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
