@@ -10,6 +10,10 @@
 
 `apps/server/src/engagement/engagement-service.ts` invokes `validateProviderReply` after the provider POST succeeds but outside the failure-completion path. A validation error leaves the ledger `reserved` instead of durably recording terminal `outcome_unknown`. This prevents duplicate automatic POSTs but violates the M04 durable outcome policy. Add a RED regression and persist terminal uncertainty through the existing ledger; do not retry the remote mutation. An attempted test write on 2026-10-13 was rejected by connector safety checks.
 
+### Important — documented create response can omit likesSummary
+
+The official Comments creation response example omits `likesSummary`, but `parseCanonicalComment` currently requires it even on successful reply POST. This may reject a legitimate 201 response as `malformed_success`. Add a failing create-response regression, make only the create response's count optional without inventing zero, and preserve strict existing GET/list parsing. No live provider entitlement is claimed.
+
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
