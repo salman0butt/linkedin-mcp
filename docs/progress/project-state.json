@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "f1a720c39d17fdb40575f43826dde633810ee6a1",
-  "ciStatus": "GREEN_HEAD_f1a720c39d17fdb40575f43826dde633810ee6a1_RUN_38358341753_474_TESTS",
+  "latestVerifiedSha": "e9aaf115292aeeaccdf7d008bf80d96b215936d2",
+  "ciStatus": "GREEN_HEAD_e9aaf115292aeeaccdf7d008bf80d96b215936d2_RUN_38486707542_474_TESTS",
   "criticalFindings": 0,
   "importantFindings": 3,
   "blockers": [
     "M04.3 Important: successful reply composite comment URN can disagree with returned numeric ID or expected parent root; malformed success must fail closed.",
     "M04.3 Important: validation failure after provider POST success bypasses ledger.complete, leaving reserved instead of terminal outcome_unknown; duplicate POST remains fail-closed.",
     "M04.3 Important: successful Comments POST response may omit likesSummary; current reply parser rejects it despite documented provider shape.",
-    "2026-10-13: GitHub connector rejected M04.3 behavioral RED regression source write through OpenAI safety checks; no new remote source commit. Locally verified corrective commit 1bbdd1b9 (481 tests) is not on remote branch; exact-head CI covers only 474 existing tests."
+    "2026-10-14: M04.3 RED regression source write remains blocked by connector safety checks. Locally verified correction 1bbdd1b9 (481 tests) is not on the remote branch. CURRENT.md now records three Important findings; M04 milestone ledger still has stale count. Exact-head CI 38486707542 passed 474 tests, but contains no M04.3 corrections."
   ],
-  "exactNextWork": "Persist the M04.3 RED behavioral regression tests through an authorized source-write mechanism, verify RED, then apply locally verified corrections and verify exact remote-head CI."
+  "exactNextWork": "Persist M04.3 RED behavioral regression tests through an authorized source-write mechanism, verify intended RED, apply corrections, and verify exact-final-head CI."
 }
