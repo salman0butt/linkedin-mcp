@@ -6,14 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "ed55ccaf3dad2fc8d7715901a51a39717adb7559",
-  "ciStatus": "GREEN_HEAD_ed55ccaf3dad2fc8d7715901a51a39717adb7559_RUN_38312460348_474_TESTS",
+  "latestVerifiedSha": "415b49d1bc67fd4090c709929d1849aac6734c6a",
+  "ciStatus": "GREEN_HEAD_415b49d1bc67fd4090c709929d1849aac6734c6a_RUN_38312628350_474_TESTS",
   "criticalFindings": 0,
-  "importantFindings": 2,
+  "importantFindings": 3,
   "blockers": [
-    "M04.3 Important: LinkedIn Comments successful reply parser does not verify the returned composite comment URN agrees with the numeric comment ID/object, so a mismatched identifier can be durably recorded.",
-    "M04.3 Important: engagement-service validateProviderReply failure after provider success bypasses ledger.complete, leaving the mutation reserved rather than durably terminal outcome_unknown. This remains fail-closed against duplicate POSTs.",
-    "2026-10-13: attempt to commit behavioral RED tests for both findings was rejected by connector safety checks; no test/source change was persisted."
+    "M04.3 Important: successful reply composite comment URN can disagree with returned numeric ID or expected parent root; malformed success must fail closed.",
+    "M04.3 Important: validation failure after provider POST success bypasses ledger.complete, leaving reserved instead of terminal outcome_unknown; duplicate POST remains fail-closed.",
+    "M04.3 Important: successful Comments POST response may omit likesSummary; current reply parser rejects it despite documented provider shape.",
+    "2026-10-13: GitHub connector rejected regression-test source write through OpenAI safety checks; no RED source change was persisted."
   ],
-  "exactNextWork": "Add behavioral RED regressions for the two M04.3 reply-identity/outcome-persistence findings through an authorized GitHub source write, then implement and verify the fixes before M04.3 closeout."
+  "exactNextWork": "Persist M04.3 reply-response behavioral RED regression tests through an authorized source write and verify expected failures before implementing corrections."
 }
