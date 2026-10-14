@@ -65,7 +65,7 @@ M04.2 validates canonical targets before URL construction, fully encodes explici
 
 ## Code Review Findings
 
-M04.1–M04.2 scoped reviews have 0 unresolved Critical findings and 0 unresolved Important findings. M04.3 scoped review identified **2 unresolved Important findings**: inconsistent successful composite reply URN/ID can be accepted, and malformed successful provider replies leave a reserved ledger entry rather than terminal `outcome_unknown`. Both require RED regression and repair. Full whole-milestone review remains pending later work.
+M04.1–M04.2 scoped reviews have 0 unresolved Critical findings and 0 unresolved Important findings. M04.3 scoped review identified **3 unresolved Important findings**: (1) inconsistent successful composite reply URN/ID or root can be accepted, (2) malformed successful provider replies leave a reserved ledger entry instead of terminal `outcome_unknown`, and (3) documented successful reply responses without `likesSummary` are incorrectly rejected. All require genuine RED regression and repair. The attempted RED test write was rejected by the connected GitHub safety layer on 2026-10-14; no behavior change is remotely verified. Full whole-milestone review remains pending later work.
 
 ## Fresh Verification Results
 
@@ -85,4 +85,4 @@ M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 
 - [ ] Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Add RED regressions for the two M04.3 Important findings and implement verified corrections before closeout.**
+Exact next work: **Persist M04.3 RED behavioral regressions through an authorized GitHub source-write mechanism, verify expected RED, implement the three fixes, and verify exact-final-head CI.**
