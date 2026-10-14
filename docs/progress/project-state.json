@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "64f259a8fab7fddeb9f4ed433d0485de7570214e",
-  "ciStatus": "GREEN_HEAD_64f259a8fab7fddeb9f4ed433d0485de7570214e_RUN_38574823719_474_TESTS",
+  "latestVerifiedSha": "95338a23b9c55b69fc921f32c3716adafc9ca8d0",
+  "ciStatus": "GREEN_HEAD_95338a23b9c55b69fc921f32c3716adafc9ca8d0_RUN_38608986330_474_TESTS",
   "criticalFindings": 0,
   "importantFindings": 3,
   "blockers": [
     "M04.3 Important: successful reply composite comment URN can disagree with returned numeric ID or expected parent root; malformed success must fail closed.",
     "M04.3 Important: validation failure after provider POST success bypasses ledger.complete, leaving reserved instead of terminal outcome_unknown; duplicate POST remains fail-closed.",
     "M04.3 Important: successful Comments POST response may omit likesSummary; current reply parser rejects it despite documented provider shape.",
-    "2026-10-14: Exact remote PR #6 head 64f259a8fab7fddeb9f4ed433d0485de7570214e has green CI run 38574823719 (474 tests); three M04.3 Important behavioral findings remain unfixed remotely. An authorized regression-test source update was rejected by OpenAI safety checks during this run. Prior isolated RED (6 failures) and GREEN (481 tests) evidence is local-only and not remote CI."
+    "2026-10-15: Exact PR #6 head 95338a23b9c55b69fc921f32c3716adafc9ca8d0 CI 38608986330 green (474 tests); the M04.3 optional likesSummary RED regression source write was rejected by OpenAI safety checks. The three Important defects remain unresolved on the remote branch."
   ],
-  "exactNextWork": "Persist the M04.3 behavioral RED regressions and verified corrections through an authorized source-write path when permitted, then verify exact-final-head CI before closing M04.3."
+  "exactNextWork": "Persist the M04.3 behavioral RED regressions and corrections through an authorized GitHub source-write path, then obtain exact-final-head green CI and scoped review before closing M04.3."
 }
