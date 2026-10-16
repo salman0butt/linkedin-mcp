@@ -2,18 +2,6 @@
 
 ## Current unresolved issues
 
-### Important — inconsistent reply identity can be accepted after HTTP 201
-
-`apps/server/src/engagement/linkedin-comments.ts` validates the response `id` against `x-restli-id` and validates the shape of `commentUrn`, but does not verify the composite URN identifies that same ID/object. An inconsistent canonical result can therefore be persisted and replayed as success. Add a RED regression, reject inconsistent successful identities without exposing provider data, and reverify. Live provider entitlement remains unverified.
-
-### Important — malformed provider success is not terminally recorded
-
-`apps/server/src/engagement/engagement-service.ts` invokes `validateProviderReply` after the provider POST succeeds but outside the failure-completion path. A validation error leaves the ledger `reserved` instead of durably recording terminal `outcome_unknown`. This prevents duplicate automatic POSTs but violates the M04 durable outcome policy. Add a RED regression and persist terminal uncertainty through the existing ledger; do not retry the remote mutation. An attempted test write on 2026-10-13 was rejected by connector safety checks.
-
-### Important — documented create response can omit likesSummary
-
-The official Comments creation response example omits `likesSummary`, but `parseCanonicalComment` currently requires it even on successful reply POST. This may reject a legitimate 201 response as `malformed_success`. Add a failing create-response regression, make only the create response's count optional without inventing zero, and preserve strict existing GET/list parsing. No live provider entitlement is claimed.
-
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
@@ -26,11 +14,24 @@ M04 adds another explicit access boundary: current Community Management APIs are
 
 ### Interactive connector/container limitations
 
-GitHub Actions remains authoritative exact-SHA execution evidence when an interactive local environment cannot reproduce the repository's Node/pnpm/network setup. This does not relax exact-head, review, concurrency or security gates.
+GitHub Actions remains authoritative exact-SHA execution evidence when an interactive local environment cannot reproduce the repository's Node/pnpm/network setup. This does not relax exact-head, review, concurrency or security gates. On 2026-10-16 the local Chat On Steroids tunnel became unavailable after dispatching independent M04.3 reviewers; no independent review result is claimed from that unavailable channel.
 
 ## Resolved during M04
 
-The M04 completion-lock handoff regression first observed at `733e37cb549b75701953c21f5a51d5fa4bd0569b` / CI `38162905039` was repaired by completion-only bounded `EEXIST` lock retries and two additional fail-closed tests. Verified at `cbcc2c72124299a548f0caf5d7ba41a445c8288d` / CI `38312220154`: **474/474 tests across 52 files**, frozen install, format, lint, typecheck and build green. Reservations/media checkpoints still fail closed immediately; no remote LinkedIn mutation retry was added.
+### M04.3 nested reply review findings
+
+Four Important findings are resolved with genuine RED→GREEN evidence and exact-head CI:
+
+1. **Reply target/parent approval mismatch** — RED `d716140fa42d5e4c294146936e4d9616be161a8b`; fixed by rejecting mismatched nested targets before approval at `386dbf96235fadf88ea16a9411cd3a24dfc3a38b`.
+2. **Malformed provider success left a nonterminal reservation** — RED `3adcee4d80fcfdad44f8374b0f97af28c590f215`, CI `38901369613`; fixed at `9699773fb323ab027ebdc2837c5e5a8a591e0c9b`, CI `38901575437`, by terminally recording `outcome_unknown` without retrying the remote mutation.
+3. **Successful composite reply identity could disagree with ID/root, including legacy replay** — RED `5dce3ac361f87abadd61c91283e8ebcc41b702d4`, CI `38902334994`; fixed at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` with shared identity validation in adapter, service and replay paths.
+4. **Documented create response could omit `likesSummary`** — the same RED `5dce3ac361f87abadd61c91283e8ebcc41b702d4` proved the create-only compatibility gap while strict read parsing stayed green; fixed at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` without fabricating a zero count.
+
+Exact-head CI `38902517595` on `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` passed **483/483 tests across 53 files** plus frozen install, format, lint, typecheck and build. Scoped correctness/security review found 0 unresolved Critical findings and 0 unresolved Important findings.
+
+### M04 completion-lock handoff regression
+
+The regression first observed at `733e37cb549b75701953c21f5a51d5fa4bd0569b` / CI `38162905039` was repaired by completion-only bounded `EEXIST` lock retries and additional fail-closed tests. Verified at `cbcc2c72124299a548f0caf5d7ba41a445c8288d` / CI `38312220154`: **474/474 tests across 52 files**, frozen install, format, lint, typecheck and build green. Reservations/media checkpoints still fail closed immediately; no remote LinkedIn mutation retry was added.
 
 ## Resolved during M03
 
@@ -42,6 +43,8 @@ M03 whole-milestone review completed with **0 unresolved Critical findings and 0
 
 M04.1 scoped contract/config review completed with **0 unresolved Critical findings and 0 unresolved Important findings**.
 
-M04.2 scoped Comments read-adapter review completed after exact-head GREEN `26ecce969e4d4935ddcd7babd93c6b46085a03b1` / CI `38160896542` with **0 unresolved Critical findings and 0 unresolved Important findings**. The adapter validates/encodes canonical targets, bounds paging and successful JSON bodies, leaves HTTP error bodies unread, sanitizes failures, uses no BATCH_GET and performs no automatic retries.
+M04.2 scoped Comments read-adapter review completed after exact-head GREEN `26ecce969e4d4935ddcd7babd93c6b46085a03b1` / CI `38160896542` with **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+M04.3 scoped nested-reply correctness/security review completed after exact-head GREEN `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` / CI `38902517595` with **0 unresolved Critical findings and 0 unresolved Important findings**. A separately dispatched independent review could not be retrieved after the local tunnel disconnected and is not represented as completed.
 
 Full M04 whole-branch correctness/security/provenance review remains required before merge.
