@@ -6,10 +6,13 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "4c9a5bd418b33d588d0b61b09ce3003532e8dcf9",
-  "ciStatus": "GREEN_HEAD_4c9a5bd418b33d588d0b61b09ce3003532e8dcf9_RUN_38902517595_483_PASS_ALL_QUALITY_GATES",
+  "latestVerifiedSha": "8ea3393a7a1a6a2ddb6dc30dc6b154b41515402f",
+  "ciStatus": "RED_HEAD_8ea3393a7a1a6a2ddb6dc30dc6b154b41515402f_RUN_38907502958_REACTIONS_ADAPTER_MISSING",
   "criticalFindings": 0,
   "importantFindings": 0,
-  "blockers": [],
-  "exactNextWork": "Write M04.4 reaction add/remove behavioral RED tests for official POST/DELETE contracts, authenticated actor derivation, approval/idempotency, success/error taxonomy and uncertain transport, then verify intended RED."
+  "blockers": [
+    "M04.4 RED test checkpoint CI 38907502958: 483 existing tests passed, new reaction suites fail because apps/server/src/engagement/linkedin-reactions.ts does not exist.",
+    "M04.4 reactions adapter source creation rejected by OpenAI safety checks on 2026-10-16; no GREEN verification."
+  ],
+  "exactNextWork": "Persist the M04.4 official Reactions adapter on feat/m04-comments-engagement via an authorized source-write path, then verify exact-head CI and continue reaction service TDD."
 }
