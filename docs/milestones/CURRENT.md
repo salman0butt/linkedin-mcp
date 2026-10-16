@@ -1,8 +1,8 @@
 # Current Milestone
 
 Milestone: M04 — Comments & Engagement
-Status: ACTIVE — M04.3 approval/idempotency-gated nested reply flow
-Iteration: M04.3
+Status: ACTIVE — M04.4 reaction add/remove flow
+Iteration: M04.4
 Branch: `feat/m04-comments-engagement`
 PR: #6 — draft
 Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`
@@ -15,14 +15,10 @@ M03 is verified on current main `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0` after
 
 M04.1 contracts/access policy GREEN: `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287` — 439/439 tests across 47 files plus all quality gates.
 
-M04.2 Comments read adapter behavioral RED: `5b035386e10f2704964d6313984080c38ec51873`, CI `38160678343` — formatting passed, all 439 existing tests remained green and the two new suites failed only because the adapter module was absent.
+M04.2 Comments read adapter GREEN: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542` — 450/450 tests across 49 files plus all quality gates. The adapter uses canonical target encoding, bounded paging, 64 KiB success-response limits, sanitized access/provider failures, unread HTTP error bodies, no BATCH_GET and no retries.
 
-M04.2 final GREEN: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542` — 450/450 tests across 49 files plus frozen install, format, lint, typecheck and build passed. The adapter uses canonical target encoding, bounded paging, 64 KiB streamed success-response limits, sanitized access/provider failures, unread HTTP error bodies, no BATCH_GET and no retries. Scoped review has 0 unresolved Critical/Important findings.
+M04.3 nested reply flow GREEN: `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595` — 483/483 tests across 53 files plus frozen install, format, lint, typecheck and build. Review fixes cover pre-approval target/parent integrity, terminal `outcome_unknown` persistence after malformed provider success, composite reply identity including legacy replay, and create responses that legitimately omit `likesSummary`. Scoped correctness/security review has 0 unresolved Critical/Important findings.
 
-M04.3 prerequisite lock regression resolved at `cbcc2c72124299a548f0caf5d7ba41a445c8288d`, exact-head CI `38312220154` — 474/474 tests across 52 files, frozen install, format, lint, typecheck and build green. Completion-only bounded `EEXIST` retry preserves reservation/media fail-closed behavior; no external mutation retries.
+M04 provider access remains entitlement-sensitive: member writes use `w_member_social_feed`; member reads use restricted `r_member_social_feed`; Community Management is vetted and Development tier disallows BATCH_GET. Deterministic CI does not represent live entitlement as verified.
 
-M04 provider access remains entitlement-sensitive: member writes use `w_member_social_feed`; member reads use restricted `r_member_social_feed`; Community Management is vetted and Development tier disallows BATCH_GET. Deterministic CI must not represent those live entitlements as verified.
-
-M04.3 scoped review has **3 unresolved Important findings**: reply composite URN/ID inconsistency, nonterminal reservation after malformed provider success, and rejection of valid successful replies without `likesSummary`. The behavioral RED test write was blocked by connector safety checks. Do not mark M04.3 complete or merge until fixed and verified.
-
-Exact next work: **Add RED regressions for all three M04.3 Important findings, verify RED, implement fixes and verify exact-head CI.**
+Exact next work: **Write M04.4 reaction add/remove behavioral RED tests for official POST/DELETE contracts, authenticated actor derivation, approval/idempotency, success/error taxonomy and uncertain transport, then verify intended RED.**
