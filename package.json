@@ -10,7 +10,7 @@
   },
   "scripts": {
     "format": "prettier --write .",
-    "format:check": "prettier --write apps/server/test/linkedin-reactions.test.ts apps/server/test/engagement-service-reactions.test.ts && git diff -- apps/server/test/linkedin-reactions.test.ts apps/server/test/engagement-service-reactions.test.ts && exit 1",
+    "format:check": "prettier --check .",
     "lint": "eslint \"**/*.ts\" --no-error-on-unmatched-pattern",
     "pretypecheck": "pnpm --filter @linkedin-mcp/core build",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",

@@ -265,46 +265,49 @@ describe('engagement service reactions', () => {
     ['reauthentication_required', 'reauth_required'],
     ['permission_required', 'permission_required'],
     ['rate_limited', 'rate_limited'],
-  ] as const)('persists known add failures terminally and never retries %s', async (providerKind, serviceKind) => {
-    const filePath = await ledgerPath();
-    const auth = authHarness();
-    const approvals = approvalHarness();
-    let providerCalls = 0;
-    const reactions = {
-      addReaction: () => {
-        providerCalls += 1;
-        return Promise.reject(new LinkedInReactionsError(providerKind));
-      },
-      removeReaction: () => Promise.resolve(),
-    };
-    const first = createEngagementService({
-      auth: auth.auth,
-      approvals,
-      ledger: createFileIdempotencyLedger({ filePath }),
-      comments: commentsHarness(),
-      reactions,
-    });
-    const preview = first.previewReactionAdd(addDraft);
-    const receipt = await first.approveReactionAdd({ payloadHash: preview.payloadHash });
-    const input = {
-      draft: addDraft,
-      payloadHash: preview.payloadHash,
-      approvalReceiptId: receipt.receiptId,
-      idempotencyKey: `reaction-add-${providerKind}`,
-    };
+  ] as const)(
+    'persists known add failures terminally and never retries %s',
+    async (providerKind, serviceKind) => {
+      const filePath = await ledgerPath();
+      const auth = authHarness();
+      const approvals = approvalHarness();
+      let providerCalls = 0;
+      const reactions = {
+        addReaction: () => {
+          providerCalls += 1;
+          return Promise.reject(new LinkedInReactionsError(providerKind));
+        },
+        removeReaction: () => Promise.resolve(),
+      };
+      const first = createEngagementService({
+        auth: auth.auth,
+        approvals,
+        ledger: createFileIdempotencyLedger({ filePath }),
+        comments: commentsHarness(),
+        reactions,
+      });
+      const preview = first.previewReactionAdd(addDraft);
+      const receipt = await first.approveReactionAdd({ payloadHash: preview.payloadHash });
+      const input = {
+        draft: addDraft,
+        payloadHash: preview.payloadHash,
+        approvalReceiptId: receipt.receiptId,
+        idempotencyKey: `reaction-add-${providerKind}`,
+      };
 
-    await expect(first.addReaction(input)).rejects.toMatchObject({ kind: serviceKind });
-    const restarted = createEngagementService({
-      auth: auth.auth,
-      approvals,
-      ledger: createFileIdempotencyLedger({ filePath }),
-      comments: commentsHarness(),
-      reactions,
-    });
-    await expect(restarted.addReaction(input)).rejects.toMatchObject({ kind: serviceKind });
-    expect(providerCalls).toBe(1);
-    if (providerKind === 'reauthentication_required') expect(auth.reauthCalls()).toBe(1);
-  });
+      await expect(first.addReaction(input)).rejects.toMatchObject({ kind: serviceKind });
+      const restarted = createEngagementService({
+        auth: auth.auth,
+        approvals,
+        ledger: createFileIdempotencyLedger({ filePath }),
+        comments: commentsHarness(),
+        reactions,
+      });
+      await expect(restarted.addReaction(input)).rejects.toMatchObject({ kind: serviceKind });
+      expect(providerCalls).toBe(1);
+      if (providerKind === 'reauthentication_required') expect(auth.reauthCalls()).toBe(1);
+    },
+  );
 
   it.each(['add', 'remove'] as const)(
     'persists uncertain %s outcomes and never retries the remote mutation',
@@ -357,9 +360,13 @@ describe('engagement service reactions', () => {
         reactions,
       });
       if (operation === 'add') {
-        await expect(restarted.addReaction(input as never)).rejects.toMatchObject({ kind: 'outcome_unknown' });
+        await expect(restarted.addReaction(input as never)).rejects.toMatchObject({
+          kind: 'outcome_unknown',
+        });
       } else {
-        await expect(restarted.removeReaction(input as never)).rejects.toMatchObject({ kind: 'outcome_unknown' });
+        await expect(restarted.removeReaction(input as never)).rejects.toMatchObject({
+          kind: 'outcome_unknown',
+        });
       }
       expect(providerCalls).toBe(1);
     },

@@ -195,7 +195,9 @@ describe('official LinkedIn Reactions adapter', () => {
   });
 
   it.each([
-    successfulReactionBody({ id: 'urn:li:reaction:(urn:li:person:other,urn:li:activity:7067167295080394752)' }),
+    successfulReactionBody({
+      id: 'urn:li:reaction:(urn:li:person:other,urn:li:activity:7067167295080394752)',
+    }),
     successfulReactionBody({ reactionType: 'PRAISE' }),
     successfulReactionBody({ root: 'urn:li:activity:999' }),
     successfulReactionBody({ created: { actor: 'urn:li:person:other', time: 1_760_000_000_000 } }),
