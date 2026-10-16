@@ -1,20 +1,15 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M04",
-  "currentIteration": "M04.3",
+  "currentIteration": "M04.4",
   "status": "ACTIVE",
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "386dbf96235fadf88ea16a9411cd3a24dfc3a38b",
-  "ciStatus": "IN_PROGRESS_HEAD_386dbf96235fadf88ea16a9411cd3a24dfc3a38b_RUN_38900096941",
+  "latestVerifiedSha": "4c9a5bd418b33d588d0b61b09ce3003532e8dcf9",
+  "ciStatus": "GREEN_HEAD_4c9a5bd418b33d588d0b61b09ce3003532e8dcf9_RUN_38902517595_483_PASS_ALL_QUALITY_GATES",
   "criticalFindings": 0,
-  "importantFindings": 4,
-  "blockers": [
-    "M04.3 Important: successful reply composite comment URN can disagree with returned numeric ID or expected parent root; malformed success must fail closed.",
-    "M04.3 Important: validation failure after provider POST success bypasses ledger.complete, leaving reserved instead of terminal outcome_unknown; duplicate POST remains fail-closed.",
-    "M04.3 Important: successful Comments POST response may omit likesSummary; current reply parser rejects it despite documented provider shape.",
-    "M04.3 reply-target correction committed at 386dbf96235fadf88ea16a9411cd3a24dfc3a38b; exact-head CI 38900096941 pending verification. Regression was RED on preceding head."
-  ],
-  "exactNextWork": "Verify exact-head CI run 38900096941 for reply-target regression; then address remaining three M04.3 Important findings with RED→GREEN TDD."
+  "importantFindings": 0,
+  "blockers": [],
+  "exactNextWork": "Write M04.4 reaction add/remove behavioral RED tests for official POST/DELETE contracts, authenticated actor derivation, approval/idempotency, success/error taxonomy and uncertain transport, then verify intended RED."
 }
