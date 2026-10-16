@@ -206,6 +206,51 @@ describe('engagement service comment replies', () => {
     expect(providerCalls).toBe(0);
   });
 
+  it('records malformed provider success as terminal outcome_unknown', async () => {
+    const filePath = await ledgerPath();
+    const auth = authHarness();
+    const approvals = approvalHarness();
+    const backingLedger = createFileIdempotencyLedger({ filePath });
+    const completions: Array<Parameters<typeof backingLedger.complete>[0]> = [];
+    const ledger = {
+      reserve: backingLedger.reserve.bind(backingLedger),
+      complete: async (input: Parameters<typeof backingLedger.complete>[0]) => {
+        completions.push(input);
+        return backingLedger.complete(input);
+      },
+    };
+    let providerCalls = 0;
+    const service = createEngagementService({
+      auth: auth.auth,
+      approvals,
+      ledger,
+      comments: {
+        createReply: () => {
+          providerCalls += 1;
+          return Promise.resolve(successfulComment('urn:li:person:unexpected-member'));
+        },
+      },
+    });
+    const preview = service.previewReply(draft);
+    const receipt = await service.approveReply({ payloadHash: preview.payloadHash });
+    const input = {
+      draft,
+      payloadHash: preview.payloadHash,
+      approvalReceiptId: receipt.receiptId,
+      idempotencyKey: 'reply-key-malformed-success',
+    };
+
+    await expect(service.createReply(input)).rejects.toMatchObject({ kind: 'outcome_unknown' });
+    expect(completions).toEqual([
+      expect.objectContaining({
+        state: 'outcome_unknown',
+        result: { errorCode: 'reply_outcome_unknown' },
+      }),
+    ]);
+    await expect(service.createReply(input)).rejects.toMatchObject({ kind: 'outcome_unknown' });
+    expect(providerCalls).toBe(1);
+  });
+
   it('marks uncertain mutation outcomes durable and never retries them automatically', async () => {
     const filePath = await ledgerPath();
     const auth = authHarness();
