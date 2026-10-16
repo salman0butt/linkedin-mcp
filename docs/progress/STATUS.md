@@ -17,6 +17,7 @@ M04.3 — approval/idempotency-gated nested reply flow — **GREEN** at `4c9a5bd
 CI `38902517595`: **483/483 tests across 53 files**, frozen install, format, lint, typecheck and build passed.
 
 M04.3 TDD/review repair evidence includes:
+
 - pre-approval reply-target mismatch RED `d716140fa42d5e4c294146936e4d9616be161a8b`, repaired at `386dbf96235fadf88ea16a9411cd3a24dfc3a38b`;
 - malformed provider-success terminal-outcome RED `3adcee4d80fcfdad44f8374b0f97af28c590f215`, CI `38901369613`, repaired at `9699773fb323ab027ebdc2837c5e5a8a591e0c9b`, CI `38901575437`;
 - composite reply identity, legacy replay integrity and documented missing-`likesSummary` RED `5dce3ac361f87abadd61c91283e8ebcc41b702d4`, CI `38902334994` with exactly 6 intended failures and 477 passes, repaired at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`.
