@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -176,6 +176,49 @@ describe('engagement service comment replies', () => {
     expect(providerCalls).toHaveLength(1);
   });
 
+  it('fails closed when replaying a legacy success with mismatched composite reply identity', async () => {
+    const filePath = await ledgerPath();
+    const auth = authHarness();
+    const approvals = approvalHarness();
+    let providerCalls = 0;
+    const comments = {
+      createReply: () => {
+        providerCalls += 1;
+        return Promise.resolve(successfulComment());
+      },
+    };
+    const service = createEngagementService({
+      auth: auth.auth,
+      approvals,
+      ledger: createFileIdempotencyLedger({ filePath }),
+      comments,
+    });
+    const preview = service.previewReply(draft);
+    const receipt = await service.approveReply({ payloadHash: preview.payloadHash });
+    const input = {
+      draft,
+      payloadHash: preview.payloadHash,
+      approvalReceiptId: receipt.receiptId,
+      idempotencyKey: 'reply-key-legacy-inconsistent-success',
+    };
+    await expect(service.createReply(input)).resolves.toMatchObject({ state: 'succeeded' });
+
+    const persisted = JSON.parse(await readFile(filePath, 'utf8')) as {
+      records: { result?: { resourceUrn?: string } }[];
+    };
+    persisted.records[0]!.result!.resourceUrn = `urn:li:comment:(urn:li:activity:9999999999999999999,${createdCommentId})`;
+    await writeFile(filePath, JSON.stringify(persisted), 'utf8');
+
+    const restarted = createEngagementService({
+      auth: auth.auth,
+      approvals,
+      ledger: createFileIdempotencyLedger({ filePath }),
+      comments,
+    });
+    await expect(restarted.createReply(input)).rejects.toMatchObject({ kind: 'outcome_unknown' });
+    expect(providerCalls).toBe(1);
+  });
+
   it('fails closed when the draft changed after approval', async () => {
     const filePath = await ledgerPath();
     const auth = authHarness();
@@ -250,6 +293,56 @@ describe('engagement service comment replies', () => {
     await expect(service.createReply(input)).rejects.toMatchObject({ kind: 'outcome_unknown' });
     expect(providerCalls).toBe(1);
   });
+
+  it.each([
+    ['different numeric ID', `urn:li:comment:(urn:li:activity:6305471423192264704,9999999999999999999)`],
+    ['different parent thread', `urn:li:comment:(urn:li:activity:9999999999999999999,${createdCommentId})`],
+  ])(
+    'rejects and terminally records provider reply with %s in its composite URN',
+    async (_case, returnedUrn) => {
+      const filePath = await ledgerPath();
+      const auth = authHarness();
+      const approvals = approvalHarness();
+      const backingLedger = createFileIdempotencyLedger({ filePath });
+      const completions: Array<Parameters<typeof backingLedger.complete>[0]> = [];
+      const ledger = {
+        reserve: backingLedger.reserve.bind(backingLedger),
+        complete: async (input: Parameters<typeof backingLedger.complete>[0]) => {
+          completions.push(input);
+          return backingLedger.complete(input);
+        },
+      };
+      let providerCalls = 0;
+      const service = createEngagementService({
+        auth: auth.auth,
+        approvals,
+        ledger,
+        comments: {
+          createReply: () => {
+            providerCalls += 1;
+            return Promise.resolve({ ...successfulComment(), commentUrn: returnedUrn });
+          },
+        },
+      });
+      const preview = service.previewReply(draft);
+      const receipt = await service.approveReply({ payloadHash: preview.payloadHash });
+      const input = {
+        draft,
+        payloadHash: preview.payloadHash,
+        approvalReceiptId: receipt.receiptId,
+        idempotencyKey: `reply-key-urn-mismatch-${_case}`,
+      };
+
+      await expect(service.createReply(input)).rejects.toMatchObject({ kind: 'outcome_unknown' });
+      expect(completions).toEqual([
+        expect.objectContaining({
+          state: 'outcome_unknown',
+          result: { errorCode: 'reply_outcome_unknown' },
+        }),
+      ]);
+      expect(providerCalls).toBe(1);
+    },
+  );
 
   it('marks uncertain mutation outcomes durable and never retries them automatically', async () => {
     const filePath = await ledgerPath();

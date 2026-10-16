@@ -158,6 +158,58 @@ describe('official LinkedIn Comments reply adapter', () => {
   });
 
   it.each([
+    ['wrong comment ID', `urn:li:comment:(urn:li:activity:6305471423192264704,9999999999999999999)`],
+    ['wrong parent thread', `urn:li:comment:(urn:li:activity:9999999999999999999,${commentId})`],
+  ])('rejects a successful reply with %s in its composite URN', async (_case, returnedUrn) => {
+    const recorded = recorder(
+      Response.json(
+        { ...successfulReplyBody(), commentUrn: returnedUrn },
+        {
+          status: 201,
+          headers: { 'x-restli-id': commentId },
+        },
+      ),
+    );
+    const client = createLinkedInCommentsClient({ apiVersion: '202610' }, { fetch: recorded.fetch });
+
+    await expect(
+      client.createReply({
+        accessToken: 'access-token-secret',
+        targetUrn,
+        actorUrn,
+        objectUrn: rootUrn,
+        parentCommentUrn: targetUrn,
+        text,
+      }),
+    ).rejects.toMatchObject({ kind: 'malformed_success', retryable: false });
+    expect(recorded.calls).toHaveLength(1);
+  });
+
+  it('accepts a documented successful reply without likesSummary without fabricating a count', async () => {
+    const body: Record<string, unknown> = { ...successfulReplyBody() };
+    delete body.likesSummary;
+    const recorded = recorder(
+      Response.json(body, {
+        status: 201,
+        headers: { 'x-restli-id': commentId },
+      }),
+    );
+    const client = createLinkedInCommentsClient({ apiVersion: '202610' }, { fetch: recorded.fetch });
+
+    const created = await client.createReply({
+      accessToken: 'access-token-secret',
+      targetUrn,
+      actorUrn,
+      objectUrn: rootUrn,
+      parentCommentUrn: targetUrn,
+      text,
+    });
+    expect(created).toMatchObject({ id: commentId, commentUrn, parentCommentUrn: targetUrn });
+    expect(created).not.toHaveProperty('totalLikes');
+    expect(recorded.calls).toHaveLength(1);
+  });
+
+  it.each([
     new Response(null, { status: 201 }),
     Response.json(successfulReplyBody(), {
       status: 201,
@@ -179,6 +231,13 @@ describe('official LinkedIn Comments reply adapter', () => {
     ),
     Response.json(
       { ...successfulReplyBody(), parentComment: undefined },
+      {
+        status: 201,
+        headers: { 'x-restli-id': commentId },
+      },
+    ),
+    Response.json(
+      { ...successfulReplyBody(), likesSummary: { totalLikes: -1 } },
       {
         status: 201,
         headers: { 'x-restli-id': commentId },

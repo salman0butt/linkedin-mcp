@@ -206,6 +206,7 @@ describe('official LinkedIn Comments read client', () => {
       { ...commentBody, message: {} },
       { ...commentBody, object: 'urn:li:person:not-a-thread' },
       { ...commentBody, likesSummary: { totalLikes: -1 } },
+      { ...commentBody, likesSummary: undefined },
     ];
 
     for (const body of invalidBodies) {
