@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "d716140fa42d5e4c294146936e4d9616be161a8b",
-  "ciStatus": "RED_HEAD_d716140fa42d5e4c294146936e4d9616be161a8b_RUN_38812658205_474_PASS_1_EXPECTED_REGRESSION_FAILURE",
+  "latestVerifiedSha": "23703260e17084894b193a38020d79c8c9945e56",
+  "ciStatus": "RED_HEAD_23703260e17084894b193a38020d79c8c9945e56_RUN_38857161781_474_PASS_1_EXPECTED_REGRESSION_FAILURE",
   "criticalFindings": 0,
   "importantFindings": 4,
   "blockers": [
     "M04.3 Important: successful reply composite comment URN can disagree with returned numeric ID or expected parent root; malformed success must fail closed.",
     "M04.3 Important: validation failure after provider POST success bypasses ledger.complete, leaving reserved instead of terminal outcome_unknown; duplicate POST remains fail-closed.",
     "M04.3 Important: successful Comments POST response may omit likesSummary; current reply parser rejects it despite documented provider shape.",
-    "M04.3 Important: createReplyPreview permits targetUrn different from parentCommentUrn before approval. Regression test committed at d716140fa42d5e4c294146936e4d9616be161a8b; exact-head CI 38812658205 is RED as expected (474 pass, 1 fail). Production correction attempted 2026-10-16 but blocked by OpenAI safety checks."
+    "M04.3 Important: createReplyPreview permits targetUrn different from parentCommentUrn before approval. Regression test committed at d716140fa42d5e4c294146936e4d9616be161a8b; exact-head CI 38857161781 on 23703260e17084894b193a38020d79c8c9945e56 remains RED (474 pass, 1 fail). Production correction attempted 2026-10-16 but blocked by OpenAI safety checks."
   ],
   "exactNextWork": "Apply the existing RED-tested reply-target/parent validation on feat/m04-comments-engagement through an authorized source-write path, then verify exact-head CI."
 }
