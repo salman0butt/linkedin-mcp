@@ -1,6 +1,6 @@
 # Project Status
 
-Last reconciled: 2026-10-16. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-17. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
@@ -39,9 +39,9 @@ LinkedIn Community Management comments/reactions use versioned official APIs. Me
 
 ## Findings / Blockers
 
-Unresolved Critical findings: 0.
+Unresolved Critical findings: 0 for completed M04.1–M04.3 scoped work.
 Unresolved Important findings: 0 for completed M04.1–M04.3 scoped work.
-No repository blocker currently prevents starting M04.4. Live Community Management entitlement remains an external verification gate, not a deterministic implementation blocker.
+M04.4 RED is verified at head `01943a583db165a73914eb63d4ed494842f52be7` / CI `38934147554`: 483 tests passed in 53 files; two new reaction suites failed to import the absent `apps/server/src/engagement/linkedin-reactions.ts`. This is not GREEN and no production reaction implementation is persisted. The prior adapter source write and the 2026-10-17 retry were rejected by OpenAI safety checks. Local development tunnel and Superpowers skill service were unavailable. Live Community Management entitlement remains an external verification gate.
 
 ## Handoff
 
