@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import {
   createReplyPreview,
+  matchesReplyIdentity,
   type CanonicalComment,
   type ReplyDraft,
   type ReplyPreview,
@@ -208,14 +209,15 @@ function errorForTerminal(record: MutationRecord): EngagementServiceError {
   }
 }
 
-function replayResult(record: MutationRecord): ReplyPublishResult {
+function replayResult(record: MutationRecord, parentCommentUrn: string): ReplyPublishResult {
   const commentId = record.result?.resourceId;
   const commentUrn = record.result?.resourceUrn;
   if (
     typeof commentId !== 'string' ||
     !/^\d+$/.test(commentId) ||
     typeof commentUrn !== 'string' ||
-    !COMMENT_URN_PATTERN.test(commentUrn)
+    !COMMENT_URN_PATTERN.test(commentUrn) ||
+    !matchesReplyIdentity(commentUrn, commentId, parentCommentUrn)
   ) {
     throw new EngagementServiceError('outcome_unknown');
   }
@@ -272,7 +274,8 @@ function validateProviderReply(
     reply.actorUrn !== expected.actorUrn ||
     reply.objectUrn !== expected.objectUrn ||
     reply.parentCommentUrn !== expected.parentCommentUrn ||
-    reply.text !== expected.text
+    reply.text !== expected.text ||
+    !matchesReplyIdentity(reply.commentUrn, reply.id, expected.parentCommentUrn)
   ) {
     throw new EngagementServiceError('outcome_unknown');
   }
@@ -353,7 +356,9 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
 
         if (reservation.status === 'replay') {
           const record = reservation.record;
-          if (record.state === 'succeeded') return replayResult(record);
+          if (record.state === 'succeeded') {
+            return replayResult(record, preview.payload.parentCommentUrn);
+          }
           if (record.state === 'failed_terminal') throw errorForTerminal(record);
           if (record.state === 'outcome_unknown') throw new EngagementServiceError('outcome_unknown');
           // Another runtime can still own a reserved mutation. Never complete or retry it here.

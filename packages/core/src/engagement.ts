@@ -21,7 +21,7 @@ export interface CanonicalComment {
   text: string;
   createdAt: string;
   lastModifiedAt: string;
-  totalLikes: number;
+  totalLikes?: number;
 }
 
 export interface CommentPaging {
@@ -92,6 +92,16 @@ export interface ReactionPreview {
 
 const simpleTargetPattern = /^urn:li:(?:share|ugcPost|activity):\d+$/;
 const commentTargetPattern = /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
+
+export function matchesReplyIdentity(
+  commentUrn: string,
+  commentId: string,
+  parentCommentUrn: string,
+): boolean {
+  if (!/^\d+$/.test(commentId) || !commentTargetPattern.test(commentUrn)) return false;
+  const parent = /^urn:li:comment:\((urn:li:(?:share|ugcPost|activity):\d+),\d+\)$/.exec(parentCommentUrn);
+  return parent !== null && commentUrn === `urn:li:comment:(${parent[1]},${commentId})`;
+}
 const replyKeys = new Set(['targetUrn', 'rootUrn', 'parentCommentUrn', 'text']);
 const reactionKeys = new Set(['operation', 'targetUrn', 'reactionType']);
 

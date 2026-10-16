@@ -1,4 +1,5 @@
 import {
+  matchesReplyIdentity,
   parseCommentTarget,
   type CanonicalComment,
   type CommentPage,
@@ -250,7 +251,7 @@ function parseMessageText(value: unknown): string {
   return text;
 }
 
-function parseCanonicalComment(value: unknown): CanonicalComment {
+function parseCanonicalComment(value: unknown, allowMissingLikesSummary = false): CanonicalComment {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new LinkedInCommentsError('malformed_response');
   }
@@ -278,7 +279,9 @@ function parseCanonicalComment(value: unknown): CanonicalComment {
     text: parseMessageText(candidate.message),
     createdAt: parseTimestampContainer(candidate.created),
     lastModifiedAt: parseTimestampContainer(candidate.lastModified),
-    totalLikes: parseTotalLikes(candidate.likesSummary),
+    ...(allowMissingLikesSummary && candidate.likesSummary === undefined
+      ? {}
+      : { totalLikes: parseTotalLikes(candidate.likesSummary) }),
   };
 }
 
@@ -288,7 +291,7 @@ function parseReplySuccess(
 ): CanonicalComment {
   let comment: CanonicalComment;
   try {
-    comment = parseCanonicalComment(value);
+    comment = parseCanonicalComment(value, true);
   } catch {
     throw new LinkedInCommentsError('malformed_success');
   }
@@ -296,7 +299,8 @@ function parseReplySuccess(
     comment.actorUrn !== expected.actorUrn ||
     comment.objectUrn !== expected.objectUrn ||
     comment.parentCommentUrn !== expected.parentCommentUrn ||
-    comment.text !== expected.text
+    comment.text !== expected.text ||
+    !matchesReplyIdentity(comment.commentUrn, comment.id, expected.parentCommentUrn)
   ) {
     throw new LinkedInCommentsError('malformed_success');
   }
