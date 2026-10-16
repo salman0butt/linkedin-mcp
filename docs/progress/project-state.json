@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "95338a23b9c55b69fc921f32c3716adafc9ca8d0",
-  "ciStatus": "GREEN_HEAD_95338a23b9c55b69fc921f32c3716adafc9ca8d0_RUN_38608986330_474_TESTS",
+  "latestVerifiedSha": "d716140fa42d5e4c294146936e4d9616be161a8b",
+  "ciStatus": "RED_HEAD_d716140fa42d5e4c294146936e4d9616be161a8b_RUN_38812658205_474_PASS_1_EXPECTED_REGRESSION_FAILURE",
   "criticalFindings": 0,
-  "importantFindings": 3,
+  "importantFindings": 4,
   "blockers": [
     "M04.3 Important: successful reply composite comment URN can disagree with returned numeric ID or expected parent root; malformed success must fail closed.",
     "M04.3 Important: validation failure after provider POST success bypasses ledger.complete, leaving reserved instead of terminal outcome_unknown; duplicate POST remains fail-closed.",
     "M04.3 Important: successful Comments POST response may omit likesSummary; current reply parser rejects it despite documented provider shape.",
-    "2026-10-15: Exact PR #6 head 95338a23b9c55b69fc921f32c3716adafc9ca8d0 CI 38608986330 green (474 tests); the M04.3 optional likesSummary RED regression source write was rejected by OpenAI safety checks. The three Important defects remain unresolved on the remote branch."
+    "M04.3 Important: createReplyPreview permits targetUrn different from parentCommentUrn before approval. Regression test committed at d716140fa42d5e4c294146936e4d9616be161a8b; exact-head CI 38812658205 is RED as expected (474 pass, 1 fail). Production correction attempted 2026-10-16 but blocked by OpenAI safety checks."
   ],
-  "exactNextWork": "Persist the M04.3 behavioral RED regressions and corrections through an authorized GitHub source-write path, then obtain exact-final-head green CI and scoped review before closing M04.3."
+  "exactNextWork": "Apply the existing RED-tested reply-target/parent validation on feat/m04-comments-engagement through an authorized source-write path, then verify exact-head CI."
 }
