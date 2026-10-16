@@ -422,7 +422,19 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
           );
         }
 
-        const { commentId, commentUrn } = validateProviderReply(created, providerInput);
+        let commentId: string;
+        let commentUrn: string;
+        try {
+          ({ commentId, commentUrn } = validateProviderReply(created, providerInput));
+        } catch {
+          return completeFailure(
+            deps,
+            input.idempotencyKey,
+            mutationHash,
+            'outcome_unknown',
+            'reply_outcome_unknown',
+          );
+        }
         let completed: MutationRecord;
         try {
           completed = await deps.ledger.complete({
