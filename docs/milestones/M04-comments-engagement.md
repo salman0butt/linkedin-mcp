@@ -1,6 +1,6 @@
 # M04 — Comments & Engagement
 
-Status: **ACTIVE — M04.3 approval/idempotency-gated nested reply flow**
+Status: **ACTIVE — M04.4 reaction add/remove flow**
 
 ## Goal
 
@@ -33,8 +33,8 @@ Organization engagement, broad feed discovery, BATCH_GET, comment edit/delete/im
 
 1. **GREEN** — M04.1 canonical contracts, capability/access policy and trusted read configuration.
 2. **GREEN** — M04.2 official bounded Comments read adapter.
-3. **ACTIVE** — M04.3 approval/idempotency-gated nested reply flow.
-4. **PLANNED** — M04.4 reaction add/remove flow.
+3. **GREEN** — M04.3 approval/idempotency-gated nested reply flow.
+4. **ACTIVE** — M04.4 reaction add/remove flow.
 5. **PLANNED** — M04.5 explicit-thread unanswered inbox/context derivation.
 6. **PLANNED** — M04.6 strict MCP/stdio/HTTP integration.
 7. **PLANNED** — M04.7 whole-milestone review, exact-head CI, merge and post-merge verification.
@@ -49,11 +49,17 @@ M04.2 behavioral RED: `5b035386e10f2704964d6313984080c38ec51873`, CI `3816067834
 
 M04.2 final GREEN: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`. 450/450 tests across 49 files plus frozen install, format, lint, typecheck and build passed.
 
-M04.3 prerequisite completion-lock recovery: original behavioral RED at `733e37cb549b75701953c21f5a51d5fa4bd0569b`, CI `38162905039`; completion-only bounded lock retry and persistent-contention/non-contention regression coverage GREEN at `cbcc2c72124299a548f0caf5d7ba41a445c8288d`, CI `38312220154` — 474/474 tests across 52 files plus all quality gates. M04.3 nested reply flow remains unfinished.
+M04.3 prerequisite completion-lock recovery: original RED `733e37cb549b75701953c21f5a51d5fa4bd0569b`, CI `38162905039`; GREEN `cbcc2c72124299a548f0caf5d7ba41a445c8288d`, CI `38312220154` — 474/474 tests across 52 files plus all quality gates.
+
+M04.3 target/parent approval integrity RED: `d716140fa42d5e4c294146936e4d9616be161a8b`; fixed at `386dbf96235fadf88ea16a9411cd3a24dfc3a38b`.
+
+M04.3 malformed provider-success terminal outcome RED: `3adcee4d80fcfdad44f8374b0f97af28c590f215`, CI `38901369613` — 475 pass / 1 intended fail; GREEN `9699773fb323ab027ebdc2837c5e5a8a591e0c9b`, CI `38901575437`.
+
+M04.3 composite identity, legacy replay and create-response optionality RED: `5dce3ac361f87abadd61c91283e8ebcc41b702d4`, CI `38902334994` — 477 pass / exactly 6 intended failures; GREEN `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595` — **483/483 tests across 53 files** plus frozen install, format, lint, typecheck and build.
 
 ## Integration Test Evidence
 
-M04.1–M04.2 use deterministic injected-provider tests only; no live LinkedIn Community Management request has been performed. Existing real stdio/HTTP MCP smoke suites remain green.
+M04.1–M04.3 use deterministic injected-provider tests; no live LinkedIn Community Management request has been performed. Existing real stdio/HTTP MCP smoke suites remain green.
 
 ## Security Review
 
@@ -61,11 +67,13 @@ Primary boundaries: restricted read entitlements, subject-derived actor identity
 
 M04.1 enforces actor-free canonical reply/reaction payload identity, excludes deprecated `MAYBE`, rejects unsupported caller fields, defaults engagement reads OFF and keeps live capabilities unavailable.
 
-M04.2 validates canonical targets before URL construction, fully encodes explicit targets, restricts request paging to 1–100 items, stream-bounds successful provider JSON to 64 KiB before parsing, validates normalized comment/paging fields, never reads HTTP error bodies, sanitizes transport/provider failures, performs no BATCH_GET and never retries reads. Scoped review found 0 unresolved Critical findings and 0 unresolved Important findings.
+M04.2 validates canonical targets before URL construction, fully encodes explicit targets, restricts request paging to 1–100 items, stream-bounds successful provider JSON to 64 KiB before parsing, validates normalized comment/paging fields, never reads HTTP error bodies, sanitizes transport/provider failures, performs no BATCH_GET and never retries reads.
+
+M04.3 derives the reply actor exclusively from authenticated subject; binds approval/idempotency to canonical payload; rejects target/parent mismatches before approval; validates returned actor/object/parent/text plus composite comment identity; validates legacy persisted replay identity; terminally records malformed provider success as `outcome_unknown`; never retries uncertain POSTs; and permits a documented create response to omit `likesSummary` without fabricating a zero while read parsing remains strict.
 
 ## Code Review Findings
 
-M04.1–M04.2 scoped reviews have 0 unresolved Critical findings and 0 unresolved Important findings. M04.3 scoped review identified **3 unresolved Important findings**: (1) inconsistent successful composite reply URN/ID or root can be accepted, (2) malformed successful provider replies leave a reserved ledger entry instead of terminal `outcome_unknown`, and (3) documented successful reply responses without `likesSummary` are incorrectly rejected. All require genuine RED regression and repair. The attempted RED test write was rejected by the connected GitHub safety layer on 2026-10-14; no behavior change is remotely verified. Full whole-milestone review remains pending later work.
+M04.1–M04.3 scoped reviews have **0 unresolved Critical findings and 0 unresolved Important findings**. Four M04.3 Important findings were regression-fixed before closeout: pre-approval target/parent mismatch, inconsistent composite reply identity including legacy replay, nonterminal reservation after malformed provider success, and rejection of valid create responses without `likesSummary`. A separately dispatched independent review could not be retrieved after the local tunnel disconnected and is not represented as completed. Full whole-milestone review remains pending M04.7.
 
 ## Fresh Verification Results
 
@@ -75,14 +83,16 @@ M04.1 exact head: `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`: 
 
 M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 450/450 tests across 49 files plus all quality gates.
 
+M04.3 exact source head: `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`: 483/483 tests across 53 files plus all quality gates.
+
 ## Durable Recovery Sources
 
 `AGENTS.md`, `CODEX-START-HERE.md`, `docs/AUTONOMOUS-DEVELOPMENT.md`, project state/status/known issues, this ledger, PRD/traceability/capability matrix, M04 spec/plan, PR #6 and exact-SHA CI.
 
 ## Completion Checklist
 
-- [ ] Acceptance verified.
-- [ ] Critical/Important resolved.
+- [ ] Overall M04 acceptance verified.
+- [ ] Overall M04 Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Persist M04.3 RED behavioral regressions through an authorized GitHub source-write mechanism, verify expected RED, implement the three fixes, and verify exact-final-head CI.**
+Exact next work: **Write M04.4 reaction add/remove behavioral RED tests for official POST/DELETE contracts, authenticated actor derivation, approval/idempotency, 201/204 success, provider errors and uncertain transport; verify intended RED before implementation.**
