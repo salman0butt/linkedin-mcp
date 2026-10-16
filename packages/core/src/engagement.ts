@@ -136,6 +136,10 @@ export function createReplyPreview(input: ReplyDraft): ReplyPreview {
     throw new Error('Reply text must be a non-empty string');
   }
 
+  if (payload.targetUrn !== payload.parentCommentUrn) {
+    throw new Error('Reply target must match parent comment');
+  }
+
   const canonicalJson = JSON.stringify(payload);
   return {
     payload,
