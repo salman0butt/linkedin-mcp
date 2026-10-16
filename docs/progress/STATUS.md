@@ -1,48 +1,47 @@
 # Project Status
 
-Last reconciled: 2026-10-13. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-16. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M04 — Comments & Engagement — **ACTIVE, M04.3 approval/idempotency-gated nested reply flow**.
+M04 — Comments & Engagement — **ACTIVE, M04.4 reaction add/remove flow**.
 
-Active branch: `feat/m04-comments-engagement`. Draft PR #6 is the milestone integration boundary.
+Active branch: `feat/m04-comments-engagement`. Draft PR #6 remains the milestone integration boundary.
 Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
 Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`.
 Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
 
-## Latest Verified Recovery
-
-M04.3 prerequisite completion-lock regression repaired at `cbcc2c72124299a548f0caf5d7ba41a445c8288d`, exact-head CI `38312220154`: **474/474 tests across 52 files**, frozen install, format, lint, typecheck and build passed. Completion alone retries transient local `EEXIST` contention (at most 8 lock attempts); reservation and media checkpoints remain immediate fail-closed, and no remote LinkedIn mutation is retried. Regression coverage includes transient contention, persistent lock ownership and non-contention failures. The earlier source-write blocker is resolved.
-
 ## Latest Verified Checkpoint
 
-M04.2 — bounded official Comments get/list adapter — **GREEN** at `26ecce969e4d4935ddcd7babd93c6b46085a03b1`.
-CI `38160896542`: **450/450 tests across 49 files**, frozen install, format, lint, typecheck and build passed.
-Behavioral RED was verified at `5b035386e10f2704964d6313984080c38ec51873`, CI `38160678343`: formatting passed, all 439 pre-existing tests stayed green, and only the two new Comments suites failed because `linkedin-comments` was absent.
-The implementation uses versioned official GET requests, canonical encoded targets, bounded paging, a 64 KiB streamed success-body limit, sanitized 401/403/404/429/provider taxonomy, unread HTTP error bodies, no BATCH_GET and no automatic retries.
-Scoped correctness/security review found 0 unresolved Critical findings and 0 unresolved Important findings.
+M04.3 — approval/idempotency-gated nested reply flow — **GREEN** at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`.
+CI `38902517595`: **483/483 tests across 53 files**, frozen install, format, lint, typecheck and build passed.
 
-M04.1 — canonical engagement contracts and access policy — **GREEN** at `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287`.
-M04 keeps all remote engagement capabilities live-unverified until legitimate Community Management evidence exists.
+M04.3 TDD/review repair evidence includes:
+- pre-approval reply-target mismatch RED `d716140fa42d5e4c294146936e4d9616be161a8b`, repaired at `386dbf96235fadf88ea16a9411cd3a24dfc3a38b`;
+- malformed provider-success terminal-outcome RED `3adcee4d80fcfdad44f8374b0f97af28c590f215`, CI `38901369613`, repaired at `9699773fb323ab027ebdc2837c5e5a8a591e0c9b`, CI `38901575437`;
+- composite reply identity, legacy replay integrity and documented missing-`likesSummary` RED `5dce3ac361f87abadd61c91283e8ebcc41b702d4`, CI `38902334994` with exactly 6 intended failures and 477 passes, repaired at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`.
+
+Scoped correctness/security review after these repairs found **0 unresolved Critical findings and 0 unresolved Important findings**. The separate independent worker-review channel became unavailable when the local tunnel disconnected; no independent result is claimed.
+
+M04.2 — bounded official Comments get/list adapter — GREEN at `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542` (450/450 tests).
+M04.1 — canonical engagement contracts/access policy — GREEN at `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287` (439/439 tests).
 
 ## Latest Verified Mainline
 
-M03 — Media Publishing — merged through PR #4, with the discovered cross-runtime final-media ownership defect repaired through hotfix PR #7.
+M03 — Media Publishing — merged through PR #4, with the cross-runtime final-media ownership repair through hotfix PR #7.
 Current verified main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
 Post-hotfix main CI `38153987423`: **427/427 tests across 46 files**, frozen install, format, lint, typecheck and build passed.
-No live LinkedIn media access is claimed.
 
 ## M04 Provider Reality
 
-Current LinkedIn Community Management documentation exposes comments and reactions through versioned official APIs. Member writes require `w_member_social_feed`; member reads require restricted `r_member_social_feed`. Community Management is vetted and Development tier disallows BATCH_GET. M04 therefore defaults member engagement reads OFF, never equates 403/restricted access with an empty result, and never claims live Community Management availability from deterministic CI.
+LinkedIn Community Management comments/reactions use versioned official APIs. Member writes require `w_member_social_feed`; member reads require restricted `r_member_social_feed`. Community Management is vetted and Development tier disallows BATCH_GET. Deterministic repository verification does **not** prove live product/scope entitlement. No live Community Management read or write is claimed.
 
 ## Findings / Blockers
 
 Unresolved Critical findings: 0.
-Unresolved Important findings: 3 (M04.3 scoped code review).
-No active CI failure at the last source-bearing remote HEAD `f1a720c39d17fdb40575f43826dde633810ee6a1`: CI `38358341753` passed 474 tests and all quality gates. Three M04.3 Important findings block closeout: composite reply URN ID/root mismatch; missing terminal `outcome_unknown` ledger completion after malformed provider success; and rejection of a valid create response omitting `likesSummary`. The connector rejected a behavioral RED source-test update on 2026-10-13. A previously locally verified correction (`1bbdd1b9`, 481 tests) is NOT present remotely; do not infer fixes from the green remote CI. Legitimate Community Management product/scope access remains an external live-verification gate.
+Unresolved Important findings: 0 for completed M04.1–M04.3 scoped work.
+No repository blocker currently prevents starting M04.4. Live Community Management entitlement remains an external verification gate, not a deterministic implementation blocker.
 
 ## Handoff
 
-Exact next work: **Persist the M04.3 behavioral RED regression tests through an authorized source-write mechanism, verify expected RED, then apply the locally verified corrections and verify exact remote-head CI.**
+Exact next work: **Write M04.4 reaction add/remove behavioral RED tests for official POST/DELETE contracts, authenticated actor derivation, approval/idempotency, 201/204 success, provider errors and uncertain transport; verify intended RED before implementation.**
