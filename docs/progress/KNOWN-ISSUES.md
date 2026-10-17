@@ -18,6 +18,12 @@ GitHub Actions remains authoritative exact-SHA execution evidence when an intera
 
 ## Resolved during M04
 
+### M04.4 approval-purpose isolation
+
+A fresh security review after the initial reaction GREEN checkpoint found one Important shared approval-boundary defect: approval receipts were bound to subject and payload hash but not to the mutation purpose. A caller able to deliberately reuse the same canonical hash across named approval methods could therefore cross an approval boundary.
+
+The defect was reproduced before production changes. The shared approval service now derives a purpose-scoped internal SHA-256 hash while preserving the public receipt payload hash. Runtime/service wiring uses stable scopes for text posts, media posts, comment replies, reaction add and reaction remove. Focused regressions prove add approval cannot authorize remove and reply approval cannot authorize reaction add, with zero provider mutations on rejection. The repair is included in exact-head GREEN `788a252f6ec9e285df0420869af6e39ca728975b`, CI `39037380577`, which passed **524/524 tests across 57 files** plus frozen install, format, lint, typecheck and build.
+
 ### M04.3 nested reply review findings
 
 Four Important findings are resolved with genuine RED→GREEN evidence and exact-head CI:
@@ -46,5 +52,9 @@ M04.1 scoped contract/config review completed with **0 unresolved Critical findi
 M04.2 scoped Comments read-adapter review completed after exact-head GREEN `26ecce969e4d4935ddcd7babd93c6b46085a03b1` / CI `38160896542` with **0 unresolved Critical findings and 0 unresolved Important findings**.
 
 M04.3 scoped nested-reply correctness/security review completed after exact-head GREEN `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` / CI `38902517595` with **0 unresolved Critical findings and 0 unresolved Important findings**. A separately dispatched independent review could not be retrieved after the local tunnel disconnected and is not represented as completed.
+
+M04.4 scoped reaction review had one later fresh security Important finding for approval-purpose isolation; that finding is resolved and verified in `788a252f6ec9e285df0420869af6e39ca728975b` / CI `39037380577`. M04.4 now has **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+M04.5 scoped inbox correctness/security review after exact-head GREEN `788a252f6ec9e285df0420869af6e39ca728975b` / CI `39037380577` found **0 Critical findings and 0 Important findings**.
 
 Full M04 whole-branch correctness/security/provenance review remains required before merge.
