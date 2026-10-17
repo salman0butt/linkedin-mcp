@@ -23,7 +23,7 @@ afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true })));
 });
 
-function serviceWithProviderCounter(providerCalls: { value: number }) {
+async function serviceWithProviderCounter(providerCalls: { value: number }) {
   return createEngagementService({
     auth: {
       getProviderContext: () =>
@@ -34,8 +34,8 @@ function serviceWithProviderCounter(providerCalls: { value: number }) {
         }),
       markReauthRequired: () => Promise.resolve(),
     },
-    approvals: createApprovalService({ randomId: () => `receipt-${Math.random()}` }),
-    ledger: createFileIdempotencyLedger({ filePath: '' }),
+    approvals: createApprovalService({ randomId: () => 'purpose-receipt' }),
+    ledger: createFileIdempotencyLedger({ filePath: await ledgerPath() }),
     comments: {
       createReply: () => Promise.reject(new Error('provider must not be called')),
     },
@@ -55,7 +55,7 @@ function serviceWithProviderCounter(providerCalls: { value: number }) {
 describe('engagement approval purpose isolation', () => {
   it('rejects add approval reuse for reaction removal before provider mutation', async () => {
     const providerCalls = { value: 0 };
-    const service = serviceWithProviderCounter(providerCalls);
+    const service = await serviceWithProviderCounter(providerCalls);
     const removePreview = service.previewReactionRemove(removeDraft);
     const receipt = await service.approveReactionAdd({ payloadHash: removePreview.payloadHash });
 
@@ -72,7 +72,7 @@ describe('engagement approval purpose isolation', () => {
 
   it('rejects reply approval reuse for reaction add before provider mutation', async () => {
     const providerCalls = { value: 0 };
-    const service = serviceWithProviderCounter(providerCalls);
+    const service = await serviceWithProviderCounter(providerCalls);
     const addPreview = service.previewReactionAdd(addDraft);
     const receipt = await service.approveReply({ payloadHash: addPreview.payloadHash });
 
