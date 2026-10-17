@@ -4,6 +4,7 @@ import { ApprovalServiceError, createApprovalService } from '../src/publishing/a
 
 const payloadHash = 'a'.repeat(64);
 const subject = 'linkedin-member-123';
+const purpose = 'test.operation';
 
 function expectApprovalError(action: () => unknown, kind: string): void {
   try {
@@ -25,21 +26,21 @@ describe('M02 approval receipt service', () => {
       ttlMs: 60_000,
     });
 
-    expect(service.issue({ payloadHash, subject })).toEqual({
+    expect(service.issue({ payloadHash, subject, purpose })).toEqual({
       receiptId: 'receipt-random-1',
       payloadHash,
       expiresAt: '2026-10-08T09:01:00.000Z',
       provider: 'LOCAL_ONLY',
     });
-    expect(service.issue({ payloadHash, subject }).receiptId).toBe('receipt-random-2');
+    expect(service.issue({ payloadHash, subject, purpose }).receiptId).toBe('receipt-random-2');
   });
 
-  it('rejects unknown receipts and exact payload or authenticated-subject mismatches', () => {
+  it('rejects unknown receipts and exact payload, subject, or purpose mismatches', () => {
     const service = createApprovalService({
       randomId: () => 'receipt-1',
       now: () => new Date('2026-10-08T09:00:00.000Z'),
     });
-    const receipt = service.issue({ payloadHash, subject });
+    const receipt = service.issue({ payloadHash, subject, purpose });
 
     expectApprovalError(
       () =>
@@ -47,6 +48,7 @@ describe('M02 approval receipt service', () => {
           receiptId: 'missing',
           payloadHash,
           subject,
+          purpose,
           idempotencyKey: 'op-1',
         }),
       'not_found',
@@ -57,6 +59,7 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash: 'b'.repeat(64),
           subject,
+          purpose,
           idempotencyKey: 'op-1',
         }),
       'mismatch',
@@ -67,6 +70,18 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash,
           subject: 'different-member',
+          purpose,
+          idempotencyKey: 'op-1',
+        }),
+      'mismatch',
+    );
+    expectApprovalError(
+      () =>
+        service.consume({
+          receiptId: receipt.receiptId,
+          payloadHash,
+          subject,
+          purpose: 'different.operation',
           idempotencyKey: 'op-1',
         }),
       'mismatch',
@@ -80,7 +95,7 @@ describe('M02 approval receipt service', () => {
       now: () => now,
       ttlMs: 1_000,
     });
-    const receipt = service.issue({ payloadHash, subject });
+    const receipt = service.issue({ payloadHash, subject, purpose });
     now = new Date('2026-10-08T09:00:01.001Z');
 
     expectApprovalError(
@@ -89,6 +104,7 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash,
           subject,
+          purpose,
           idempotencyKey: 'op-expired',
         }),
       'expired',
@@ -100,11 +116,12 @@ describe('M02 approval receipt service', () => {
       randomId: () => 'receipt-single-use',
       now: () => new Date('2026-10-08T09:00:00.000Z'),
     });
-    const receipt = service.issue({ payloadHash, subject });
+    const receipt = service.issue({ payloadHash, subject, purpose });
     const input = {
       receiptId: receipt.receiptId,
       payloadHash,
       subject,
+      purpose,
       idempotencyKey: 'operation-1',
     };
 
@@ -117,12 +134,13 @@ describe('M02 approval receipt service', () => {
       randomId: () => 'receipt-consumed',
       now: () => new Date('2026-10-08T09:00:00.000Z'),
     });
-    const receipt = service.issue({ payloadHash, subject });
+    const receipt = service.issue({ payloadHash, subject, purpose });
 
     service.consume({
       receiptId: receipt.receiptId,
       payloadHash,
       subject,
+      purpose,
       idempotencyKey: 'operation-1',
     });
 
@@ -132,6 +150,7 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash,
           subject,
+          purpose,
           idempotencyKey: 'operation-2',
         }),
       'already_consumed',
