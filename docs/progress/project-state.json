@@ -7,11 +7,14 @@
   "activePr": 6,
   "baseBranch": "main",
   "latestVerifiedSha": "788a252f6ec9e285df0420869af6e39ca728975b",
-  "ciStatus": "GREEN_HEAD_788a252f6ec9e285df0420869af6e39ca728975b_RUN_39037380577_524_PASS_57_FILES_FORMAT_LINT_TYPECHECK_BUILD_GREEN",
+  "ciStatus": "RED_HEAD_656d1b819358ffa9feaa403646d35d4365a4e2c6_RUN_39038187921_524_PASS_9_FAIL_ENGAGEMENT_MCP_TOOLS_NOT_REGISTERED",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "Live LinkedIn Community Management product/scope entitlement remains unverified; deterministic CI does not establish live comment/reaction availability."
+    "M04.6 exact-head behavioral RED is confirmed: 9 engagement MCP contract failures because 12 tools are not registered; 524 existing tests pass.",
+    "Connected GitHub source-file creation was denied by OpenAI safety checks; do not bypass the control.",
+    "Live LinkedIn Community Management entitlement remains unverified."
   ],
-  "exactNextWork": "Write M04.6 strict MCP/stdio/HTTP engagement integration behavioral RED tests for tool discovery, strict schemas, structured access/provenance states and rejection of actor/token/read-gate/admin overrides; verify intended RED before implementation."
+  "exactNextWork": "Persist the strict M04.6 engagement MCP tool registration and authenticated runtime wiring on the existing milestone branch through an authorized repository-write path, then verify focused tests and exact-head CI.",
+  "activeHeadSha": "656d1b819358ffa9feaa403646d35d4365a4e2c6"
 }
