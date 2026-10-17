@@ -6,7 +6,7 @@ import type {
   CommentPage,
   EngagementReadAvailability,
 } from '../../../packages/core/dist/index.js';
-import type { UnansweredCommentInboxItem } from './engagement/comment-inbox.js';
+import type { EngagementReadService } from './engagement/engagement-read-service.js';
 import {
   EngagementServiceError,
   type EngagementService,
@@ -14,24 +14,9 @@ import {
   type ReactionRemoveDraft,
 } from './engagement/engagement-service.js';
 
-export interface EngagementReadTools {
-  getComment(input: {
-    targetUrn: string;
-    commentId: string;
-  }): Promise<EngagementReadAvailability<CanonicalComment>>;
-  listComments(input: {
-    targetUrn: string;
-    start?: number;
-    count?: number;
-  }): Promise<EngagementReadAvailability<CommentPage>>;
-  inbox(input: {
-    threadUrns: readonly string[];
-  }): Promise<EngagementReadAvailability<readonly UnansweredCommentInboxItem[]>>;
-}
-
 export interface EngagementTools {
-  reads: EngagementReadTools;
-  writes: EngagementService;
+  reads: EngagementReadService;
+  writes?: EngagementService;
 }
 
 interface RegisterEngagementToolsDeps {
@@ -297,10 +282,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'LOCAL_ONLY');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: deps.engagement.writes.previewReply(input),
+          data: writes.previewReply(input),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -316,10 +302,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     async (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'LOCAL_ONLY');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: await deps.engagement.writes.approveReply({ payloadHash: input.payloadHash }),
+          data: await writes.approveReply({ payloadHash: input.payloadHash }),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -335,10 +322,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     async (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'OFFICIAL_API');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'OFFICIAL_API');
       try {
         return result(deps, 'succeeded', 'OFFICIAL_API', {
-          data: await deps.engagement.writes.createReply(input),
+          data: await writes.createReply(input),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'OFFICIAL_API');
@@ -354,10 +342,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'LOCAL_ONLY');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: deps.engagement.writes.previewReactionAdd(input as ReactionAddDraft),
+          data: writes.previewReactionAdd(input as ReactionAddDraft),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -373,10 +362,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     async (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'LOCAL_ONLY');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: await deps.engagement.writes.approveReactionAdd({ payloadHash: input.payloadHash }),
+          data: await writes.approveReactionAdd({ payloadHash: input.payloadHash }),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -392,10 +382,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     async (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'OFFICIAL_API');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'OFFICIAL_API');
       try {
         return result(deps, 'succeeded', 'OFFICIAL_API', {
-          data: await deps.engagement.writes.addReaction(input),
+          data: await writes.addReaction(input),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'OFFICIAL_API');
@@ -411,10 +402,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'LOCAL_ONLY');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: deps.engagement.writes.previewReactionRemove(input as ReactionRemoveDraft),
+          data: writes.previewReactionRemove(input as ReactionRemoveDraft),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -430,10 +422,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     async (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'LOCAL_ONLY');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: await deps.engagement.writes.approveReactionRemove({ payloadHash: input.payloadHash }),
+          data: await writes.approveReactionRemove({ payloadHash: input.payloadHash }),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -449,10 +442,11 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       outputSchema,
     },
     async (input) => {
-      if (deps.engagement === undefined) return unavailable(deps, 'OFFICIAL_API');
+      const writes = deps.engagement?.writes;
+      if (writes === undefined) return unavailable(deps, 'OFFICIAL_API');
       try {
         return result(deps, 'succeeded', 'OFFICIAL_API', {
-          data: await deps.engagement.writes.removeReaction(input),
+          data: await writes.removeReaction(input),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'OFFICIAL_API');
