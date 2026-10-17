@@ -1,4 +1,8 @@
-import { parseCommentTarget, type CommentTarget, type ReactionType } from '../../../../packages/core/dist/index.js';
+import {
+  parseCommentTarget,
+  type CommentTarget,
+  type ReactionType,
+} from '../../../../packages/core/dist/index.js';
 
 const ENDPOINT = 'https://api.linkedin.com/rest/reactions';
 const MAX_RESPONSE_BYTES = 64 * 1024;
@@ -71,7 +75,9 @@ function validateVersion(version: string): void {
   }
 }
 
-function validateInput(input: RemoveReactionInput): { actorUrn: string; targetUrn: CommentTarget } {
+function validateInput(
+  input: RemoveReactionInput,
+): { actorUrn: string; targetUrn: CommentTarget } {
   if (typeof input.accessToken !== 'string' || input.accessToken.trim() === '') {
     throw new Error('LinkedIn access token is required');
   }
@@ -151,7 +157,11 @@ function parseTimestamp(value: unknown, actorUrn: string): string {
     throw new LinkedInReactionsError('malformed_success');
   }
   const data = value as Record<string, unknown>;
-  if (data.actor !== actorUrn || !Number.isSafeInteger(data.time) || (data.time as number) < 0) {
+  if (
+    data.actor !== actorUrn ||
+    !Number.isSafeInteger(data.time) ||
+    (data.time as number) < 0
+  ) {
     throw new LinkedInReactionsError('malformed_success');
   }
   const date = new Date(data.time as number);
