@@ -3,6 +3,7 @@ import { createMcpHandler } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createLinkedInMcpServer } from '../src/create-server.js';
+import { LinkedInCommentsError } from '../src/engagement/linkedin-comments.js';
 
 const activeClients: Client[] = [];
 const activeHandlers: Array<ReturnType<typeof createMcpHandler>> = [];
@@ -218,6 +219,28 @@ describe('M04 engagement MCP contract', () => {
       targetUrn: threadUrn,
       commentId: '1001',
     });
+  });
+
+  it('maps a Comments rate limit to an explicit sanitized MCP rate_limited result', async () => {
+    const fixture = engagement();
+    fixture.reads.getComment.mockRejectedValueOnce(new LinkedInCommentsError('rate_limited'));
+    const client = await connect(fixture.deps);
+    const result = await client.callTool({
+      name: 'linkedin.comments.get',
+      arguments: { targetUrn: threadUrn, commentId: '1001' },
+    });
+
+    expect(result.isError).not.toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      status: 'rate_limited',
+      provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
+      error: {
+        code: 'rate_limited',
+        message: 'LinkedIn rate limits prevented this operation.',
+        retryable: false,
+      },
+    });
+    expect(JSON.stringify(result.structuredContent)).not.toMatch(/provider body|accessToken|secret/i);
   });
 
   it('previews a reply locally without exposing actor, token, or provider controls', async () => {
