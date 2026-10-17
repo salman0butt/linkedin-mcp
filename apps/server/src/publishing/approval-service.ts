@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 const provider = 'LOCAL_ONLY' as const;
 const defaultTtlMs = 5 * 60_000;
@@ -66,6 +66,32 @@ function assertNonEmpty(value: string, name: string): void {
 
 function assertPayloadHash(value: string): void {
   if (!/^[a-f0-9]{64}$/.test(value)) throw new Error('payloadHash must be a lowercase SHA-256 hex digest');
+}
+
+function purposePayloadHash(purpose: string, payloadHash: string): string {
+  assertNonEmpty(purpose, 'purpose');
+  assertPayloadHash(payloadHash);
+  return createHash('sha256')
+    .update(JSON.stringify(['approval-purpose-v1', purpose, payloadHash]))
+    .digest('hex');
+}
+
+export function scopeApprovalService(service: ApprovalService, purpose: string): ApprovalService {
+  assertNonEmpty(purpose, 'purpose');
+
+  return {
+    issue(input) {
+      const scopedHash = purposePayloadHash(purpose, input.payloadHash);
+      const receipt = service.issue({ ...input, payloadHash: scopedHash });
+      return { ...receipt, payloadHash: input.payloadHash };
+    },
+    consume(input) {
+      return service.consume({
+        ...input,
+        payloadHash: purposePayloadHash(purpose, input.payloadHash),
+      });
+    },
+  };
 }
 
 export function createApprovalService(deps: ApprovalServiceDeps = {}): ApprovalService {
