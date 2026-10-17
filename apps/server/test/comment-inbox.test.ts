@@ -34,9 +34,7 @@ function comment(
     commentUrn,
     actorUrn,
     objectUrn,
-    ...(options.parentCommentUrn === undefined
-      ? {}
-      : { parentCommentUrn: options.parentCommentUrn }),
+    ...(options.parentCommentUrn === undefined ? {} : { parentCommentUrn: options.parentCommentUrn }),
     text: options.text ?? `comment-${id}`,
     createdAt,
     lastModifiedAt: createdAt,
@@ -122,10 +120,7 @@ describe('explicit-thread unanswered comment inbox', () => {
     };
 
     await expect(
-      deriveUnansweredCommentInbox(
-        { subject: 'member-123', threadUrns: [threadA] },
-        { listComments },
-      ),
+      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: [threadA] }, { listComments }),
     ).resolves.toEqual({
       status: 'available',
       provider: 'OFFICIAL_API',
@@ -167,16 +162,10 @@ describe('explicit-thread unanswered comment inbox', () => {
     const tooMany = Array.from({ length: 21 }, (_, index) => `urn:li:activity:${1000 + index}`);
 
     await expect(
-      deriveUnansweredCommentInbox(
-        { subject: 'member-123', threadUrns: [] },
-        { listComments },
-      ),
+      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: [] }, { listComments }),
     ).rejects.toMatchObject({ kind: 'invalid_input' });
     await expect(
-      deriveUnansweredCommentInbox(
-        { subject: 'member-123', threadUrns: tooMany },
-        { listComments },
-      ),
+      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: tooMany }, { listComments }),
     ).rejects.toMatchObject({ kind: 'invalid_input' });
     await expect(
       deriveUnansweredCommentInbox(
@@ -185,10 +174,7 @@ describe('explicit-thread unanswered comment inbox', () => {
       ),
     ).rejects.toMatchObject({ kind: 'invalid_input' });
     await expect(
-      deriveUnansweredCommentInbox(
-        { subject: 'member-123', threadUrns: [firstComment] },
-        { listComments },
-      ),
+      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: [firstComment] }, { listComments }),
     ).rejects.toMatchObject({ kind: 'invalid_input' });
   });
 
@@ -200,10 +186,7 @@ describe('explicit-thread unanswered comment inbox', () => {
     };
 
     await expect(
-      deriveUnansweredCommentInbox(
-        { subject: 'member-123', threadUrns: [threadA] },
-        { listComments },
-      ),
+      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: [threadA] }, { listComments }),
     ).rejects.toMatchObject({ kind: 'limit_exceeded' });
     expect(calls).toBeLessThanOrEqual(3);
   });
@@ -246,11 +229,7 @@ describe('explicit-thread unanswered comment inbox', () => {
     if (result.status !== 'available') {
       throw new Error('expected available inbox');
     }
-    expect(result.value.map((item) => item.commentUrn)).toEqual([
-      firstComment,
-      thirdComment,
-      secondComment,
-    ]);
+    expect(result.value.map((item) => item.commentUrn)).toEqual([firstComment, thirdComment, secondComment]);
     expect(calls.every((call) => call.count === 100)).toBe(true);
     expect(calls).toContainEqual({
       targetUrn: threadA,
@@ -267,10 +246,7 @@ describe('explicit-thread unanswered comment inbox', () => {
     };
 
     await expect(
-      deriveUnansweredCommentInbox(
-        { subject: '   ', threadUrns: [threadA] },
-        { listComments },
-      ),
+      deriveUnansweredCommentInbox({ subject: '   ', threadUrns: [threadA] }, { listComments }),
     ).rejects.toBeInstanceOf(CommentInboxError);
     expect(calls).toBe(0);
   });
