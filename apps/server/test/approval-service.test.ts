@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { ApprovalServiceError, createApprovalService } from '../src/publishing/approval-service.js';
+import {
+  ApprovalServiceError,
+  createApprovalService,
+  scopeApprovalService,
+} from '../src/publishing/approval-service.js';
 
 const payloadHash = 'a'.repeat(64);
 const subject = 'linkedin-member-123';
@@ -71,6 +75,36 @@ describe('M02 approval receipt service', () => {
         }),
       'mismatch',
     );
+  });
+
+  it('rejects a receipt consumed through a different approval purpose', () => {
+    const service = createApprovalService({
+      randomId: () => 'receipt-purpose-bound',
+      now: () => new Date('2026-10-08T09:00:00.000Z'),
+    });
+    const addApprovals = scopeApprovalService(service, 'reactions.add');
+    const removeApprovals = scopeApprovalService(service, 'reactions.remove');
+    const receipt = addApprovals.issue({ payloadHash, subject });
+
+    expect(receipt.payloadHash).toBe(payloadHash);
+    expectApprovalError(
+      () =>
+        removeApprovals.consume({
+          receiptId: receipt.receiptId,
+          payloadHash,
+          subject,
+          idempotencyKey: 'op-wrong-purpose',
+        }),
+      'mismatch',
+    );
+    expect(
+      addApprovals.consume({
+        receiptId: receipt.receiptId,
+        payloadHash,
+        subject,
+        idempotencyKey: 'op-correct-purpose',
+      }),
+    ).toEqual({ status: 'initiated', idempotencyKey: 'op-correct-purpose' });
   });
 
   it('expires receipts using the injected clock', () => {

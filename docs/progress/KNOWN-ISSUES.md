@@ -4,44 +4,57 @@
 
 ### Minor — private package boundary is repository-relative
 
-`@linkedin-mcp/server` is private and currently imports the built private core package through `../../../packages/core/dist/index.js`, while its build script explicitly builds core first. Monorepo tests/build/real transport smokes verify this arrangement. When package-consumer boundaries expand, replace it with an explicit `@linkedin-mcp/core` workspace dependency and regenerate the lockfile under the repository supply-chain policy.
+`@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
 
 ### External verification gate — live LinkedIn capability availability
 
-M01/M02 deterministic implementation and M03 deterministic/local behavior are verified through recorded checkpoints, but ordinary CI has no configured LinkedIn developer application/member credentials/product access. Live `profile.me`, `post.create.text`, image upload, image-status reads and media-post availability therefore remain unverified. Native PKCE enablement, programmatic refresh and member/media read verification are access-dependent and must not be converted into VERIFIED live-capability claims without legitimate provider evidence.
+Deterministic implementation does not prove provider entitlement. M01–M03 repository behavior is verified, but live profile/post/media availability still depends on legitimate app/account access.
+
+M04 adds another explicit access boundary: current Community Management APIs are vetted. Member comment/reaction writes require `w_member_social_feed`; member comment/reaction reads require restricted `r_member_social_feed`. Development tier also restricts API volume and disallows BATCH_GET. CI has no legitimate provider credentials/product entitlement, so M04 live read/write capability must remain unverified until real evidence exists.
 
 ### Interactive connector/container limitations
 
-GitHub Actions is the authoritative exact-head execution environment when interactive package/network execution is unavailable. Repository writes may use supported GitHub write mechanisms with exact-head checks when a primary connector path is transiently unavailable; this does not relax concurrency or security policy.
+GitHub Actions remains authoritative exact-SHA execution evidence when an interactive local environment cannot reproduce the repository's Node/pnpm/network setup. This does not relax exact-head, review, concurrency or security gates. On 2026-10-16 the local Chat On Steroids tunnel became unavailable after dispatching independent M04.3 reviewers; no independent review result is claimed from that unavailable channel.
+
+## Resolved during M04
+
+### M04.4 approval-purpose isolation
+
+A fresh security review after the initial reaction GREEN checkpoint found one Important shared approval-boundary defect: approval receipts were bound to subject and payload hash but not to the mutation purpose. A caller able to deliberately reuse the same canonical hash across named approval methods could therefore cross an approval boundary.
+
+The defect was reproduced before production changes. The shared approval service now derives a purpose-scoped internal SHA-256 hash while preserving the public receipt payload hash. Runtime/service wiring uses stable scopes for text posts, media posts, comment replies, reaction add and reaction remove. Focused regressions prove add approval cannot authorize remove and reply approval cannot authorize reaction add, with zero provider mutations on rejection. The repair is included in exact-head GREEN `788a252f6ec9e285df0420869af6e39ca728975b`, CI `39037380577`, which passed **524/524 tests across 57 files** plus frozen install, format, lint, typecheck and build.
+
+### M04.3 nested reply review findings
+
+Four Important findings are resolved with genuine RED→GREEN evidence and exact-head CI:
+
+1. **Reply target/parent approval mismatch** — RED `d716140fa42d5e4c294146936e4d9616be161a8b`; fixed by rejecting mismatched nested targets before approval at `386dbf96235fadf88ea16a9411cd3a24dfc3a38b`.
+2. **Malformed provider success left a nonterminal reservation** — RED `3adcee4d80fcfdad44f8374b0f97af28c590f215`, CI `38901369613`; fixed at `9699773fb323ab027ebdc2837c5e5a8a591e0c9b`, CI `38901575437`, by terminally recording `outcome_unknown` without retrying the remote mutation.
+3. **Successful composite reply identity could disagree with ID/root, including legacy replay** — RED `5dce3ac361f87abadd61c91283e8ebcc41b702d4`, CI `38902334994`; fixed at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` with shared identity validation in adapter, service and replay paths.
+4. **Documented create response could omit `likesSummary`** — the same RED `5dce3ac361f87abadd61c91283e8ebcc41b702d4` proved the create-only compatibility gap while strict read parsing stayed green; fixed at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` without fabricating a zero count.
+
+Exact-head CI `38902517595` on `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` passed **483/483 tests across 53 files** plus frozen install, format, lint, typecheck and build. Scoped correctness/security review found 0 unresolved Critical findings and 0 unresolved Important findings.
+
+### M04 completion-lock handoff regression
+
+The regression first observed at `733e37cb549b75701953c21f5a51d5fa4bd0569b` / CI `38162905039` was repaired by completion-only bounded `EEXIST` lock retries and additional fail-closed tests. Verified at `cbcc2c72124299a548f0caf5d7ba41a445c8288d` / CI `38312220154`: **474/474 tests across 52 files**, frozen install, format, lint, typecheck and build green. Reservations/media checkpoints still fail closed immediately; no remote LinkedIn mutation retry was added.
 
 ## Resolved during M03
 
-### M03.2 — implementation write block resolved
-
-Earlier connector safety checks rejected M03.2 writes, but supported repository writes later became available. Final GREEN: `16d6fa2ffd6088d8973001fece18c2d5ab331ebd`, CI `37964060504`.
-
-### M03.3 — successful provider responses are bounded
-
-The first Images adapter GREEN exposed one Important unbounded-success-response issue. Regression RED `982628adaaaa1cc61ad5e717654ca563bcb2c616` / CI `37966563223`; final GREEN `f5f4a7d99fdbca41cfdfa9d73838ecd00f9d7f5f` / CI `37966842680` streams successful provider JSON with a hard 64 KiB local bound.
-
-### M03.6 — stalled status reads are bounded and cancelled
-
-Scoped review found that a provider status request that never settled could exceed the verifier's ten-second budget. Behavioral RED `4b92d8d8ea2c44f94c39d0e1483ab01bf2390e36` / CI `38127429915` proved the hang. Follow-up RED `3c6ee6476bce750377a9b371698c2431985ebf0d` / CI `38127891256` proved the real Images adapter was not forwarding the abort signal. Final GREEN `e21bf679846564eacdc025de2fa7657e4dc25018` / CI `38127969036` passes 411 tests and all quality gates with real fetch cancellation forwarding.
-
-### M03.8 — truncated PNG/JPEG media failed to prove terminal structure
-
-Whole-milestone review found that valid dimension headers were sufficient for PNG/JPEG acceptance even when terminal data was missing. Behavioral RED `77cc6c5706dee48777773b247946459fed35d4c2` / CI `38133439691`; final GREEN `06505689a070f02a3d86a6c550a922b5028e45de` / CI `38135585804` requires terminal PNG `IEND` and JPEG EOI while retaining existing local size/dimension/frame safety bounds.
-
-### M03.8 — cross-runtime duplicate media initialization
-
-Whole-milestone review found that two independent runtimes sharing one file-backed ledger could both observe the same newly reserved mutation before a media checkpoint and both call remote `initializeUpload`. Behavioral RED `0394ae1ffcf725076a0674583c6464c0b7b7f9fa` / CI `38135863252` proved duplicate initialization while all pre-existing tests stayed green. The replay guard introduced at `0150f157c1af71387bd40f28f28941a41a19a8b5` rejects an in-flight reserved replay with no durable media checkpoint before remote mutation. A second uploaded-before-post concurrency probe passed and confirmed no additional ownership mechanism was required. Final exact-head GREEN `7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8` / CI `38136409125` passes 426 tests and all quality gates.
+M03 merged through PR #4 at `6713bfe79c261021ac39b75599509cd843e95f6d`; the later cross-runtime final-media ownership defect was repaired on main through hotfix PR #7 at `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`. Post-hotfix CI `38153987423` passed 427/427 tests across 46 files plus format/lint/typecheck/build. Whole-milestone review resolved all Critical/Important findings.
 
 ## Review state
 
-M01/M02 whole-milestone reviews were clear before their merges.
+M03 whole-milestone review completed with **0 unresolved Critical findings and 0 unresolved Important findings** before merge, with the later ownership defect separately regression-fixed and verified on main.
 
-M03.2–M03.6 scoped reviews completed with 0 unresolved Critical and 0 unresolved Important findings after their recorded fixes.
+M04.1 scoped contract/config review completed with **0 unresolved Critical findings and 0 unresolved Important findings**.
 
-M03.7 strict MCP/transport integration reached GREEN at `5851b9dc1c5b97094ec22cf2e40da71ba6f99118` / CI `38129813482`.
+M04.2 scoped Comments read-adapter review completed after exact-head GREEN `26ecce969e4d4935ddcd7babd93c6b46085a03b1` / CI `38160896542` with **0 unresolved Critical findings and 0 unresolved Important findings**.
 
-M03.8 whole-milestone skeptical correctness/security/provenance review completed after resolving the truncated-file and cross-runtime duplicate-initialization findings. At verified implementation head `7c4adf9da2fa33d2d597fcf9034d36fd5076a7a8` / CI `38136409125`, **0 unresolved Critical findings and 0 unresolved Important findings** remain. Final closeout-documentation CI and merge/post-merge verification are still required before M03 is marked merged.
+M04.3 scoped nested-reply correctness/security review completed after exact-head GREEN `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9` / CI `38902517595` with **0 unresolved Critical findings and 0 unresolved Important findings**. A separately dispatched independent review could not be retrieved after the local tunnel disconnected and is not represented as completed.
+
+M04.4 scoped reaction review had one later fresh security Important finding for approval-purpose isolation; that finding is resolved and verified in `788a252f6ec9e285df0420869af6e39ca728975b` / CI `39037380577`. M04.4 now has **0 unresolved Critical findings and 0 unresolved Important findings**.
+
+M04.5 scoped inbox correctness/security review after exact-head GREEN `788a252f6ec9e285df0420869af6e39ca728975b` / CI `39037380577` found **0 Critical findings and 0 Important findings**.
+
+M04.6 strict MCP/stdio/HTTP integration GREEN at `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148` / CI `39058125153`: 539/539 tests across 59 files plus frozen install, format, lint, typecheck and build. Twelve engagement tools are registered; real stdio and HTTP smoke tests pass. M04.7 whole-branch correctness/security/provenance review remains required before merge.

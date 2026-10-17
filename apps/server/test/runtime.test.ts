@@ -46,7 +46,7 @@ describe('createLinkedInRuntime', () => {
     expect(runtime.publishing.textPostService).toBeUndefined();
   });
 
-  it('shares one injected dependency graph and creates a publisher only with explicit config', () => {
+  it('scopes injected approvals while reusing the injected dependency graph', () => {
     const authService = { getStatus: vi.fn() } as unknown as AuthService;
     const approvals = { issue: vi.fn(), consume: vi.fn() } as never;
     const ledger = { reserve: vi.fn(), complete: vi.fn() } as unknown as IdempotencyLedger;
@@ -69,10 +69,22 @@ describe('createLinkedInRuntime', () => {
     });
 
     expect(runtime.authService).toBe(authService);
-    expect(runtime.publishing.approvals).toBe(approvals);
+    expect(runtime.publishing.approvals).not.toBe(approvals);
     expect(runtime.publishing.textPostService).toBeDefined();
     expect(createTextPost).not.toHaveBeenCalled();
     expect(getTextPost).not.toHaveBeenCalled();
+
+    const publicPayloadHash = 'a'.repeat(64);
+    runtime.publishing.approvals.issue({
+      payloadHash: publicPayloadHash,
+      subject: 'member-123',
+    });
+    const issueMock = (approvals as unknown as { issue: ReturnType<typeof vi.fn> }).issue;
+    expect(issueMock).toHaveBeenCalledTimes(1);
+    const scopedInput = issueMock.mock.calls[0]?.[0] as { payloadHash: string; subject: string };
+    expect(scopedInput.subject).toBe('member-123');
+    expect(scopedInput.payloadHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(scopedInput.payloadHash).not.toBe(publicPayloadHash);
   });
 
   it('forwards trusted member-read enablement to the shared Task 6 service', async () => {

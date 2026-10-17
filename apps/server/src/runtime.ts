@@ -1,6 +1,20 @@
 import { createAuthService, type AuthService } from './auth/auth-service.js';
 import type { ServerConfig } from './config.js';
-import { createApprovalService, type ApprovalService } from './publishing/approval-service.js';
+import {
+  createEngagementReadService,
+  type EngagementReadService,
+} from './engagement/engagement-read-service.js';
+import { createEngagementService, type EngagementService } from './engagement/engagement-service.js';
+import { createLinkedInCommentsClient, type LinkedInCommentsClient } from './engagement/linkedin-comments.js';
+import {
+  createLinkedInReactionsClient,
+  type LinkedInReactionsClient,
+} from './engagement/linkedin-reactions.js';
+import {
+  createApprovalService,
+  scopeApprovalService,
+  type ApprovalService,
+} from './publishing/approval-service.js';
 import {
   createFileIdempotencyLedger,
   type IdempotencyLedger,
@@ -24,6 +38,10 @@ export interface LinkedInRuntime {
     textPostService?: TextPostService;
     mediaPostService?: MediaPostService;
   };
+  engagement?: {
+    reads: EngagementReadService;
+    writes?: EngagementService;
+  };
 }
 
 export interface LinkedInRuntimeOverrides {
@@ -31,6 +49,8 @@ export interface LinkedInRuntimeOverrides {
   approvals?: ApprovalService;
   ledger?: IdempotencyLedger;
   posts?: LinkedInPostsAdapter;
+  comments?: LinkedInCommentsClient;
+  reactions?: LinkedInReactionsClient;
   now?: () => Date;
 }
 
@@ -58,17 +78,19 @@ export function createLinkedInRuntime(
         ? { ...(overrides.now === undefined ? {} : { now: overrides.now }) }
         : { config: config.auth, ...(overrides.now === undefined ? {} : { now: overrides.now }) },
     );
-  const approvals =
+  const approvalStore =
     overrides.approvals ??
     createApprovalService({
       ...(overrides.now === undefined ? {} : { now: overrides.now }),
       ttlMs: config.publishingApprovalTtlMs,
     });
+  const textApprovals = scopeApprovalService(approvalStore, 'posts.text');
 
   let textPostService: TextPostService | undefined;
   let mediaPostService: MediaPostService | undefined;
+  let ledger: IdempotencyLedger | undefined;
   if (config.linkedinApiVersion !== undefined && config.publishingLedgerPath !== undefined) {
-    const ledger =
+    ledger =
       overrides.ledger ??
       createFileIdempotencyLedger({
         filePath: config.publishingLedgerPath,
@@ -77,7 +99,7 @@ export function createLinkedInRuntime(
     const posts = overrides.posts ?? createLinkedInPostsAdapter({ apiVersion: config.linkedinApiVersion });
     textPostService = createTextPostService({
       auth: authService,
-      approvals,
+      approvals: textApprovals,
       ledger,
       posts,
       memberPostReadEnabled: config.memberPostReadEnabled,
@@ -86,7 +108,7 @@ export function createLinkedInRuntime(
     if (config.mediaRoot !== undefined && isMediaLedger(ledger) && isMediaPostsAdapter(posts)) {
       mediaPostService = createMediaPostService({
         auth: authService,
-        approvals,
+        approvals: scopeApprovalService(approvalStore, 'posts.media'),
         ledger,
         files: new MediaFileReader({
           root: config.mediaRoot,
@@ -99,13 +121,38 @@ export function createLinkedInRuntime(
     }
   }
 
+  let engagement: LinkedInRuntime['engagement'];
+  if (config.linkedinApiVersion !== undefined) {
+    const comments =
+      overrides.comments ?? createLinkedInCommentsClient({ apiVersion: config.linkedinApiVersion });
+    const reads = createEngagementReadService({
+      auth: authService,
+      comments,
+      enabled: config.engagementReadEnabled,
+    });
+    let writes: EngagementService | undefined;
+    if (ledger !== undefined) {
+      const reactions =
+        overrides.reactions ?? createLinkedInReactionsClient({ apiVersion: config.linkedinApiVersion });
+      writes = createEngagementService({
+        auth: authService,
+        approvals: approvalStore,
+        ledger,
+        comments,
+        reactions,
+      });
+    }
+    engagement = { reads, ...(writes === undefined ? {} : { writes }) };
+  }
+
   return {
     version: config.serverVersion,
     authService,
     publishing: {
-      approvals,
+      approvals: textApprovals,
       ...(textPostService === undefined ? {} : { textPostService }),
       ...(mediaPostService === undefined ? {} : { mediaPostService }),
     },
+    ...(engagement === undefined ? {} : { engagement }),
   };
 }

@@ -4,11 +4,14 @@ import type { McpServer } from '@modelcontextprotocol/server';
 
 import {
   createLinkedInMcpServer as createBaseLinkedInMcpServer,
-  type LinkedInMcpServerDeps,
+  type LinkedInMcpServerDeps as BaseLinkedInMcpServerDeps,
 } from './create-server-base.js';
+import { registerEngagementTools, type EngagementTools } from './engagement-mcp.js';
 import { registerMediaPostTools } from './media-mcp.js';
 
-export type { LinkedInMcpServerDeps } from './create-server-base.js';
+export interface LinkedInMcpServerDeps extends BaseLinkedInMcpServerDeps {
+  engagement?: EngagementTools;
+}
 
 export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpServer {
   const createRequestId = deps.createRequestId ?? randomUUID;
@@ -23,6 +26,11 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
 
   registerMediaPostTools(server, {
     ...(mediaPostService === undefined ? {} : { mediaPostService }),
+    createRequestId,
+    now,
+  });
+  registerEngagementTools(server, {
+    ...(normalizedDeps.engagement === undefined ? {} : { engagement: normalizedDeps.engagement }),
     createRequestId,
     now,
   });
