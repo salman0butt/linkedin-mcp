@@ -45,23 +45,12 @@ const targetUrnSchema = z
   .string()
   .regex(/^urn:li:(?:(?:share|ugcPost|activity):\d+|comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\))$/);
 const threadUrnSchema = z.string().regex(/^urn:li:(?:share|ugcPost|activity):\d+$/);
-const commentUrnSchema = z
-  .string()
-  .regex(/^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/);
+const commentUrnSchema = z.string().regex(/^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/);
 const commentIdSchema = z.string().regex(/^\d+$/);
 const nonEmptyStringSchema = z.string().refine((value) => value.trim().length > 0);
-const reactionTypeSchema = z.enum([
-  'LIKE',
-  'PRAISE',
-  'EMPATHY',
-  'INTEREST',
-  'APPRECIATION',
-  'ENTERTAINMENT',
-]);
+const reactionTypeSchema = z.enum(['LIKE', 'PRAISE', 'EMPATHY', 'INTEREST', 'APPRECIATION', 'ENTERTAINMENT']);
 
-const getCommentInputSchema = z
-  .object({ targetUrn: targetUrnSchema, commentId: commentIdSchema })
-  .strict();
+const getCommentInputSchema = z.object({ targetUrn: targetUrnSchema, commentId: commentIdSchema }).strict();
 const listCommentsInputSchema = z
   .object({
     targetUrn: targetUrnSchema,
@@ -86,9 +75,7 @@ const replyDraftSchema = z
     text: nonEmptyStringSchema,
   })
   .strict();
-const approveInputSchema = z
-  .object({ payloadHash: payloadHashSchema, approved: z.literal(true) })
-  .strict();
+const approveInputSchema = z.object({ payloadHash: payloadHashSchema, approved: z.literal(true) }).strict();
 const createReplyInputSchema = z
   .object({
     draft: replyDraftSchema,
@@ -140,10 +127,7 @@ const outputSchema = z
     data: z.unknown().optional(),
     provider: providerSchema,
     warnings: z.array(z.string()).optional(),
-    error: z
-      .object({ code: z.string(), message: z.string(), retryable: z.boolean() })
-      .strict()
-      .optional(),
+    error: z.object({ code: z.string(), message: z.string(), retryable: z.boolean() }).strict().optional(),
     metadata: z.object({ requestId: z.string(), timestamp: z.string() }).strict(),
   })
   .strict();
@@ -242,10 +226,7 @@ function mapFailure(error: unknown, deps: RegisterEngagementToolsDeps, provider:
   });
 }
 
-function readResult<T>(
-  value: EngagementReadAvailability<T>,
-  deps: RegisterEngagementToolsDeps,
-) {
+function readResult<T>(value: EngagementReadAvailability<T>, deps: RegisterEngagementToolsDeps) {
   return result(deps, value.status === 'available' ? 'succeeded' : 'permission_required', 'OFFICIAL_API', {
     data: value,
   });
