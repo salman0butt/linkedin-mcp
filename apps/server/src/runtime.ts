@@ -1,6 +1,10 @@
 import { createAuthService, type AuthService } from './auth/auth-service.js';
 import type { ServerConfig } from './config.js';
-import { createApprovalService, type ApprovalService } from './publishing/approval-service.js';
+import {
+  createApprovalService,
+  scopeApprovalService,
+  type ApprovalService,
+} from './publishing/approval-service.js';
 import {
   createFileIdempotencyLedger,
   type IdempotencyLedger,
@@ -58,12 +62,13 @@ export function createLinkedInRuntime(
         ? { ...(overrides.now === undefined ? {} : { now: overrides.now }) }
         : { config: config.auth, ...(overrides.now === undefined ? {} : { now: overrides.now }) },
     );
-  const approvals =
+  const approvalStore =
     overrides.approvals ??
     createApprovalService({
       ...(overrides.now === undefined ? {} : { now: overrides.now }),
       ttlMs: config.publishingApprovalTtlMs,
     });
+  const textApprovals = scopeApprovalService(approvalStore, 'posts.text');
 
   let textPostService: TextPostService | undefined;
   let mediaPostService: MediaPostService | undefined;
@@ -77,7 +82,7 @@ export function createLinkedInRuntime(
     const posts = overrides.posts ?? createLinkedInPostsAdapter({ apiVersion: config.linkedinApiVersion });
     textPostService = createTextPostService({
       auth: authService,
-      approvals,
+      approvals: textApprovals,
       ledger,
       posts,
       memberPostReadEnabled: config.memberPostReadEnabled,
@@ -86,7 +91,7 @@ export function createLinkedInRuntime(
     if (config.mediaRoot !== undefined && isMediaLedger(ledger) && isMediaPostsAdapter(posts)) {
       mediaPostService = createMediaPostService({
         auth: authService,
-        approvals,
+        approvals: scopeApprovalService(approvalStore, 'posts.media'),
         ledger,
         files: new MediaFileReader({
           root: config.mediaRoot,
@@ -103,7 +108,7 @@ export function createLinkedInRuntime(
     version: config.serverVersion,
     authService,
     publishing: {
-      approvals,
+      approvals: textApprovals,
       ...(textPostService === undefined ? {} : { textPostService }),
       ...(mediaPostService === undefined ? {} : { mediaPostService }),
     },
