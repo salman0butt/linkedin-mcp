@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M04",
-  "currentIteration": "M04.5",
+  "currentIteration": "M04.6",
   "status": "ACTIVE",
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "642359aa8caab4a2dd1c15ab22e64e07927e2688",
-  "ciStatus": "GREEN_HEAD_642359aa8caab4a2dd1c15ab22e64e07927e2688_RUN_39034345652_514_PASS_55_FILES_FORMAT_LINT_TYPECHECK_BUILD_GREEN",
+  "latestVerifiedSha": "788a252f6ec9e285df0420869af6e39ca728975b",
+  "ciStatus": "GREEN_HEAD_788a252f6ec9e285df0420869af6e39ca728975b_RUN_39037380577_524_PASS_57_FILES_FORMAT_LINT_TYPECHECK_BUILD_GREEN",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
     "Live LinkedIn Community Management product/scope entitlement remains unverified; deterministic CI does not establish live comment/reaction availability."
   ],
-  "exactNextWork": "Write M04.5 explicit-thread unanswered-inbox behavioral RED tests for answered/unanswered classification, authenticated-member reply detection, 1–20 root bounds, paging/call ceilings, restricted-read propagation and deterministic ordering; verify intended RED."
+  "exactNextWork": "Write M04.6 strict MCP/stdio/HTTP engagement integration behavioral RED tests for tool discovery, strict schemas, structured access/provenance states and rejection of actor/token/read-gate/admin overrides; verify intended RED before implementation."
 }
