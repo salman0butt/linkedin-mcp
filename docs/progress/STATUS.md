@@ -4,7 +4,7 @@ Last reconciled: 2026-10-17. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M04 — Comments & Engagement — **ACTIVE, M04.4 reaction add/remove flow**.
+M04 — Comments & Engagement — **ACTIVE, M04.5 explicit-thread unanswered inbox/context derivation**.
 
 Active branch: `feat/m04-comments-engagement`. Draft PR #6 remains the milestone integration boundary.
 Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
@@ -13,19 +13,21 @@ Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
 
 ## Latest Verified Checkpoint
 
-M04.3 — approval/idempotency-gated nested reply flow — **GREEN** at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`.
-CI `38902517595`: **483/483 tests across 53 files**, frozen install, format, lint, typecheck and build passed.
+M04.4 — approval/idempotency-gated reaction add/remove flow — **GREEN** at `642359aa8caab4a2dd1c15ab22e64e07927e2688`.
+CI `39034345652`: **514/514 tests across 55 files**, frozen install, format, lint, typecheck and build passed.
 
-M04.3 TDD/review repair evidence includes:
+M04.4 genuine TDD evidence:
+- adapter RED at `5f1c5e3adb683730ea85266e1f3b13db05aed9130`, CI `39030219764`: 483 existing tests passed and both new reaction suites failed because the adapter was absent;
+- service RED at `42119b100a951e1628f043682dbb4088b34e9e78`, CI `39034035608`: all 21 adapter tests passed and exactly 10 reaction-service tests failed because the six service methods were absent;
+- GREEN at `642359aa8caab4a2dd1c15ab22e64e07927e2688`, CI `39034345652`: 514/514 tests plus all quality gates.
 
-- pre-approval reply-target mismatch RED `d716140fa42d5e4c294146936e4d9616be161a8b`, repaired at `386dbf96235fadf88ea16a9411cd3a24dfc3a38b`;
-- malformed provider-success terminal-outcome RED `3adcee4d80fcfdad44f8374b0f97af28c590f215`, CI `38901369613`, repaired at `9699773fb323ab027ebdc2837c5e5a8a591e0c9b`, CI `38901575437`;
-- composite reply identity, legacy replay integrity and documented missing-`likesSummary` RED `5dce3ac361f87abadd61c91283e8ebcc41b702d4`, CI `38902334994` with exactly 6 intended failures and 477 passes, repaired at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`.
+Two independent scoped correctness/security reviews reported **0 Critical findings and 0 Important findings**. One reviewer recorded only two nonblocking Minor observations: stale Task 4 checkboxes and incomplete positive coverage of every allowed reaction enum value.
 
-Scoped correctness/security review after these repairs found **0 unresolved Critical findings and 0 unresolved Important findings**. The separate independent worker-review channel became unavailable when the local tunnel disconnected; no independent result is claimed.
+M04.4 derives actor identity only from the authenticated subject, requires `w_member_social_feed`, binds preview/approval/idempotency to canonical operation/actor/payload, reserves before provider mutation, validates durable replay, bounds successful response bodies, sanitizes provider/transport failures, and never automatically retries uncertain POST/DELETE outcomes.
 
-M04.2 — bounded official Comments get/list adapter — GREEN at `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542` (450/450 tests).
-M04.1 — canonical engagement contracts/access policy — GREEN at `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287` (439/439 tests).
+M04.3 nested reply flow: GREEN at `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595` (483/483 tests).
+M04.2 bounded official Comments read adapter: GREEN at `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542` (450/450 tests).
+M04.1 canonical engagement contracts/access policy: GREEN at `2b80391f943907218a29fd39d4d6535cf0837e8f`, CI `38155192287` (439/439 tests).
 
 ## Latest Verified Mainline
 
@@ -39,10 +41,10 @@ LinkedIn Community Management comments/reactions use versioned official APIs. Me
 
 ## Findings / Blockers
 
-Unresolved Critical findings: 0 for completed M04.1–M04.3 scoped work.
-Unresolved Important findings: 0 for completed M04.1–M04.3 scoped work.
-M04.4 RED is verified at head `01943a583db165a73914eb63d4ed494842f52be7` / CI `38934147554`: 483 tests passed in 53 files; two new reaction suites failed to import the absent `apps/server/src/engagement/linkedin-reactions.ts`. This is not GREEN and no production reaction implementation is persisted. The prior adapter source write and the 2026-10-17 retry were rejected by OpenAI safety checks. Local development tunnel and Superpowers skill service were unavailable. Live Community Management entitlement remains an external verification gate.
+Unresolved Critical findings: 0 for completed M04.1–M04.4 scoped work.
+Unresolved Important findings: 0 for completed M04.1–M04.4 scoped work.
+Live Community Management entitlement remains an external verification gate; it is not represented as verified capability availability.
 
 ## Handoff
 
-Exact next work: **Write M04.4 reaction add/remove behavioral RED tests for official POST/DELETE contracts, authenticated actor derivation, approval/idempotency, 201/204 success, provider errors and uncertain transport; verify intended RED before implementation.**
+Exact next work: **Write M04.5 explicit-thread unanswered-inbox behavioral RED tests for answered/unanswered classification, authenticated-member reply detection, 1–20 explicit-root bounds, page/call ceilings, restricted-read propagation and deterministic ordering; verify intended RED.**
