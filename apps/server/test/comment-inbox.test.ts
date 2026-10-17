@@ -13,17 +13,25 @@ import type {
 
 const threadA = 'urn:li:activity:7067167295080394752';
 const threadB = 'urn:li:share:6305471423242596352';
-const firstComment = 'urn:li:comment:(urn:li:activity:7067167295080394752,1001)';
-const secondComment = 'urn:li:comment:(urn:li:activity:7067167295080394752,1002)';
-const thirdComment = 'urn:li:comment:(urn:li:share:6305471423242596352,2001)';
+const firstComment =
+  'urn:li:comment:(urn:li:activity:7067167295080394752,1001)';
+const secondComment =
+  'urn:li:comment:(urn:li:activity:7067167295080394752,1002)';
+const thirdComment =
+  'urn:li:comment:(urn:li:share:6305471423242596352,2001)';
 
 function comment(
   id: string,
   commentUrn: string,
   actorUrn: string,
   objectUrn: string,
-  options: { parentCommentUrn?: string; text?: string; createdAt?: string } = {},
+  options: {
+    parentCommentUrn?: string;
+    text?: string;
+    createdAt?: string;
+  } = {},
 ): CanonicalComment {
+  const createdAt = options.createdAt ?? '2026-10-17T10:00:00.000Z';
   return {
     id,
     commentUrn,
@@ -33,8 +41,8 @@ function comment(
       ? {}
       : { parentCommentUrn: options.parentCommentUrn }),
     text: options.text ?? `comment-${id}`,
-    createdAt: options.createdAt ?? '2026-10-17T10:00:00.000Z',
-    lastModifiedAt: options.createdAt ?? '2026-10-17T10:00:00.000Z',
+    createdAt,
+    lastModifiedAt: createdAt,
     totalLikes: 0,
   };
 }
@@ -55,7 +63,9 @@ function page(
   };
 }
 
-function available(value: CommentPage): EngagementReadAvailability<CommentPage> {
+function available(
+  value: CommentPage,
+): EngagementReadAvailability<CommentPage> {
   return { status: 'available', provider: 'OFFICIAL_API', value };
 }
 
@@ -70,11 +80,13 @@ function unavailable(
 }
 
 describe('explicit-thread unanswered comment inbox', () => {
-  it('returns only top-level comments without a direct authenticated-member reply', async () => {
+  it('keeps only comments without a direct authenticated-member reply', async () => {
     const self = 'urn:li:person:member-123';
     const customer = 'urn:li:person:customer-456';
-    const childByOther = 'urn:li:comment:(urn:li:activity:7067167295080394752,1101)';
-    const nestedSelf = 'urn:li:comment:(urn:li:activity:7067167295080394752,1102)';
+    const childByOther =
+      'urn:li:comment:(urn:li:activity:7067167295080394752,1101)';
+    const nestedSelf =
+      'urn:li:comment:(urn:li:activity:7067167295080394752,1102)';
 
     const listComments: CommentInboxListComments = ({ targetUrn }) => {
       if (targetUrn === threadA) {
@@ -94,10 +106,12 @@ describe('explicit-thread unanswered comment inbox', () => {
         );
       }
       if (targetUrn === firstComment) {
+        const selfReply =
+          'urn:li:comment:(urn:li:activity:7067167295080394752,1003)';
         return Promise.resolve(
           available(
             page([
-              comment('1003', `${firstComment.slice(0, -5)}1003)`, self, threadA, {
+              comment('1003', selfReply, self, threadA, {
                 parentCommentUrn: firstComment,
               }),
             ]),
@@ -144,7 +158,7 @@ describe('explicit-thread unanswered comment inbox', () => {
   });
 
   it.each(['disabled', 'permission_required'] as const)(
-    'propagates %s read availability instead of fabricating an empty inbox',
+    'propagates %s availability rather than returning an empty inbox',
     async (status) => {
       let calls = 0;
       const listComments: CommentInboxListComments = () => {
@@ -162,15 +176,23 @@ describe('explicit-thread unanswered comment inbox', () => {
     },
   );
 
-  it('rejects non-explicit, duplicate, empty, and over-limit thread-root inputs locally', async () => {
-    const listComments: CommentInboxListComments = () => Promise.resolve(available(page([])));
+  it('rejects invalid explicit-root inputs before provider reads', async () => {
+    const listComments: CommentInboxListComments = () =>
+      Promise.resolve(available(page([])));
+    const tooMany = Array.from(
+      { length: 21 },
+      (_, index) => `urn:li:activity:${1000 + index}`,
+    );
 
     await expect(
-      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: [] }, { listComments }),
+      deriveUnansweredCommentInbox(
+        { subject: 'member-123', threadUrns: [] },
+        { listComments },
+      ),
     ).rejects.toMatchObject({ kind: 'invalid_input' });
     await expect(
       deriveUnansweredCommentInbox(
-        { subject: 'member-123', threadUrns: Array.from({ length: 21 }, (_, i) => `urn:li:activity:${1000 + i}`) },
+        { subject: 'member-123', threadUrns: tooMany },
         { listComments },
       ),
     ).rejects.toMatchObject({ kind: 'invalid_input' });
@@ -188,7 +210,7 @@ describe('explicit-thread unanswered comment inbox', () => {
     ).rejects.toMatchObject({ kind: 'invalid_input' });
   });
 
-  it('bounds paging and total provider calls instead of returning a partial inbox', async () => {
+  it('bounds paging instead of returning a partial inbox', async () => {
     let calls = 0;
     const listComments: CommentInboxListComments = ({ start }) => {
       calls += 1;
@@ -204,47 +226,36 @@ describe('explicit-thread unanswered comment inbox', () => {
     expect(calls).toBeLessThanOrEqual(3);
   });
 
-  it('paginates explicit roots/replies and returns deterministic chronological ordering', async () => {
+  it('paginates and returns deterministic chronological ordering', async () => {
     const customer = 'urn:li:person:customer-456';
-    const calls: Array<{ targetUrn: string; start: number; count: number }> = [];
-    const listComments: CommentInboxListComments = ({ targetUrn, start, count }) => {
+    const calls: Array<{
+      targetUrn: string;
+      start: number;
+      count: number;
+    }> = [];
+    const listComments: CommentInboxListComments = ({
+      targetUrn,
+      start,
+      count,
+    }) => {
       calls.push({ targetUrn, start, count });
       if (targetUrn === threadA && start === 0) {
-        return Promise.resolve(
-          available(
-            page(
-              [
-                comment('1002', secondComment, customer, threadA, {
-                  createdAt: '2026-10-17T11:00:00.000Z',
-                }),
-              ],
-              0,
-              100,
-            ),
-          ),
-        );
+        const item = comment('1002', secondComment, customer, threadA, {
+          createdAt: '2026-10-17T11:00:00.000Z',
+        });
+        return Promise.resolve(available(page([item], 0, 100)));
       }
       if (targetUrn === threadA && start === 100) {
-        return Promise.resolve(
-          available(
-            page([
-              comment('1001', firstComment, customer, threadA, {
-                createdAt: '2026-10-17T09:00:00.000Z',
-              }),
-            ], 100),
-          ),
-        );
+        const item = comment('1001', firstComment, customer, threadA, {
+          createdAt: '2026-10-17T09:00:00.000Z',
+        });
+        return Promise.resolve(available(page([item], 100)));
       }
       if (targetUrn === threadB) {
-        return Promise.resolve(
-          available(
-            page([
-              comment('2001', thirdComment, customer, threadB, {
-                createdAt: '2026-10-17T10:00:00.000Z',
-              }),
-            ]),
-          ),
-        );
+        const item = comment('2001', thirdComment, customer, threadB, {
+          createdAt: '2026-10-17T10:00:00.000Z',
+        });
+        return Promise.resolve(available(page([item])));
       }
       return Promise.resolve(available(page([])));
     };
@@ -254,17 +265,23 @@ describe('explicit-thread unanswered comment inbox', () => {
       { listComments },
     );
     expect(result.status).toBe('available');
-    if (result.status !== 'available') throw new Error('expected available inbox');
+    if (result.status !== 'available') {
+      throw new Error('expected available inbox');
+    }
     expect(result.value.map((item) => item.commentUrn)).toEqual([
       firstComment,
       thirdComment,
       secondComment,
     ]);
     expect(calls.every((call) => call.count === 100)).toBe(true);
-    expect(calls).toContainEqual({ targetUrn: threadA, start: 100, count: 100 });
+    expect(calls).toContainEqual({
+      targetUrn: threadA,
+      start: 100,
+      count: 100,
+    });
   });
 
-  it('rejects invalid authenticated-subject input before any provider call', async () => {
+  it('rejects an invalid subject before any provider call', async () => {
     let calls = 0;
     const listComments: CommentInboxListComments = () => {
       calls += 1;
@@ -272,7 +289,10 @@ describe('explicit-thread unanswered comment inbox', () => {
     };
 
     await expect(
-      deriveUnansweredCommentInbox({ subject: '   ', threadUrns: [threadA] }, { listComments }),
+      deriveUnansweredCommentInbox(
+        { subject: '   ', threadUrns: [threadA] },
+        { listComments },
+      ),
     ).rejects.toBeInstanceOf(CommentInboxError);
     expect(calls).toBe(0);
   });
