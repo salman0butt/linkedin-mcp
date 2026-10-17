@@ -58,7 +58,7 @@ describe('M04 engagement runtime wiring', () => {
     const runtime = createLinkedInRuntime(parseConfig({ LINKEDIN_MCP_API_VERSION: '202610' }), {
       authService,
       comments,
-    } as never);
+    });
     const engagement = runtimeEngagement(runtime);
 
     expect(engagement).toBeDefined();
@@ -82,7 +82,7 @@ describe('M04 engagement runtime wiring', () => {
         LINKEDIN_MCP_API_VERSION: '202610',
         LINKEDIN_MCP_ENGAGEMENT_READ_ENABLED: 'true',
       }),
-      { authService, comments } as never,
+      { authService, comments },
     );
     const engagement = runtimeEngagement(runtime);
 
@@ -105,7 +105,7 @@ describe('M04 engagement runtime wiring', () => {
         LINKEDIN_MCP_API_VERSION: '202610',
         LINKEDIN_MCP_ENGAGEMENT_READ_ENABLED: 'true',
       }),
-      { authService, comments } as never,
+      { authService, comments },
     );
     const engagement = runtimeEngagement(runtime);
 
@@ -137,7 +137,7 @@ describe('M04 engagement runtime wiring', () => {
         LINKEDIN_MCP_API_VERSION: '202610',
         LINKEDIN_MCP_ENGAGEMENT_READ_ENABLED: 'true',
       }),
-      { authService, comments } as never,
+      { authService, comments },
     );
     const engagement = runtimeEngagement(runtime);
 
@@ -175,7 +175,7 @@ describe('M04 engagement runtime wiring', () => {
         LINKEDIN_MCP_API_VERSION: '202610',
         LINKEDIN_MCP_ENGAGEMENT_READ_ENABLED: 'true',
       }),
-      { authService, comments } as never,
+      { authService, comments },
     );
     const engagement = runtimeEngagement(runtime);
 
