@@ -260,7 +260,12 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
     async (input) => {
       if (deps.engagement === undefined) return unavailable(deps, 'OFFICIAL_API');
       try {
-        return readResult(await deps.engagement.reads.listComments(input), deps);
+        const request = {
+          targetUrn: input.targetUrn,
+          ...(input.start === undefined ? {} : { start: input.start }),
+          ...(input.count === undefined ? {} : { count: input.count }),
+        };
+        return readResult(await deps.engagement.reads.listComments(request), deps);
       } catch (error: unknown) {
         return mapFailure(error, deps, 'OFFICIAL_API');
       }
