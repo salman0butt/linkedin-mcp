@@ -2,17 +2,18 @@
   "schemaVersion": 1,
   "currentMilestone": "M04",
   "currentIteration": "M04.4",
-  "status": "ACTIVE",
+  "status": "BLOCKED",
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "8ea3393a7a1a6a2ddb6dc30dc6b154b41515402f",
-  "ciStatus": "RED_HEAD_8ea3393a7a1a6a2ddb6dc30dc6b154b41515402f_RUN_38907502958_REACTIONS_ADAPTER_MISSING",
+  "latestVerifiedSha": "4fe05db4eb4a840dc003280caffa6f641281b546",
+  "ciStatus": "RED_HEAD_4fe05db4eb4a840dc003280caffa6f641281b546_RUN_38983027320_483_PASS_2_REACTION_IMPORT_SUITES_FAIL",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M04.4 RED test checkpoint CI 38907502958: 483 existing tests passed, new reaction suites fail because apps/server/src/engagement/linkedin-reactions.ts does not exist.",
-    "M04.4 reactions adapter source creation rejected by OpenAI safety checks on 2026-10-16; no GREEN verification."
+    "Exact-head CI 38983027320 on 4fe05db4: format passed, 483 tests passed across 53 files, two reaction suites fail to import missing apps/server/src/engagement/linkedin-reactions.ts; lint/typecheck/build skipped.",
+    "2026-10-17 source creation via GitHub connector rejected by OpenAI safety checks; no production reactions adapter was persisted. Local development tunnel and Superpowers skills unavailable. M04.4 scoped review and GREEN verification remain pending.",
+    "Live LinkedIn Community Management scope/product entitlement unverified; no live reaction capability claimed."
   ],
-  "exactNextWork": "Persist the M04.4 official Reactions adapter on feat/m04-comments-engagement via an authorized source-write path, then verify exact-head CI and continue reaction service TDD."
+  "exactNextWork": "Persist the already RED-tested M04.4 Reactions adapter through a permitted repository source-write action on feat/m04-comments-engagement, then run exact-head CI."
 }
