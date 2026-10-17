@@ -1,18 +1,9 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
-import type {
-  CanonicalComment,
-  CommentPage,
-  EngagementReadAvailability,
-} from '../../../packages/core/dist/index.js';
+import type { EngagementReadAvailability } from '../../../packages/core/dist/index.js';
 import type { EngagementReadService } from './engagement/engagement-read-service.js';
-import {
-  EngagementServiceError,
-  type EngagementService,
-  type ReactionAddDraft,
-  type ReactionRemoveDraft,
-} from './engagement/engagement-service.js';
+import { EngagementServiceError, type EngagementService } from './engagement/engagement-service.js';
 
 export interface EngagementTools {
   reads: EngagementReadService;
@@ -346,7 +337,7 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: writes.previewReactionAdd(input as ReactionAddDraft),
+          data: writes.previewReactionAdd(input),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -406,7 +397,7 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: writes.previewReactionRemove(input as ReactionRemoveDraft),
+          data: writes.previewReactionRemove(input),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
