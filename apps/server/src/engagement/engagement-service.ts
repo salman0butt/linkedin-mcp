@@ -13,6 +13,7 @@ import {
 import { AuthServiceError, type AuthService } from '../auth/auth-service.js';
 import {
   ApprovalServiceError,
+  scopeApprovalService,
   type ApprovalReceipt,
   type ApprovalService,
 } from '../publishing/approval-service.js';
@@ -339,6 +340,7 @@ function previewReactionFor(
 
 async function approveReactionFor(
   deps: EngagementServiceDeps,
+  operation: 'add' | 'remove',
   input: ApproveReplyInput,
 ): Promise<ApprovalReceipt> {
   if (input === null || typeof input !== 'object' || Array.isArray(input)) {
@@ -347,7 +349,10 @@ async function approveReactionFor(
   assertPayloadHash(input.payloadHash);
   const context = await providerContext(deps);
   try {
-    return deps.approvals.issue({ payloadHash: input.payloadHash, subject: context.subject });
+    return scopeApprovalService(deps.approvals, `reactions.${operation}`).issue({
+      payloadHash: input.payloadHash,
+      subject: context.subject,
+    });
   } catch {
     throw new EngagementServiceError('storage_failure');
   }
@@ -449,7 +454,7 @@ async function runReaction(
     const context = await providerContext(deps);
     let approval;
     try {
-      approval = deps.approvals.consume({
+      approval = scopeApprovalService(deps.approvals, `reactions.${operation}`).consume({
         receiptId: input.approvalReceiptId,
         payloadHash: preview.payloadHash,
         subject: context.subject,
@@ -583,10 +588,10 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
       return previewReactionFor(draft, 'remove');
     },
     approveReactionAdd(input) {
-      return approveReactionFor(deps, input);
+      return approveReactionFor(deps, 'add', input);
     },
     approveReactionRemove(input) {
-      return approveReactionFor(deps, input);
+      return approveReactionFor(deps, 'remove', input);
     },
     addReaction(input) {
       return runReaction(deps, 'add', input);
@@ -605,7 +610,10 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
       assertPayloadHash(input.payloadHash);
       const context = await providerContext(deps);
       try {
-        return deps.approvals.issue({ payloadHash: input.payloadHash, subject: context.subject });
+        return scopeApprovalService(deps.approvals, 'comments.reply').issue({
+          payloadHash: input.payloadHash,
+          subject: context.subject,
+        });
       } catch {
         throw new EngagementServiceError('storage_failure');
       }
@@ -633,7 +641,7 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
         const context = await providerContext(deps);
         let approval;
         try {
-          approval = deps.approvals.consume({
+          approval = scopeApprovalService(deps.approvals, 'comments.reply').consume({
             receiptId: input.approvalReceiptId,
             payloadHash: preview.payloadHash,
             subject: context.subject,
