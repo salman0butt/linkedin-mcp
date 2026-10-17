@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { ApprovalServiceError, createApprovalService } from '../src/publishing/approval-service.js';
+import {
+  ApprovalServiceError,
+  createApprovalService,
+  scopeApprovalService,
+} from '../src/publishing/approval-service.js';
 
 const payloadHash = 'a'.repeat(64);
 const subject = 'linkedin-member-123';
-const purpose = 'test.operation';
 
 function expectApprovalError(action: () => unknown, kind: string): void {
   try {
@@ -26,21 +29,21 @@ describe('M02 approval receipt service', () => {
       ttlMs: 60_000,
     });
 
-    expect(service.issue({ payloadHash, subject, purpose })).toEqual({
+    expect(service.issue({ payloadHash, subject })).toEqual({
       receiptId: 'receipt-random-1',
       payloadHash,
       expiresAt: '2026-10-08T09:01:00.000Z',
       provider: 'LOCAL_ONLY',
     });
-    expect(service.issue({ payloadHash, subject, purpose }).receiptId).toBe('receipt-random-2');
+    expect(service.issue({ payloadHash, subject }).receiptId).toBe('receipt-random-2');
   });
 
-  it('rejects unknown receipts and exact payload, subject, or purpose mismatches', () => {
+  it('rejects unknown receipts and exact payload or authenticated-subject mismatches', () => {
     const service = createApprovalService({
       randomId: () => 'receipt-1',
       now: () => new Date('2026-10-08T09:00:00.000Z'),
     });
-    const receipt = service.issue({ payloadHash, subject, purpose });
+    const receipt = service.issue({ payloadHash, subject });
 
     expectApprovalError(
       () =>
@@ -48,7 +51,6 @@ describe('M02 approval receipt service', () => {
           receiptId: 'missing',
           payloadHash,
           subject,
-          purpose,
           idempotencyKey: 'op-1',
         }),
       'not_found',
@@ -59,7 +61,6 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash: 'b'.repeat(64),
           subject,
-          purpose,
           idempotencyKey: 'op-1',
         }),
       'mismatch',
@@ -70,22 +71,40 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash,
           subject: 'different-member',
-          purpose,
           idempotencyKey: 'op-1',
         }),
       'mismatch',
     );
+  });
+
+  it('rejects a receipt consumed through a different approval purpose', () => {
+    const service = createApprovalService({
+      randomId: () => 'receipt-purpose-bound',
+      now: () => new Date('2026-10-08T09:00:00.000Z'),
+    });
+    const addApprovals = scopeApprovalService(service, 'reactions.add');
+    const removeApprovals = scopeApprovalService(service, 'reactions.remove');
+    const receipt = addApprovals.issue({ payloadHash, subject });
+
+    expect(receipt.payloadHash).toBe(payloadHash);
     expectApprovalError(
       () =>
-        service.consume({
+        removeApprovals.consume({
           receiptId: receipt.receiptId,
           payloadHash,
           subject,
-          purpose: 'different.operation',
-          idempotencyKey: 'op-1',
+          idempotencyKey: 'op-wrong-purpose',
         }),
       'mismatch',
     );
+    expect(
+      addApprovals.consume({
+        receiptId: receipt.receiptId,
+        payloadHash,
+        subject,
+        idempotencyKey: 'op-correct-purpose',
+      }),
+    ).toEqual({ status: 'initiated', idempotencyKey: 'op-correct-purpose' });
   });
 
   it('expires receipts using the injected clock', () => {
@@ -95,7 +114,7 @@ describe('M02 approval receipt service', () => {
       now: () => now,
       ttlMs: 1_000,
     });
-    const receipt = service.issue({ payloadHash, subject, purpose });
+    const receipt = service.issue({ payloadHash, subject });
     now = new Date('2026-10-08T09:00:01.001Z');
 
     expectApprovalError(
@@ -104,7 +123,6 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash,
           subject,
-          purpose,
           idempotencyKey: 'op-expired',
         }),
       'expired',
@@ -116,12 +134,11 @@ describe('M02 approval receipt service', () => {
       randomId: () => 'receipt-single-use',
       now: () => new Date('2026-10-08T09:00:00.000Z'),
     });
-    const receipt = service.issue({ payloadHash, subject, purpose });
+    const receipt = service.issue({ payloadHash, subject });
     const input = {
       receiptId: receipt.receiptId,
       payloadHash,
       subject,
-      purpose,
       idempotencyKey: 'operation-1',
     };
 
@@ -134,13 +151,12 @@ describe('M02 approval receipt service', () => {
       randomId: () => 'receipt-consumed',
       now: () => new Date('2026-10-08T09:00:00.000Z'),
     });
-    const receipt = service.issue({ payloadHash, subject, purpose });
+    const receipt = service.issue({ payloadHash, subject });
 
     service.consume({
       receiptId: receipt.receiptId,
       payloadHash,
       subject,
-      purpose,
       idempotencyKey: 'operation-1',
     });
 
@@ -150,7 +166,6 @@ describe('M02 approval receipt service', () => {
           receiptId: receipt.receiptId,
           payloadHash,
           subject,
-          purpose,
           idempotencyKey: 'operation-2',
         }),
       'already_consumed',
