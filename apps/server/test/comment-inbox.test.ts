@@ -13,12 +13,9 @@ import type {
 
 const threadA = 'urn:li:activity:7067167295080394752';
 const threadB = 'urn:li:share:6305471423242596352';
-const firstComment =
-  'urn:li:comment:(urn:li:activity:7067167295080394752,1001)';
-const secondComment =
-  'urn:li:comment:(urn:li:activity:7067167295080394752,1002)';
-const thirdComment =
-  'urn:li:comment:(urn:li:share:6305471423242596352,2001)';
+const firstComment = 'urn:li:comment:(urn:li:activity:7067167295080394752,1001)';
+const secondComment = 'urn:li:comment:(urn:li:activity:7067167295080394752,1002)';
+const thirdComment = 'urn:li:comment:(urn:li:share:6305471423242596352,2001)';
 
 function comment(
   id: string,
@@ -47,11 +44,7 @@ function comment(
   };
 }
 
-function page(
-  elements: readonly CanonicalComment[],
-  start = 0,
-  nextStart?: number,
-): CommentPage {
+function page(elements: readonly CanonicalComment[], start = 0, nextStart?: number): CommentPage {
   return {
     elements,
     paging: {
@@ -63,15 +56,11 @@ function page(
   };
 }
 
-function available(
-  value: CommentPage,
-): EngagementReadAvailability<CommentPage> {
+function available(value: CommentPage): EngagementReadAvailability<CommentPage> {
   return { status: 'available', provider: 'OFFICIAL_API', value };
 }
 
-function unavailable(
-  status: 'disabled' | 'permission_required',
-): EngagementReadAvailability<CommentPage> {
+function unavailable(status: 'disabled' | 'permission_required'): EngagementReadAvailability<CommentPage> {
   return {
     status,
     provider: 'OFFICIAL_API',
@@ -83,10 +72,8 @@ describe('explicit-thread unanswered comment inbox', () => {
   it('keeps only comments without a direct authenticated-member reply', async () => {
     const self = 'urn:li:person:member-123';
     const customer = 'urn:li:person:customer-456';
-    const childByOther =
-      'urn:li:comment:(urn:li:activity:7067167295080394752,1101)';
-    const nestedSelf =
-      'urn:li:comment:(urn:li:activity:7067167295080394752,1102)';
+    const childByOther = 'urn:li:comment:(urn:li:activity:7067167295080394752,1101)';
+    const nestedSelf = 'urn:li:comment:(urn:li:activity:7067167295080394752,1102)';
 
     const listComments: CommentInboxListComments = ({ targetUrn }) => {
       if (targetUrn === threadA) {
@@ -106,8 +93,7 @@ describe('explicit-thread unanswered comment inbox', () => {
         );
       }
       if (targetUrn === firstComment) {
-        const selfReply =
-          'urn:li:comment:(urn:li:activity:7067167295080394752,1003)';
+        const selfReply = 'urn:li:comment:(urn:li:activity:7067167295080394752,1003)';
         return Promise.resolve(
           available(
             page([
@@ -177,12 +163,8 @@ describe('explicit-thread unanswered comment inbox', () => {
   );
 
   it('rejects invalid explicit-root inputs before provider reads', async () => {
-    const listComments: CommentInboxListComments = () =>
-      Promise.resolve(available(page([])));
-    const tooMany = Array.from(
-      { length: 21 },
-      (_, index) => `urn:li:activity:${1000 + index}`,
-    );
+    const listComments: CommentInboxListComments = () => Promise.resolve(available(page([])));
+    const tooMany = Array.from({ length: 21 }, (_, index) => `urn:li:activity:${1000 + index}`);
 
     await expect(
       deriveUnansweredCommentInbox(
@@ -233,11 +215,7 @@ describe('explicit-thread unanswered comment inbox', () => {
       start: number;
       count: number;
     }> = [];
-    const listComments: CommentInboxListComments = ({
-      targetUrn,
-      start,
-      count,
-    }) => {
+    const listComments: CommentInboxListComments = ({ targetUrn, start, count }) => {
       calls.push({ targetUrn, start, count });
       if (targetUrn === threadA && start === 0) {
         const item = comment('1002', secondComment, customer, threadA, {
