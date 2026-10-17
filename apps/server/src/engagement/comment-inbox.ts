@@ -47,9 +47,7 @@ export interface UnansweredCommentInboxItem {
   replyTargetUrn: string;
 }
 
-export type UnansweredCommentInboxResult = EngagementReadAvailability<
-  readonly UnansweredCommentInboxItem[]
->;
+export type UnansweredCommentInboxResult = EngagementReadAvailability<readonly UnansweredCommentInboxItem[]>;
 
 interface CommentInboxDeps {
   listComments: CommentInboxListComments;
