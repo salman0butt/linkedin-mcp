@@ -2,10 +2,13 @@ import { createHash } from 'node:crypto';
 
 import {
   createReplyPreview,
+  createReactionPreview,
   matchesReplyIdentity,
   type CanonicalComment,
   type ReplyDraft,
   type ReplyPreview,
+  type ReactionDraft,
+  type ReactionPreview,
 } from '../../../../packages/core/dist/index.js';
 import { AuthServiceError, type AuthService } from '../auth/auth-service.js';
 import {
@@ -23,6 +26,11 @@ import {
   type CreateReplyInput as LinkedInCreateReplyInput,
   type LinkedInCommentsClient,
 } from './linkedin-comments.js';
+import {
+  LinkedInReactionsError,
+  type CanonicalReaction,
+  type LinkedInReactionsClient,
+} from './linkedin-reactions.js';
 
 export type EngagementServiceErrorKind =
   | 'invalid_payload'
@@ -69,7 +77,39 @@ export interface ReplyPublishResult {
   replay: boolean;
 }
 
+export type ReactionAddDraft = Omit<Extract<ReactionDraft, { operation: 'add' }>, 'operation'>;
+export type ReactionRemoveDraft = Omit<Extract<ReactionDraft, { operation: 'remove' }>, 'operation'>;
+
+export interface ReactionMutationInput<TDraft> {
+  draft: TDraft;
+  payloadHash: string;
+  approvalReceiptId: string;
+  idempotencyKey: string;
+}
+
+export interface ReactionAddResult {
+  state: 'succeeded';
+  provider: 'OFFICIAL_API';
+  targetUrn: string;
+  reactionUrn: string;
+  reactionType: string;
+  replay: boolean;
+}
+
+export interface ReactionRemoveResult {
+  state: 'succeeded';
+  provider: 'OFFICIAL_API';
+  targetUrn: string;
+  replay: boolean;
+}
+
 export interface EngagementService {
+  previewReactionAdd(draft: ReactionAddDraft): ReactionPreview;
+  previewReactionRemove(draft: ReactionRemoveDraft): ReactionPreview;
+  approveReactionAdd(input: ApproveReplyInput): Promise<ApprovalReceipt>;
+  approveReactionRemove(input: ApproveReplyInput): Promise<ApprovalReceipt>;
+  addReaction(input: ReactionMutationInput<ReactionAddDraft>): Promise<ReactionAddResult>;
+  removeReaction(input: ReactionMutationInput<ReactionRemoveDraft>): Promise<ReactionRemoveResult>;
   previewReply(draft: ReplyDraft): ReplyPreview;
   approveReply(input: ApproveReplyInput): Promise<ApprovalReceipt>;
   createReply(input: CreateReplyInput): Promise<ReplyPublishResult>;
@@ -83,6 +123,7 @@ interface EngagementServiceDeps {
   approvals: ApprovalService;
   ledger: IdempotencyLedger;
   comments: CommentsWriter;
+  reactions?: Pick<LinkedInReactionsClient, 'addReaction' | 'removeReaction'>;
 }
 
 interface ProviderContext {
@@ -282,8 +323,277 @@ function validateProviderReply(
   return { commentId: reply.id, commentUrn: reply.commentUrn };
 }
 
+function previewReactionFor(
+  draft: ReactionAddDraft | ReactionRemoveDraft,
+  operation: 'add' | 'remove',
+): ReactionPreview {
+  try {
+    if (draft === null || typeof draft !== 'object' || Array.isArray(draft)) {
+      throw new Error('Invalid reaction draft');
+    }
+    return createReactionPreview({ ...draft, operation } as ReactionDraft);
+  } catch {
+    throw new EngagementServiceError('invalid_payload');
+  }
+}
+
+async function approveReactionFor(
+  deps: EngagementServiceDeps,
+  input: ApproveReplyInput,
+): Promise<ApprovalReceipt> {
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) {
+    throw new EngagementServiceError('invalid_payload');
+  }
+  assertPayloadHash(input.payloadHash);
+  const context = await providerContext(deps);
+  try {
+    return deps.approvals.issue({ payloadHash: input.payloadHash, subject: context.subject });
+  } catch {
+    throw new EngagementServiceError('storage_failure');
+  }
+}
+
+function expectedReactionUrn(actorUrn: string, targetUrn: string): string {
+  return `urn:li:reaction:(${actorUrn},${targetUrn})`;
+}
+
+function validateReactionSuccess(
+  reaction: CanonicalReaction,
+  actorUrn: string,
+  preview: ReactionPreview,
+): string {
+  if (preview.payload.operation !== 'add') throw new EngagementServiceError('outcome_unknown');
+  const expected = expectedReactionUrn(actorUrn, preview.payload.targetUrn);
+  if (
+    reaction === null ||
+    typeof reaction !== 'object' ||
+    reaction.id !== expected ||
+    reaction.actorUrn !== actorUrn ||
+    reaction.rootUrn !== preview.payload.targetUrn ||
+    reaction.reactionType !== preview.payload.reactionType ||
+    typeof reaction.createdAt !== 'string' ||
+    !Number.isFinite(Date.parse(reaction.createdAt)) ||
+    typeof reaction.lastModifiedAt !== 'string' ||
+    !Number.isFinite(Date.parse(reaction.lastModifiedAt))
+  ) {
+    throw new EngagementServiceError('outcome_unknown');
+  }
+  return expected;
+}
+
+function replayReactionResult(
+  record: MutationRecord,
+  operation: 'add' | 'remove',
+  actorUrn: string,
+  preview: ReactionPreview,
+): ReactionAddResult | ReactionRemoveResult {
+  if (operation === 'add' && preview.payload.operation === 'add') {
+    const expected = expectedReactionUrn(actorUrn, preview.payload.targetUrn);
+    if (
+      record.result?.resourceUrn !== expected ||
+      record.result.resourceId !== preview.payload.reactionType
+    ) {
+      throw new EngagementServiceError('outcome_unknown');
+    }
+    return {
+      state: 'succeeded',
+      provider: 'OFFICIAL_API',
+      targetUrn: preview.payload.targetUrn,
+      reactionUrn: expected,
+      reactionType: preview.payload.reactionType,
+      replay: true,
+    };
+  }
+  if (operation === 'remove' && preview.payload.operation === 'remove') {
+    if (record.result?.resourceUrn !== preview.payload.targetUrn || record.result.resourceId !== 'removed') {
+      throw new EngagementServiceError('outcome_unknown');
+    }
+    return {
+      state: 'succeeded',
+      provider: 'OFFICIAL_API',
+      targetUrn: preview.payload.targetUrn,
+      replay: true,
+    };
+  }
+  throw new EngagementServiceError('outcome_unknown');
+}
+
+async function runReaction(
+  deps: EngagementServiceDeps,
+  operation: 'add',
+  input: ReactionMutationInput<ReactionAddDraft>,
+): Promise<ReactionAddResult>;
+async function runReaction(
+  deps: EngagementServiceDeps,
+  operation: 'remove',
+  input: ReactionMutationInput<ReactionRemoveDraft>,
+): Promise<ReactionRemoveResult>;
+async function runReaction(
+  deps: EngagementServiceDeps,
+  operation: 'add' | 'remove',
+  input: ReactionMutationInput<ReactionAddDraft | ReactionRemoveDraft>,
+): Promise<ReactionAddResult | ReactionRemoveResult> {
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) {
+    throw new EngagementServiceError('invalid_payload');
+  }
+  assertPayloadHash(input.payloadHash);
+  assertNonEmpty(input.approvalReceiptId);
+  assertNonEmpty(input.idempotencyKey);
+  const preview = previewReactionFor(input.draft, operation);
+  if (preview.payloadHash !== input.payloadHash) {
+    throw new EngagementServiceError('approval_mismatch');
+  }
+  if (deps.reactions === undefined) throw new EngagementServiceError('storage_failure');
+
+  return serializeByLedger(deps.ledger, async () => {
+    const context = await providerContext(deps);
+    let approval;
+    try {
+      approval = deps.approvals.consume({
+        receiptId: input.approvalReceiptId,
+        payloadHash: preview.payloadHash,
+        subject: context.subject,
+        idempotencyKey: input.idempotencyKey,
+      });
+    } catch (error: unknown) {
+      throw errorForApproval(error);
+    }
+
+    const actorUrn = `urn:li:person:${context.subject}`;
+    const mutationHash = createHash('sha256')
+      .update(
+        JSON.stringify({ operation: `reactions.${operation}`, actor: actorUrn, payload: preview.payload }),
+      )
+      .digest('hex');
+    let reservation;
+    try {
+      reservation = await deps.ledger.reserve({
+        idempotencyKey: input.idempotencyKey,
+        payloadHash: mutationHash,
+      });
+    } catch (error: unknown) {
+      throw errorForLedger(error);
+    }
+    if (reservation.status === 'replay') {
+      const record = reservation.record;
+      if (record.state === 'succeeded') {
+        return replayReactionResult(record, operation, actorUrn, preview);
+      }
+      if (record.state === 'failed_terminal') throw errorForTerminal(record);
+      throw new EngagementServiceError('outcome_unknown');
+    }
+    if (approval.status !== 'initiated') {
+      return completeFailure(
+        deps,
+        input.idempotencyKey,
+        mutationHash,
+        'failed_terminal',
+        'approval_consumed',
+      );
+    }
+
+    try {
+      if (operation === 'add' && preview.payload.operation === 'add') {
+        const reaction = await deps.reactions!.addReaction({
+          accessToken: context.accessToken,
+          actorUrn,
+          targetUrn: preview.payload.targetUrn,
+          reactionType: preview.payload.reactionType,
+        });
+        const reactionUrn = validateReactionSuccess(reaction, actorUrn, preview);
+        const completed = await deps.ledger.complete({
+          idempotencyKey: input.idempotencyKey,
+          payloadHash: mutationHash,
+          state: 'succeeded',
+          result: { resourceUrn: reactionUrn, resourceId: preview.payload.reactionType },
+        });
+        if (completed.state !== 'succeeded') throw new EngagementServiceError('outcome_unknown');
+        return {
+          state: 'succeeded',
+          provider: 'OFFICIAL_API',
+          targetUrn: preview.payload.targetUrn,
+          reactionUrn,
+          reactionType: preview.payload.reactionType,
+          replay: false,
+        } as const;
+      }
+      if (operation === 'remove' && preview.payload.operation === 'remove') {
+        await deps.reactions!.removeReaction({
+          accessToken: context.accessToken,
+          actorUrn,
+          targetUrn: preview.payload.targetUrn,
+        });
+        const completed = await deps.ledger.complete({
+          idempotencyKey: input.idempotencyKey,
+          payloadHash: mutationHash,
+          state: 'succeeded',
+          result: { resourceUrn: preview.payload.targetUrn, resourceId: 'removed' },
+        });
+        if (completed.state !== 'succeeded') throw new EngagementServiceError('outcome_unknown');
+        return {
+          state: 'succeeded',
+          provider: 'OFFICIAL_API',
+          targetUrn: preview.payload.targetUrn,
+          replay: false,
+        } as const;
+      }
+    } catch (error: unknown) {
+      if (error instanceof LinkedInReactionsError) {
+        if (error.kind === 'reauthentication_required') {
+          await bestEffortReauth(deps, context);
+          return completeFailure(
+            deps,
+            input.idempotencyKey,
+            mutationHash,
+            'failed_terminal',
+            'reauth_required',
+          );
+        }
+        if (error.kind === 'permission_required') {
+          return completeFailure(
+            deps,
+            input.idempotencyKey,
+            mutationHash,
+            'failed_terminal',
+            'permission_required',
+          );
+        }
+        if (error.kind === 'rate_limited') {
+          return completeFailure(deps, input.idempotencyKey, mutationHash, 'failed_terminal', 'rate_limited');
+        }
+      }
+      return completeFailure(
+        deps,
+        input.idempotencyKey,
+        mutationHash,
+        'outcome_unknown',
+        'reaction_outcome_unknown',
+      );
+    }
+    throw new EngagementServiceError('outcome_unknown');
+  });
+}
+
 export function createEngagementService(deps: EngagementServiceDeps): EngagementService {
   return {
+    previewReactionAdd(draft) {
+      return previewReactionFor(draft, 'add');
+    },
+    previewReactionRemove(draft) {
+      return previewReactionFor(draft, 'remove');
+    },
+    approveReactionAdd(input) {
+      return approveReactionFor(deps, input);
+    },
+    approveReactionRemove(input) {
+      return approveReactionFor(deps, input);
+    },
+    addReaction(input) {
+      return runReaction(deps, 'add', input);
+    },
+    removeReaction(input) {
+      return runReaction(deps, 'remove', input);
+    },
     previewReply(draft) {
       return previewFor(draft);
     },
