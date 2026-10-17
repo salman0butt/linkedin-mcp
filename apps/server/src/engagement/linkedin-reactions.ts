@@ -75,19 +75,11 @@ function validateVersion(version: string): void {
   }
 }
 
-function validateInput(
-  input: RemoveReactionInput,
-): { actorUrn: string; targetUrn: CommentTarget } {
-  if (
-    typeof input.accessToken !== 'string' ||
-    input.accessToken.trim() === ''
-  ) {
+function validateInput(input: RemoveReactionInput): { actorUrn: string; targetUrn: CommentTarget } {
+  if (typeof input.accessToken !== 'string' || input.accessToken.trim() === '') {
     throw new Error('LinkedIn access token is required');
   }
-  if (
-    typeof input.actorUrn !== 'string' ||
-    !ACTOR_PATTERN.test(input.actorUrn)
-  ) {
+  if (typeof input.actorUrn !== 'string' || !ACTOR_PATTERN.test(input.actorUrn)) {
     throw new Error('LinkedIn reaction actor must be a member person URN');
   }
   let targetUrn: CommentTarget;
@@ -106,10 +98,7 @@ function validateReactionType(value: unknown): ReactionType {
   return value as ReactionType;
 }
 
-function headers(
-  accessToken: string,
-  apiVersion: string,
-): Record<string, string> {
+function headers(accessToken: string, apiVersion: string): Record<string, string> {
   return {
     authorization: `Bearer ${accessToken}`,
     'linkedin-version': apiVersion,
@@ -118,8 +107,7 @@ function headers(
 }
 
 function classifyError(status: number): LinkedInReactionsError {
-  if (status === 401)
-    return new LinkedInReactionsError('reauthentication_required');
+  if (status === 401) return new LinkedInReactionsError('reauthentication_required');
   if (status === 403) return new LinkedInReactionsError('permission_required');
   if (status === 429) return new LinkedInReactionsError('rate_limited');
   return new LinkedInReactionsError('outcome_unknown');
@@ -156,9 +144,7 @@ async function readBoundedSuccess(response: Response): Promise<unknown> {
     offset += chunk.byteLength;
   }
   try {
-    return JSON.parse(
-      new TextDecoder('utf-8', { fatal: true }).decode(bytes),
-    ) as unknown;
+    return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) as unknown;
   } catch {
     throw new LinkedInReactionsError('malformed_success');
   }
@@ -169,23 +155,15 @@ function parseTimestamp(value: unknown, actorUrn: string): string {
     throw new LinkedInReactionsError('malformed_success');
   }
   const data = value as Record<string, unknown>;
-  if (
-    data.actor !== actorUrn ||
-    !Number.isSafeInteger(data.time) ||
-    (data.time as number) < 0
-  ) {
+  if (data.actor !== actorUrn || !Number.isSafeInteger(data.time) || (data.time as number) < 0) {
     throw new LinkedInReactionsError('malformed_success');
   }
   const date = new Date(data.time as number);
-  if (!Number.isFinite(date.getTime()))
-    throw new LinkedInReactionsError('malformed_success');
+  if (!Number.isFinite(date.getTime())) throw new LinkedInReactionsError('malformed_success');
   return date.toISOString();
 }
 
-function parseReaction(
-  value: unknown,
-  input: AddReactionInput,
-): CanonicalReaction {
+function parseReaction(value: unknown, input: AddReactionInput): CanonicalReaction {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new LinkedInReactionsError('malformed_success');
   }
@@ -221,17 +199,14 @@ export function createLinkedInReactionsClient(
       const reactionType = validateReactionType(input.reactionType);
       let response: Response;
       try {
-        response = await fetchImpl(
-          `${ENDPOINT}?actor=${encodeURIComponent(actorUrn)}`,
-          {
-            method: 'POST',
-            headers: {
-              ...headers(input.accessToken, config.apiVersion),
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({ root: targetUrn, reactionType }),
+        response = await fetchImpl(`${ENDPOINT}?actor=${encodeURIComponent(actorUrn)}`, {
+          method: 'POST',
+          headers: {
+            ...headers(input.accessToken, config.apiVersion),
+            'content-type': 'application/json',
           },
-        );
+          body: JSON.stringify({ root: targetUrn, reactionType }),
+        });
       } catch {
         throw new LinkedInReactionsError('outcome_unknown');
       }
