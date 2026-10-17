@@ -4,12 +4,20 @@ Last reconciled: 2026-10-17. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
-M04 — Comments & Engagement — **ACTIVE, M04.6 strict MCP/stdio/HTTP integration**.
+M04 — Comments & Engagement — **ACTIVE, M04.7 whole-milestone review and closeout**.
 
 Active branch: `feat/m04-comments-engagement`. Draft PR #6 remains the milestone integration boundary.
 Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
 Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`.
 Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
+
+## M04.6 Strict MCP/Transport Integration — GREEN
+
+Behavioral RED: `656d1b819358ffa9feaa403646d35d4365a4e2c6`, CI `39038187921`: 524 existing tests passed, nine engagement MCP contract tests failed because the twelve engagement tools were not registered.
+
+Latest exact-head GREEN: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153`: **539/539 tests across 59 files**, frozen install, format, lint, typecheck and build passed. The twelve strict engagement tools are registered in the shared runtime, and real stdio/loopback HTTP transport smoke suites pass with 28 tools. Restricted reads preserve disabled/permission-required states, and provider read rate-limit errors remain explicit and sanitized. Live Community Management entitlement is still unverified.
+
+M04.7 whole-milestone skeptical/security/provenance review, documentation reconciliation, exact-final-head CI and merge/post-merge verification remain pending.
 
 ## Latest Verified Checkpoint
 
@@ -57,4 +65,4 @@ Live Community Management entitlement remains an external verification gate; it 
 
 ## Handoff
 
-Exact next work: **Write M04.6 strict MCP/stdio/HTTP engagement integration behavioral RED tests for tool discovery, strict schemas, structured access/provenance states and rejection of actor/token/read-gate/admin overrides; verify intended RED before implementation.**
+Exact next work: **Perform M04.7 whole-branch skeptical correctness/security/provenance review, then regression-fix any Critical/Important findings before final merge gates.**

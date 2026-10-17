@@ -1,8 +1,8 @@
 # Current Milestone
 
 Milestone: M04 — Comments & Engagement
-Status: ACTIVE — M04.6 strict MCP/stdio/HTTP integration
-Iteration: M04.6
+Status: ACTIVE — M04.7 whole-milestone review and closeout
+Iteration: M04.7
 Branch: `feat/m04-comments-engagement`
 PR: #6 — draft
 Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`
@@ -25,4 +25,8 @@ M04.5 explicit-thread unanswered inbox RED: `8d9f74ce00b55de1c9b5bfd2808ff541c6e
 
 M04 provider access remains entitlement-sensitive: member writes use `w_member_social_feed`; member reads use restricted `r_member_social_feed`; Community Management is vetted and Development tier disallows BATCH_GET. Deterministic CI does not represent live entitlement as verified.
 
-Exact next work: **Write M04.6 strict MCP/stdio/HTTP engagement integration behavioral RED tests for tool discovery, strict schemas, structured access/provenance states and rejection of actor/token/read-gate/admin overrides; verify intended RED before implementation.**
+M04.6 behavioral RED: `656d1b819358ffa9feaa403646d35d4365a4e2c6`, CI `39038187921` — 524 existing tests passed, nine new MCP contract failures.
+
+M04.6 GREEN: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153` — 539/539 tests across 59 files, frozen install, format, lint, typecheck and build. Twelve engagement MCP tools and real stdio/HTTP smoke integration verified. No live Community Management entitlement claimed.
+
+Exact next work: **Perform M04.7 whole-branch skeptical correctness/security/provenance review, then regression-fix any Critical/Important findings before final merge gates.**

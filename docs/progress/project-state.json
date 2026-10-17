@@ -1,20 +1,19 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M04",
-  "currentIteration": "M04.6",
+  "currentIteration": "M04.7",
   "status": "ACTIVE",
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "788a252f6ec9e285df0420869af6e39ca728975b",
-  "ciStatus": "RED_HEAD_656d1b819358ffa9feaa403646d35d4365a4e2c6_RUN_39038187921_524_PASS_9_FAIL_ENGAGEMENT_MCP_TOOLS_NOT_REGISTERED",
+  "latestVerifiedSha": "79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148",
+  "ciStatus": "GREEN_RUN_39058125153_539_TESTS_59_FILES_FROZEN_INSTALL_FORMAT_LINT_TYPECHECK_BUILD_PASS",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M04.6 exact-head behavioral RED is confirmed: 9 engagement MCP contract failures because 12 tools are not registered; 524 existing tests pass.",
-    "Connected GitHub source-file creation was denied by OpenAI safety checks; do not bypass the control.",
-    "Live LinkedIn Community Management entitlement remains unverified."
+    "M04.7 whole-milestone skeptical correctness/security/provenance review and final merge gates remain pending.",
+    "Live LinkedIn Community Management entitlement remains unverified; deterministic CI is not live access evidence."
   ],
-  "exactNextWork": "Persist the strict M04.6 engagement MCP tool registration and authenticated runtime wiring on the existing milestone branch through an authorized repository-write path, then verify focused tests and exact-head CI.",
-  "activeHeadSha": "656d1b819358ffa9feaa403646d35d4365a4e2c6"
+  "exactNextWork": "Perform M04.7 whole-branch skeptical correctness/security/provenance review, then regression-fix any Critical/Important findings before final merge gates.",
+  "activeHeadSha": "79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148"
 }

@@ -1,6 +1,6 @@
 # M04 — Comments & Engagement
 
-Status: **ACTIVE — M04.6 strict MCP/stdio/HTTP integration**
+Status: **ACTIVE — M04.7 whole-milestone review and closeout**
 
 ## Goal
 
@@ -36,8 +36,8 @@ Organization engagement, broad feed discovery, BATCH_GET, comment edit/delete/im
 3. **GREEN** — M04.3 approval/idempotency-gated nested reply flow.
 4. **GREEN** — M04.4 reaction add/remove flow, including post-checkpoint approval-purpose isolation repair.
 5. **GREEN** — M04.5 explicit-thread unanswered inbox/context derivation.
-6. **ACTIVE** — M04.6 strict MCP/stdio/HTTP integration.
-7. **PLANNED** — M04.7 whole-milestone review, exact-head CI, merge and post-merge verification.
+6. **GREEN** — M04.6 strict MCP/stdio/HTTP integration.
+7. **ACTIVE** — M04.7 whole-milestone review, exact-head CI, merge and post-merge verification.
 
 ## TDD Evidence
 
@@ -53,9 +53,11 @@ A later fresh security review found one Important shared approval-purpose isolat
 
 M04.5 clean behavioral RED: `8d9f74ce00b55de1c9b5bfd2808ff541c6e15528`, CI `39037076502` — 517 executable tests passed and only `comment-inbox.test.ts` failed because `comment-inbox.ts` was absent. GREEN: `788a252f6ec9e285df0420869af6e39ca728975b`, CI `39037380577` — **524/524 tests across 57 files** plus frozen install, format, lint, typecheck and build.
 
+M04.6 behavioral RED: `656d1b819358ffa9feaa403646d35d4365a4e2c6`, CI `39038187921` — 524 existing tests passed, nine new engagement MCP contract failures due to missing tool registrations. Final implementation GREEN: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153` — **539/539 tests across 59 files**, frozen install, format, lint, typecheck and build.
+
 ## Integration Test Evidence
 
-M04.1–M04.5 use deterministic injected-provider/local derivation tests; no live LinkedIn Community Management request has been performed. Existing real stdio/HTTP MCP smoke suites remain green, but engagement-specific MCP/transport integration is M04.6 work.
+M04.1–M04.5 use deterministic injected-provider/local derivation tests; no live LinkedIn Community Management request has been performed. M04.6 registers all twelve engagement MCP tools with strict schemas and authenticated runtime wiring. Real stdio/HTTP smoke suites verify 28 tools. Read disabled/permission-required states and sanitized Comments rate-limit taxonomy are exercised. No live LinkedIn Community Management request has been performed.
 
 ## Security Review
 
@@ -91,7 +93,7 @@ M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 
 
 M04.3 exact source head: `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`: 483/483 tests across 53 files plus all quality gates.
 
-Latest verified source head: `788a252f6ec9e285df0420869af6e39ca728975b`, CI `39037380577`: 524/524 tests across 57 files plus frozen install, format, lint, typecheck and build.
+Latest verified source head: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153`: 539/539 tests across 59 files plus frozen install, format, lint, typecheck and build.
 
 ## Durable Recovery Sources
 
@@ -103,4 +105,4 @@ Latest verified source head: `788a252f6ec9e285df0420869af6e39ca728975b`, CI `390
 - [ ] Overall M04 Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Write M04.6 strict MCP/stdio/HTTP engagement integration behavioral RED tests for tool discovery, strict schemas, structured access/provenance states and rejection of actor/token/read-gate/admin overrides; verify intended RED before implementation.**
+Exact next work: **Perform M04.7 whole-branch skeptical correctness/security/provenance review, then regression-fix any Critical/Important findings before final merge gates.**
