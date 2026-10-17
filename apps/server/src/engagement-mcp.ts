@@ -3,6 +3,7 @@ import * as z from 'zod/v4';
 
 import type { EngagementReadAvailability } from '../../../packages/core/dist/index.js';
 import type { EngagementReadService } from './engagement/engagement-read-service.js';
+import { LinkedInCommentsError } from './engagement/linkedin-comments.js';
 import { EngagementServiceError, type EngagementService } from './engagement/engagement-service.js';
 
 export interface EngagementTools {
@@ -192,6 +193,30 @@ function mapFailure(error: unknown, deps: RegisterEngagementToolsDeps, provider:
       case 'storage_failure':
         status = 'failed';
         message = 'Local engagement state could not be persisted.';
+        break;
+    }
+  } else if (error instanceof LinkedInCommentsError) {
+    code = error.kind;
+    switch (error.kind) {
+      case 'reauthentication_required':
+      case 'permission_required':
+        status = 'permission_required';
+        message = 'LinkedIn member authorization is required.';
+        break;
+      case 'rate_limited':
+        status = 'rate_limited';
+        message = 'LinkedIn rate limits prevented this operation.';
+        break;
+      case 'not_found':
+        status = 'failed';
+        message = 'The requested LinkedIn comment was not found.';
+        break;
+      case 'provider_failure':
+      case 'malformed_response':
+      case 'malformed_success':
+      case 'outcome_unknown':
+        status = 'failed';
+        message = 'LinkedIn engagement operation did not complete.';
         break;
     }
   }
