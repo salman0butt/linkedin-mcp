@@ -6,14 +6,14 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "4fe05db4eb4a840dc003280caffa6f641281b546",
-  "ciStatus": "RED_HEAD_4fe05db4eb4a840dc003280caffa6f641281b546_RUN_38983027320_483_PASS_2_REACTION_IMPORT_SUITES_FAIL",
+  "latestVerifiedSha": "611f5579ce38f42df83d92eda07b75d299bc9c3e",
+  "ciStatus": "RED_HEAD_611f5579ce38f42df83d92eda07b75d299bc9c3e_RUN_38988388257_483_PASS_2_REACTION_IMPORT_SUITES_FAIL",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "Exact-head CI 38983027320 on 4fe05db4: format passed, 483 tests passed across 53 files, two reaction suites fail to import missing apps/server/src/engagement/linkedin-reactions.ts; lint/typecheck/build skipped.",
-    "2026-10-17 source creation via GitHub connector rejected by OpenAI safety checks; no production reactions adapter was persisted. Local development tunnel and Superpowers skills unavailable. M04.4 scoped review and GREEN verification remain pending.",
-    "Live LinkedIn Community Management scope/product entitlement unverified; no live reaction capability claimed."
+    "Exact-head CI 38988388257 on 611f5579: frozen install and format passed, 483 tests passed across 53 files, two reaction suites cannot import missing apps/server/src/engagement/linkedin-reactions.ts; lint/typecheck/build skipped.",
+    "2026-10-17 GitHub connector create_file for the prepared reactions adapter was rejected by OpenAI safety checks. No adapter or reaction service source has been persisted. The existing service also lacks the six reaction preview/approval/mutation operations; M04.4 GREEN and scoped security review are pending.",
+    "Live LinkedIn Community Management product and w_member_social_feed scope entitlement remain unverified; no live reaction capability claimed."
   ],
-  "exactNextWork": "Persist the already RED-tested M04.4 Reactions adapter through a permitted repository source-write action on feat/m04-comments-engagement, then run exact-head CI."
+  "exactNextWork": "Persist the M04.4 Reactions adapter and six approval/idempotency service operations on the existing feature branch through an authorized write action; verify exact-head CI."
 }
