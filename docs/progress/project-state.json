@@ -7,13 +7,14 @@
   "activePr": 6,
   "baseBranch": "main",
   "latestVerifiedSha": "79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148",
-  "ciStatus": "GREEN_RUN_39058125153_539_TESTS_59_FILES_FROZEN_INSTALL_FORMAT_LINT_TYPECHECK_BUILD_PASS",
+  "ciStatus": "GREEN_SOURCE_79bd4bf_RUN_39058125153_539_TESTS_59_FILES_ALL_GATES; DOCS_HEAD_6291707_CI_RUN_39059378716_IN_PROGRESS",
   "criticalFindings": 0,
-  "importantFindings": 0,
+  "importantFindings": 1,
   "blockers": [
-    "M04.7 whole-milestone skeptical correctness/security/provenance review and final merge gates remain pending.",
-    "Live LinkedIn Community Management entitlement remains unverified; deterministic CI is not live access evidence."
+    "M04.7 Important review finding: Comments getComment does not validate returned id against requested commentId, and parsed comment id is not bound to the numeric id embedded in commentUrn. Behavioral RED has not been verified.",
+    "The attempted regression-test GitHub write was rejected by OpenAI safety checks; do not bypass this control.",
+    "Live LinkedIn Community Management entitlement remains unverified."
   ],
-  "exactNextWork": "Perform M04.7 whole-branch skeptical correctness/security/provenance review, then regression-fix any Critical/Important findings before final merge gates.",
-  "activeHeadSha": "79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148"
+  "exactNextWork": "Add Comments read identity-integrity regression tests on the existing M04 branch through an authorized write path, verify intended behavioral RED, then implement fail-closed validation.",
+  "activeHeadSha": "62917070076325c37f0fefece82861b2479d0150"
 }
