@@ -48,6 +48,7 @@ export interface UnansweredCommentInboxItem {
 }
 
 export type UnansweredCommentInboxResult = EngagementReadAvailability<readonly UnansweredCommentInboxItem[]>;
+type UnavailableReadResult = Exclude<EngagementReadAvailability<unknown>, { status: 'available' }>;
 
 interface CommentInboxDeps {
   listComments: CommentInboxListComments;
@@ -79,7 +80,7 @@ function validateInput(input: CommentInboxInput): void {
 
 function unavailableResult(
   result: Exclude<EngagementReadAvailability<CommentPage>, { status: 'available' }>,
-): UnansweredCommentInboxResult {
+): UnavailableReadResult {
   return {
     status: result.status,
     provider: 'OFFICIAL_API',
