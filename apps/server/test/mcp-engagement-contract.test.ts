@@ -24,7 +24,11 @@ const replyPreview = {
   warnings: [] as const,
 };
 const reactionAddPreview = {
-  payload: { operation: 'add' as const, targetUrn: threadUrn, reactionType: 'LIKE' as const },
+  payload: {
+    operation: 'add' as const,
+    targetUrn: threadUrn,
+    reactionType: 'LIKE' as const,
+  },
   canonicalJson: '{}',
   payloadHash: 'b'.repeat(64),
   provider: 'OFFICIAL_API' as const,
@@ -130,12 +134,40 @@ function engagement(overrides: Record<string, unknown> = {}) {
     approveReactionRemove: vi.fn(),
     removeReaction: vi.fn(),
   };
+
   return {
     deps: { engagement: { reads, writes }, ...overrides },
     reads,
     writes,
   };
 }
+
+const privilegedCases = [
+  {
+    tool: 'linkedin.comments.get',
+    args: { targetUrn: threadUrn, commentId: '1001' },
+    field: 'accessToken',
+    value: 'secret',
+  },
+  {
+    tool: 'linkedin.comments.inbox',
+    args: { threadUrns: [threadUrn] },
+    field: 'engagementReadEnabled',
+    value: true,
+  },
+  {
+    tool: 'linkedin.comments.reply.preview',
+    args: replyDraft,
+    field: 'actorUrn',
+    value: 'urn:li:person:attacker',
+  },
+  {
+    tool: 'linkedin.reactions.add.preview',
+    args: { targetUrn: threadUrn, reactionType: 'LIKE' },
+    field: 'providerUrl',
+    value: 'https://attacker.invalid',
+  },
+] as const;
 
 describe('M04 engagement MCP contract', () => {
   it('advertises all engagement tools before live Community Management availability is proven', async () => {
@@ -146,28 +178,23 @@ describe('M04 engagement MCP contract', () => {
     expect(names).toEqual(expect.arrayContaining([...engagementToolNames]));
   });
 
-  it.each([
-    ['linkedin.comments.get', { targetUrn: threadUrn, commentId: '1001' }, 'accessToken', 'secret'],
-    ['linkedin.comments.inbox', { threadUrns: [threadUrn] }, 'engagementReadEnabled', true],
-    ['linkedin.comments.reply.preview', replyDraft, 'actorUrn', 'urn:li:person:attacker'],
-    [
-      'linkedin.reactions.add.preview',
-      { targetUrn: threadUrn, reactionType: 'LIKE' },
-      'providerUrl',
-      'https://attacker.invalid',
-    ],
-  ] as const)('rejects privileged field %s/%s before engagement execution', async (tool, args, field, value) => {
-    const fixture = engagement();
-    const client = await connect(fixture.deps);
-    const result = await client.callTool({ name: tool, arguments: { ...args, [field]: value } });
+  for (const testCase of privilegedCases) {
+    it(`rejects privileged field ${testCase.field} before engagement execution`, async () => {
+      const fixture = engagement();
+      const client = await connect(fixture.deps);
+      const result = await client.callTool({
+        name: testCase.tool,
+        arguments: { ...testCase.args, [testCase.field]: testCase.value },
+      });
 
-    expect(result.isError).toBe(true);
-    expect(JSON.stringify(result.content)).toMatch(/input validation error|unrecognized key/i);
-    expect(fixture.reads.getComment).not.toHaveBeenCalled();
-    expect(fixture.reads.inbox).not.toHaveBeenCalled();
-    expect(fixture.writes.previewReply).not.toHaveBeenCalled();
-    expect(fixture.writes.previewReactionAdd).not.toHaveBeenCalled();
-  });
+      expect(result.isError).toBe(true);
+      expect(JSON.stringify(result.content)).toMatch(/input validation error|unrecognized key/i);
+      expect(fixture.reads.getComment).not.toHaveBeenCalled();
+      expect(fixture.reads.inbox).not.toHaveBeenCalled();
+      expect(fixture.writes.previewReply).not.toHaveBeenCalled();
+      expect(fixture.writes.previewReactionAdd).not.toHaveBeenCalled();
+    });
+  }
 
   it('preserves an explicit disabled restricted-read state instead of returning empty comment data', async () => {
     const fixture = engagement();
@@ -196,7 +223,10 @@ describe('M04 engagement MCP contract', () => {
   it('previews a reply locally without exposing actor, token, or provider controls', async () => {
     const fixture = engagement();
     const client = await connect(fixture.deps);
-    const result = await client.callTool({ name: 'linkedin.comments.reply.preview', arguments: replyDraft });
+    const result = await client.callTool({
+      name: 'linkedin.comments.reply.preview',
+      arguments: replyDraft,
+    });
 
     expect(result.isError).not.toBe(true);
     expect(result.structuredContent).toMatchObject({
@@ -229,7 +259,10 @@ describe('M04 engagement MCP contract', () => {
       approvalReceiptId: 'reaction-add-receipt-private',
       idempotencyKey: 'reaction-add-idempotency-private',
     };
-    const result = await client.callTool({ name: 'linkedin.reactions.add', arguments: argumentsValue });
+    const result = await client.callTool({
+      name: 'linkedin.reactions.add',
+      arguments: argumentsValue,
+    });
 
     expect(result.isError).not.toBe(true);
     expect(result.structuredContent).toMatchObject({
