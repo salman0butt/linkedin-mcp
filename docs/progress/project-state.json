@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "2b517ab91be96c3546ea5e89488932f08a2b31ec",
-  "ciStatus": "GREEN_HEAD_2b517ab91be96c3546ea5e89488932f08a2b31ec_RUN_39059444692_ALL_GATES_539_TESTS_59_FILES",
+  "latestVerifiedSha": "ab69eeef955bca8c00521b0bbd0ace6b28adfeb3",
+  "ciStatus": "GREEN_HEAD_ab69eeef955bca8c00521b0bbd0ace6b28adfeb3_RUN_39112967968_ALL_GATES_539_TESTS_59_FILES",
   "criticalFindings": 0,
   "importantFindings": 1,
   "blockers": [
-    "M04.7 Important: Comments getComment does not compare returned id to requested commentId; parseCanonicalComment does not verify the numeric commentUrn id equals returned id. Three RED regression cases prepared but not committed or executed.",
-    "GitHub create_file for regression tests rejected by connector safety boundary on 2026-10-18; do not bypass the control.",
+    "M04.7 Important: Comments getComment does not compare returned id to requested commentId; parseCanonicalComment does not verify numeric composite commentUrn id matches returned id. Three regression cases remain uncommitted and RED unverified.",
+    "GitHub update_file rejected regression test change via OpenAI safety checks on 2026-10-18; no source write or RED test execution occurred. Do not bypass the control.",
     "Live LinkedIn Community Management entitlement remains unverified."
   ],
-  "exactNextWork": "Persist three Comments read identity-integrity regression tests on existing M04 branch through an authorized write path and verify behavioral RED.",
-  "activeHeadSha": "2b517ab91be96c3546ea5e89488932f08a2b31ec"
+  "exactNextWork": "Persist three Comments read identity-integrity regression tests on the existing M04 branch through an authorized write path and verify behavioral RED.",
+  "activeHeadSha": "ab69eeef955bca8c00521b0bbd0ace6b28adfeb3"
 }
