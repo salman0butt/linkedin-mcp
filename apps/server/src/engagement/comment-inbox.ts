@@ -112,7 +112,11 @@ export async function deriveUnansweredCommentInbox(
       if (result.status !== 'available') return unavailableResult(result);
 
       elements.push(...result.value.elements);
-      const nextStart = result.value.paging.nextStart;
+      const nextStart =
+        result.value.paging.nextStart ??
+        (result.value.paging.total === undefined && result.value.elements.length === PAGE_SIZE
+          ? start + PAGE_SIZE
+          : undefined);
       if (nextStart === undefined) {
         return { status: 'available', provider: 'OFFICIAL_API', value: elements };
       }
@@ -134,7 +138,9 @@ export async function deriveUnansweredCommentInbox(
 
     const topLevelByUrn = new Map<string, CanonicalComment>();
     for (const comment of topLevelResult.value) {
-      if (comment.parentCommentUrn === undefined) topLevelByUrn.set(comment.commentUrn, comment);
+      if (comment.parentCommentUrn === undefined && comment.actorUrn !== selfActorUrn) {
+        topLevelByUrn.set(comment.commentUrn, comment);
+      }
     }
 
     for (const comment of topLevelByUrn.values()) {
