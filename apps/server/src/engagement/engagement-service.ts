@@ -251,7 +251,11 @@ function errorForTerminal(record: MutationRecord): EngagementServiceError {
   }
 }
 
-function replayResult(record: MutationRecord, parentCommentUrn: string): ReplyPublishResult {
+function replayResult(
+  record: MutationRecord,
+  parentCommentUrn: string,
+  rootUrn: string,
+): ReplyPublishResult {
   const commentId = record.result?.resourceId;
   const commentUrn = record.result?.resourceUrn;
   if (
@@ -259,7 +263,7 @@ function replayResult(record: MutationRecord, parentCommentUrn: string): ReplyPu
     !/^\d+$/.test(commentId) ||
     typeof commentUrn !== 'string' ||
     !COMMENT_URN_PATTERN.test(commentUrn) ||
-    !matchesReplyIdentity(commentUrn, commentId, parentCommentUrn)
+    !matchesReplyIdentity(commentUrn, commentId, parentCommentUrn, rootUrn)
   ) {
     throw new EngagementServiceError('outcome_unknown');
   }
@@ -317,7 +321,7 @@ function validateProviderReply(
     reply.objectUrn !== expected.objectUrn ||
     reply.parentCommentUrn !== expected.parentCommentUrn ||
     reply.text !== expected.text ||
-    !matchesReplyIdentity(reply.commentUrn, reply.id, expected.parentCommentUrn)
+    !matchesReplyIdentity(reply.commentUrn, reply.id, expected.parentCommentUrn, expected.objectUrn)
   ) {
     throw new EngagementServiceError('outcome_unknown');
   }
@@ -675,7 +679,7 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
         if (reservation.status === 'replay') {
           const record = reservation.record;
           if (record.state === 'succeeded') {
-            return replayResult(record, preview.payload.parentCommentUrn);
+            return replayResult(record, preview.payload.parentCommentUrn, preview.payload.rootUrn);
           }
           if (record.state === 'failed_terminal') throw errorForTerminal(record);
           if (record.state === 'outcome_unknown') throw new EngagementServiceError('outcome_unknown');
