@@ -55,6 +55,8 @@ M04.5 clean behavioral RED: `8d9f74ce00b55de1c9b5bfd2808ff541c6e15528`, CI `3903
 
 M04.6 behavioral RED: `656d1b819358ffa9feaa403646d35d4365a4e2c6`, CI `39038187921` — 524 existing tests passed, nine new engagement MCP contract failures due to missing tool registrations. Final implementation GREEN: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153` — **539/539 tests across 59 files**, frozen install, format, lint, typecheck and build.
 
+M04.7 read identity-integrity finding RED: `d906d730617e8931945478d187bc784c200a622a`, CI `39392445179` — three intended failures detecting requested-ID and composite comment URN mismatches. GREEN: `92a8ca816ca4c300c624360acde0afd6599512bf`, CI `39392843550` — 542/542 tests across 60 files and all quality gates. The scoped Important finding was regression-fixed. Whole-milestone skeptical review, durable traceability and final merge gates remain pending.
+
 ## Integration Test Evidence
 
 M04.1–M04.5 use deterministic injected-provider/local derivation tests; no live LinkedIn Community Management request has been performed. M04.6 registers all twelve engagement MCP tools with strict schemas and authenticated runtime wiring. Real stdio/HTTP smoke suites verify 28 tools. Read disabled/permission-required states and sanitized Comments rate-limit taxonomy are exercised. No live LinkedIn Community Management request has been performed.
