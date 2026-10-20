@@ -7,7 +7,7 @@ import {
 } from '../../../../packages/core/dist/index.js';
 
 const SOCIAL_ACTIONS_ENDPOINT = 'https://api.linkedin.com/rest/socialActions';
-const MAX_PROVIDER_JSON_BYTES = 64 * 1024;
+const MAX_PROVIDER_JSON_BYTES = 256 * 1024;
 const COMMENT_URN_PATTERN = /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
 const ACTOR_URN_PATTERN = /^urn:li:(?:person:[^\s]+|organization:\d+|organizationBrand:\d+)$/;
 const MEMBER_ACTOR_URN_PATTERN = /^urn:li:person:[^\s]+$/;
