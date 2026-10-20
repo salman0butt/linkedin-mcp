@@ -14,7 +14,7 @@ describe('LinkedIn Comments response bounds', () => {
     const oversized = JSON.stringify({
       elements: [],
       paging: { start: 0, count: 10, total: 0 },
-      padding: 'x'.repeat(70 * 1024),
+      padding: 'x'.repeat(270 * 1024),
     });
     const client = createLinkedInCommentsClient(config, {
       fetch: fetchReturning(new Response(oversized, { status: 200 })),
