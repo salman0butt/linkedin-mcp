@@ -1,6 +1,6 @@
 # Project Status
 
-Last reconciled: 2026-10-18. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-20. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
@@ -15,15 +15,9 @@ Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
 
 Behavioral RED: `656d1b819358ffa9feaa403646d35d4365a4e2c6`, CI `39038187921`: 524 existing tests passed, nine engagement MCP contract tests failed because the twelve engagement tools were not registered.
 
-Latest exact-head GREEN: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153`: **539/539 tests across 59 files**, frozen install, format, lint, typecheck and build passed. The twelve strict engagement tools are registered in the shared runtime, and real stdio/loopback HTTP transport smoke suites pass with 28 tools. Restricted reads preserve disabled/permission-required states, and provider read rate-limit errors remain explicit and sanitized. Live Community Management entitlement is still unverified.
+M04.6 exact-head GREEN: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153`: **539/539 tests across 59 files**, frozen install, format, lint, typecheck and build passed. The twelve strict engagement tools are registered in the shared runtime, and real stdio/loopback HTTP transport smoke suites pass with 28 tools. Restricted reads preserve disabled/permission-required states, and provider read rate-limit errors remain explicit and sanitized. Live Community Management entitlement is still unverified.
 
 M04.7 whole-milestone skeptical/security/provenance review, documentation reconciliation, exact-final-head CI and merge/post-merge verification remain pending.
-
-## M04.7 Active Important Finding — Comments Read Identity Integrity
-
-The Comments read adapter accepts a successful `getComment` response with a returned numeric id that differs from the requested id. The shared read parser also accepts a composite `commentUrn` whose numeric id differs from the response `id`, including inside paginated lists. This is **1 unresolved Important finding**, blocking PR #6 merge. Three focused regression cases were prepared but are **not committed and RED has not been verified**: self-consistent wrong get ID, mismatched composite ID, and malformed identity in a list.
-
-On 2026-10-18, GitHub's connected source-file `update_file` was rejected by OpenAI safety checks. The source remains unchanged; do not bypass that control. The latest observed GREEN source/doc baseline before the present reconciliation is `ab69eeef955bca8c00521b0bbd0ace6b28adfeb3`, CI `39112967968`: 539/539 tests across 59 files plus frozen install, format, lint, typecheck and build. Passing existing tests does not resolve this Important finding. Live Community Management entitlement remains unverified.
 
 ## M04.7 Comments Read Identity Integrity — REGRESSION-FIXED
 
@@ -32,6 +26,8 @@ Behavioral RED: commit `d906d730617e8931945478d187bc784c200a622a`, CI `393924451
 Verified GREEN: commit `92a8ca816ca4c300c624360acde0afd6599512bf`, CI `39392843550`: **542/542 tests across 60 files**, frozen install, format, lint, typecheck and build passed. Comments GET now rejects a response whose ID differs from the requested ID; GET/list reject composite URNs whose numeric ID differs from the returned ID. Errors are sanitized `malformed_response` with no provider payload disclosure. No live provider entitlement is asserted.
 
 Scoped finding closed; currently **0 known unresolved Critical / Important findings**. M04.7 whole-branch skeptical security/provenance review and final merge gates remain pending.
+
+Latest verified exact head before this documentation reconciliation: `b915a38f464be863b12c676a3522bb537a4cc9c5` / CI `39393288032`: **542/542 tests across 60 files** plus frozen install, format, lint, typecheck and build.
 
 Exact next work: **Perform M04.7 whole-branch skeptical correctness/security/provenance review at the exact head and resolve any new Critical/Important findings before merge gates.**
 
@@ -75,10 +71,11 @@ LinkedIn Community Management comments/reactions use versioned official APIs. Me
 
 ## Findings / Blockers
 
-Unresolved Critical findings: 0 currently identified.
-Unresolved Important findings: 1 in M04.7 (Comments read identity integrity); earlier M04.1–M04.5 scoped findings remain resolved.
-Live Community Management entitlement remains an external verification gate; it is not represented as verified capability availability.
+Unresolved Critical findings: **0 known**.
+Unresolved Important findings: **0 known** (M04.7 Comments identity-integrity regression-fixed and GREEN).
+Pending: complete M04.7 whole-branch correctness/security/provenance review, verify current traceability and exact-final-head CI, then apply merge gates. PR #6 remains a draft until those checks pass.
+Live Community Management entitlement remains an external verification gate; deterministic CI does not establish actual product/scope access.
 
 ## Handoff
 
-Exact next work: **Persist three Comments read identity-integrity regression tests on the existing M04 branch through an authorized write path and verify behavioral RED.**
+Exact next work: **Complete the independent whole-branch M04.7 correctness/security/provenance review at the current head and regression-fix any new Critical/Important findings before merging.**
