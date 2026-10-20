@@ -225,7 +225,7 @@ export function createLinkedInReactionsClient(
       let response: Response;
       try {
         response = await fetchImpl(
-          `${ENDPOINT}/(actor:${encodeURIComponent(actorUrn)},entity:${encodeURIComponent(targetUrn)})`,
+          `${ENDPOINT}/(actor:${encodeURIComponent(actorUrn)},entity:${encodeURIComponent(targetUrn).replace(/\(/g, '%28').replace(/\)/g, '%29')})`,
           {
             method: 'DELETE',
             headers: headers(input.accessToken, config.apiVersion),
