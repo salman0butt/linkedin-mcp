@@ -269,10 +269,14 @@ function parseCanonicalComment(value: unknown, allowMissingLikesSummary = false)
 
   const parentCommentUrn =
     candidate.parentComment === undefined ? undefined : parseCommentUrn(candidate.parentComment);
+  const parsedCommentUrn = parseCommentUrn(candidate.commentUrn);
+  if (parsedCommentUrn.slice(parsedCommentUrn.lastIndexOf(',') + 1, -1) !== candidate.id) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
 
   return {
     id: candidate.id,
-    commentUrn: parseCommentUrn(candidate.commentUrn),
+    commentUrn: parsedCommentUrn,
     actorUrn: parseActorUrn(candidate.actor),
     objectUrn,
     ...(parentCommentUrn === undefined ? {} : { parentCommentUrn }),
@@ -377,7 +381,9 @@ export function createLinkedInCommentsClient(
       }
 
       if (response.status !== 200) throw classifyHttpError(response.status);
-      return parseCanonicalComment(await readBoundedJson(response));
+      const comment = parseCanonicalComment(await readBoundedJson(response));
+      if (comment.id !== commentId) throw new LinkedInCommentsError('malformed_response');
+      return comment;
     },
 
     async listComments(input) {
