@@ -9,7 +9,7 @@ import {
 const SOCIAL_ACTIONS_ENDPOINT = 'https://api.linkedin.com/rest/socialActions';
 const MAX_PROVIDER_JSON_BYTES = 64 * 1024;
 const COMMENT_URN_PATTERN = /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
-const ACTOR_URN_PATTERN = /^urn:li:(?:person:[^\s]+|organization:\d+)$/;
+const ACTOR_URN_PATTERN = /^urn:li:(?:person:[^\s]+|organization:\d+|organizationBrand:\d+)$/;
 const MEMBER_ACTOR_URN_PATTERN = /^urn:li:person:[^\s]+$/;
 
 export type LinkedInCommentsErrorKind =
@@ -304,7 +304,7 @@ function parseReplySuccess(
     comment.objectUrn !== expected.objectUrn ||
     comment.parentCommentUrn !== expected.parentCommentUrn ||
     comment.text !== expected.text ||
-    !matchesReplyIdentity(comment.commentUrn, comment.id, expected.parentCommentUrn)
+    !matchesReplyIdentity(comment.commentUrn, comment.id, expected.parentCommentUrn, expected.objectUrn)
   ) {
     throw new LinkedInCommentsError('malformed_success');
   }
@@ -414,6 +414,9 @@ export function createLinkedInCommentsClient(
       const targetUrn = validateTargetUrn(input.targetUrn);
       const actorUrn = validateMemberActorUrn(input.actorUrn);
       const objectUrn = validateTargetUrn(input.objectUrn);
+      if (COMMENT_URN_PATTERN.test(objectUrn)) {
+        throw new Error('LinkedIn reply root object must be a post or activity URN');
+      }
       const parentCommentUrn = validateParentCommentUrn(input.parentCommentUrn);
       const text = validateReplyText(input.text);
       if (!COMMENT_URN_PATTERN.test(targetUrn) || parentCommentUrn !== targetUrn) {
