@@ -278,15 +278,10 @@ describe('explicit-thread unanswered comment inbox', () => {
         return Promise.resolve(available(page(firstPage)));
       }
       if (start === 100) {
-        return Promise.resolve(
-          available(
-            page([
-              comment('4000', `urn:li:comment:(${threadA},4000)`, self, threadA, {
-                parentCommentUrn: firstComment,
-              }),
-            ], start),
-          ),
-        );
+        const answer = comment('4000', `urn:li:comment:(${threadA},4000)`, self, threadA, {
+          parentCommentUrn: firstComment,
+        });
+        return Promise.resolve(available(page([answer], start)));
       }
       throw new Error('Unexpected page');
     };
