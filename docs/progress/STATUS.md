@@ -25,6 +25,16 @@ The Comments read adapter accepts a successful `getComment` response with a retu
 
 On 2026-10-18, GitHub's connected source-file `update_file` was rejected by OpenAI safety checks. The source remains unchanged; do not bypass that control. The latest observed GREEN source/doc baseline before the present reconciliation is `ab69eeef955bca8c00521b0bbd0ace6b28adfeb3`, CI `39112967968`: 539/539 tests across 59 files plus frozen install, format, lint, typecheck and build. Passing existing tests does not resolve this Important finding. Live Community Management entitlement remains unverified.
 
+## M04.7 Comments Read Identity Integrity — REGRESSION-FIXED
+
+Behavioral RED: commit `d906d730617e8931945478d187bc784c200a622a`, CI `39392445179`: formatting passed and three new identity-integrity regression tests failed as intended (returned requested-ID mismatch, composite URN numeric mismatch, and malformed list identity). All 539 prior tests remained green.
+
+Verified GREEN: commit `92a8ca816ca4c300c624360acde0afd6599512bf`, CI `39392843550`: **542/542 tests across 60 files**, frozen install, format, lint, typecheck and build passed. Comments GET now rejects a response whose ID differs from the requested ID; GET/list reject composite URNs whose numeric ID differs from the returned ID. Errors are sanitized `malformed_response` with no provider payload disclosure. No live provider entitlement is asserted.
+
+Scoped finding closed; currently **0 known unresolved Critical / Important findings**. M04.7 whole-branch skeptical security/provenance review and final merge gates remain pending.
+
+Exact next work: **Perform M04.7 whole-branch skeptical correctness/security/provenance review at the exact head and resolve any new Critical/Important findings before merge gates.**
+
 ## M04.5 Historical Verified Checkpoint
 
 M04.5 — explicit-thread unanswered inbox/context derivation — **GREEN** at `788a252f6ec9e285df0420869af6e39ca728975b`.
