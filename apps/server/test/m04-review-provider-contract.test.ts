@@ -88,7 +88,7 @@ describe('M04 official provider contract review regressions', () => {
     let requestedUrl: string | undefined;
     const client = createLinkedInReactionsClient(config, {
       fetch: (input) => {
-        requestedUrl = String(input);
+        requestedUrl = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
         return Promise.resolve(new Response(null, { status: 204 }));
       },
     });
