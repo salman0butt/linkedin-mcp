@@ -97,10 +97,17 @@ export function matchesReplyIdentity(
   commentUrn: string,
   commentId: string,
   parentCommentUrn: string,
+  rootUrn?: string,
 ): boolean {
   if (!/^\d+$/.test(commentId) || !commentTargetPattern.test(commentUrn)) return false;
   const parent = /^urn:li:comment:\((urn:li:(?:share|ugcPost|activity):\d+),\d+\)$/.exec(parentCommentUrn);
-  return parent !== null && commentUrn === `urn:li:comment:(${parent[1]},${commentId})`;
+  if (parent === null) return false;
+  return (
+    commentUrn === `urn:li:comment:(${parent[1]},${commentId})` ||
+    (rootUrn !== undefined &&
+      simpleTargetPattern.test(rootUrn) &&
+      commentUrn === `urn:li:comment:(${rootUrn},${commentId})`)
+  );
 }
 const replyKeys = new Set(['targetUrn', 'rootUrn', 'parentCommentUrn', 'text']);
 const reactionKeys = new Set(['operation', 'targetUrn', 'reactionType']);
@@ -138,7 +145,13 @@ export function createReplyPreview(input: ReplyDraft): ReplyPreview {
 
   const payload: ReplyDraft = {
     targetUrn: parseCommentTarget(record.targetUrn as string),
-    rootUrn: parseCommentTarget(record.rootUrn as string),
+    rootUrn: (() => {
+      const value = record.rootUrn;
+      if (typeof value !== 'string' || !simpleTargetPattern.test(value)) {
+        throw new Error('Reply root must be a share, ugcPost, or activity URN');
+      }
+      return value;
+    })(),
     parentCommentUrn: parseCommentUrn(record.parentCommentUrn as string, 'Parent comment'),
     text: record.text as string,
   };
