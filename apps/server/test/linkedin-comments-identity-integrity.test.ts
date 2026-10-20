@@ -17,10 +17,7 @@ const body = {
 };
 
 function clientFor(value: unknown) {
-  return createLinkedInCommentsClient(
-    { apiVersion: '202610' },
-    { fetch: async () => Response.json(value) },
-  );
+  return createLinkedInCommentsClient({ apiVersion: '202610' }, { fetch: async () => Response.json(value) });
 }
 
 describe('Comments read identity integrity', () => {
