@@ -116,7 +116,7 @@ describe('official LinkedIn Reactions adapter', () => {
 
     expect(recorded.calls).toEqual([
       {
-        input: `https://api.linkedin.com/rest/reactions/(actor:${encodeURIComponent(actorUrn)},entity:${encodeURIComponent(commentUrn)})`,
+        input: `https://api.linkedin.com/rest/reactions/(actor:${encodeURIComponent(actorUrn)},entity:${encodeURIComponent(commentUrn).replace(/\(/g, '%28').replace(/\)/g, '%29')})`,
         init: {
           method: 'DELETE',
           headers: {
