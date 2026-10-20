@@ -238,6 +238,65 @@ describe('explicit-thread unanswered comment inbox', () => {
     });
   });
 
+  it('does not treat the authenticated member own top-level comments as unanswered', async () => {
+    const self = 'urn:li:person:member-123';
+    let nestedReads = 0;
+    const listComments: CommentInboxListComments = ({ targetUrn }) => {
+      if (targetUrn === threadA) {
+        return Promise.resolve(available(page([comment('1001', firstComment, self, threadA)])));
+      }
+      nestedReads += 1;
+      return Promise.resolve(available(page([])));
+    };
+
+    await expect(
+      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: [threadA] }, { listComments }),
+    ).resolves.toMatchObject({ status: 'available', value: [] });
+    expect(nestedReads).toBe(0);
+  });
+
+  it('continues a full page with unknown total before deciding a comment is unanswered', async () => {
+    const self = 'urn:li:person:member-123';
+    const other = 'urn:li:person:customer-456';
+    const starts: number[] = [];
+    const listComments: CommentInboxListComments = ({ targetUrn, start }) => {
+      if (targetUrn === threadA) {
+        return Promise.resolve(available(page([comment('1001', firstComment, other, threadA)])));
+      }
+      if (targetUrn !== firstComment) throw new Error('Unexpected thread');
+      starts.push(start);
+      if (start === 0) {
+        const firstPage = Array.from({ length: 100 }, (_, index) =>
+          comment(
+            String(3000 + index),
+            `urn:li:comment:(${threadA},${3000 + index})`,
+            other,
+            threadA,
+            { parentCommentUrn: firstComment },
+          ),
+        );
+        return Promise.resolve(available(page(firstPage)));
+      }
+      if (start === 100) {
+        return Promise.resolve(
+          available(
+            page([
+              comment('4000', `urn:li:comment:(${threadA},4000)`, self, threadA, {
+                parentCommentUrn: firstComment,
+              }),
+            ], start),
+          ),
+        );
+      }
+      throw new Error('Unexpected page');
+    };
+
+    await expect(
+      deriveUnansweredCommentInbox({ subject: 'member-123', threadUrns: [threadA] }, { listComments }),
+    ).resolves.toMatchObject({ status: 'available', value: [] });
+    expect(starts).toEqual([0, 100]);
+  });
+
   it('rejects an invalid subject before any provider call', async () => {
     let calls = 0;
     const listComments: CommentInboxListComments = () => {
