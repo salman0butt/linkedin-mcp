@@ -267,13 +267,9 @@ describe('explicit-thread unanswered comment inbox', () => {
       starts.push(start);
       if (start === 0) {
         const firstPage = Array.from({ length: 100 }, (_, index) =>
-          comment(
-            String(3000 + index),
-            `urn:li:comment:(${threadA},${3000 + index})`,
-            other,
-            threadA,
-            { parentCommentUrn: firstComment },
-          ),
+          comment(String(3000 + index), `urn:li:comment:(${threadA},${3000 + index})`, other, threadA, {
+            parentCommentUrn: firstComment,
+          }),
         );
         return Promise.resolve(available(page(firstPage)));
       }
