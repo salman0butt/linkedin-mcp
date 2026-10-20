@@ -44,7 +44,7 @@ describe('LinkedIn Comments response bounds', () => {
     });
     await expect(
       client.listComments({ accessToken: 'access-token-secret', targetUrn: shareUrn, count: 100 }),
-    ).resolves.toMatchObject({ elements: expect.arrayContaining([{ id: '1000' }]) });
+    ).resolves.toMatchObject({ elements: expect.arrayContaining([expect.objectContaining({ id: '1000' })]) });
   });
 
   it('fails closed when the provider success stream becomes unreadable', async () => {
