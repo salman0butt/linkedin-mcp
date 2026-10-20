@@ -251,11 +251,7 @@ function errorForTerminal(record: MutationRecord): EngagementServiceError {
   }
 }
 
-function replayResult(
-  record: MutationRecord,
-  parentCommentUrn: string,
-  rootUrn: string,
-): ReplyPublishResult {
+function replayResult(record: MutationRecord, parentCommentUrn: string, rootUrn: string): ReplyPublishResult {
   const commentId = record.result?.resourceId;
   const commentUrn = record.result?.resourceUrn;
   if (
