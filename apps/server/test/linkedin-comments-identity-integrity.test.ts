@@ -17,30 +17,47 @@ const body = {
 };
 
 function clientFor(value: unknown) {
-  return createLinkedInCommentsClient({ apiVersion: '202610' }, {
-    fetch: async () => Response.json(value),
-  });
+  return createLinkedInCommentsClient(
+    { apiVersion: '202610' },
+    { fetch: async () => Response.json(value) },
+  );
 }
 
 describe('Comments read identity integrity', () => {
   it('rejects a self-consistent provider comment for a different requested ID', async () => {
-    await expect(clientFor(body).getComment({
-      accessToken: 'token', targetUrn: objectUrn, commentId: '6636062862760562689',
-    })).rejects.toMatchObject({ kind: 'malformed_response' });
+    await expect(
+      clientFor(body).getComment({
+        accessToken: 'token',
+        targetUrn: objectUrn,
+        commentId: '6636062862760562689',
+      }),
+    ).rejects.toMatchObject({ kind: 'malformed_response' });
   });
 
   it('rejects a composite comment URN with a different numeric ID', async () => {
-    const mismatched = { ...body, commentUrn: `urn:li:comment:(${objectUrn},6636062862760562689)` };
-    await expect(clientFor(mismatched).getComment({
-      accessToken: 'token', targetUrn: objectUrn, commentId: id,
-    })).rejects.toMatchObject({ kind: 'malformed_response' });
+    const mismatched = {
+      ...body,
+      commentUrn: `urn:li:comment:(${objectUrn},6636062862760562689)`,
+    };
+    await expect(
+      clientFor(mismatched).getComment({
+        accessToken: 'token',
+        targetUrn: objectUrn,
+        commentId: id,
+      }),
+    ).rejects.toMatchObject({ kind: 'malformed_response' });
   });
 
   it('rejects a paginated comment containing inconsistent numeric identity', async () => {
-    const malformed = { ...body, commentUrn: `urn:li:comment:(${objectUrn},6636062862760562689)` };
-    await expect(clientFor({
-      elements: [malformed], paging: { start: 0, count: 10, total: 1 },
-    }).listComments({ accessToken: 'token', targetUrn: objectUrn }))
-      .rejects.toMatchObject({ kind: 'malformed_response' });
+    const malformed = {
+      ...body,
+      commentUrn: `urn:li:comment:(${objectUrn},6636062862760562689)`,
+    };
+    await expect(
+      clientFor({
+        elements: [malformed],
+        paging: { start: 0, count: 10, total: 1 },
+      }).listComments({ accessToken: 'token', targetUrn: objectUrn }),
+    ).rejects.toMatchObject({ kind: 'malformed_response' });
   });
 });
