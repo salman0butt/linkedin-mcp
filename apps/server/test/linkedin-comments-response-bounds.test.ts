@@ -42,9 +42,13 @@ describe('LinkedIn Comments response bounds', () => {
     const client = createLinkedInCommentsClient(config, {
       fetch: fetchReturning(new Response(body, { status: 200 })),
     });
-    await expect(
-      client.listComments({ accessToken: 'access-token-secret', targetUrn: shareUrn, count: 100 }),
-    ).resolves.toMatchObject({ elements: expect.arrayContaining([expect.objectContaining({ id: '1000' })]) });
+    const page = await client.listComments({
+      accessToken: 'access-token-secret',
+      targetUrn: shareUrn,
+      count: 100,
+    });
+    expect(page.elements).toHaveLength(100);
+    expect(page.elements[0]?.id).toBe('1000');
   });
 
   it('fails closed when the provider success stream becomes unreadable', async () => {
