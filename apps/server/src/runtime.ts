@@ -12,9 +12,11 @@ import {
 } from './engagement/linkedin-reactions.js';
 import {
   createApprovalService,
+  requireTrustedApprovalGrant,
   scopeApprovalService,
   type ApprovalService,
 } from './publishing/approval-service.js';
+import type { TrustedApprovalGrantConsumer } from './publishing/trusted-approval-grants.js';
 import {
   createFileIdempotencyLedger,
   type IdempotencyLedger,
@@ -47,6 +49,7 @@ export interface LinkedInRuntime {
 export interface LinkedInRuntimeOverrides {
   authService?: AuthService;
   approvals?: ApprovalService;
+  trustedApprovalGrants?: TrustedApprovalGrantConsumer;
   ledger?: IdempotencyLedger;
   posts?: LinkedInPostsAdapter;
   comments?: LinkedInCommentsClient;
@@ -78,12 +81,14 @@ export function createLinkedInRuntime(
         ? { ...(overrides.now === undefined ? {} : { now: overrides.now }) }
         : { config: config.auth, ...(overrides.now === undefined ? {} : { now: overrides.now }) },
     );
-  const approvalStore =
+  const approvalStore = requireTrustedApprovalGrant(
     overrides.approvals ??
-    createApprovalService({
-      ...(overrides.now === undefined ? {} : { now: overrides.now }),
-      ttlMs: config.publishingApprovalTtlMs,
-    });
+      createApprovalService({
+        ...(overrides.now === undefined ? {} : { now: overrides.now }),
+        ttlMs: config.publishingApprovalTtlMs,
+      }),
+    overrides.trustedApprovalGrants,
+  );
   const textApprovals = scopeApprovalService(approvalStore, 'posts.text');
 
   let textPostService: TextPostService | undefined;

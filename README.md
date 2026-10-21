@@ -2,21 +2,26 @@
 
 TypeScript MCP server for LinkedIn workflows with explicit provider provenance, approval boundaries and durable development state.
 
-The implementation includes foundation tools, OAuth identity and approval-gated member text publishing. Tool discovery and deterministic CI do not establish live LinkedIn access. Live reads/writes require a legitimately configured application, member authorization and the relevant product/scopes. See `docs/progress/project-state.json` and `docs/milestones/CURRENT.md` for current integration status.
+The implementation includes foundation tools, OAuth identity, text/media publishing and comment/reaction workflows. Tool discovery and deterministic CI do not establish live LinkedIn access. Live reads/writes require a legitimately configured application, member authorization and the relevant product/scopes. See `docs/progress/project-state.json` and `docs/milestones/CURRENT.md` for current integration status.
 
 ## Tools
 
-Built runtimes discover ten tools even when OAuth/publishing is unconfigured:
+Built runtimes discover 28 tools even when OAuth/publishing is unconfigured:
 
 - `linkedin.health`, `linkedin.version`, `linkedin.capabilities` — local control plane and truthful capability metadata.
 - `linkedin.auth.start`, `linkedin.auth.status`, `linkedin.profile.me`, `linkedin.auth.logout` — authorization, connection status, identity and local credential cleanup. Product-dependent OAuth/refresh support remains access-dependent.
 - `linkedin.post.preview.text` — local canonical text payload/hash; no authorization, receipt, provider call or file write.
-- `linkedin.post.approve.text` — explicit approval intent; issues a short-lived local receipt only for connected persisted member identity and granted write scope. It does not refresh credentials or publish.
+- `linkedin.post.approve.text` — requests a short-lived receipt for an independently reviewed host grant, connected member identity and granted write scope. The input intent flag alone is insufficient.
 - `linkedin.post.create.text` — consumes an eligible subject/payload-bound receipt and caller idempotency key, durably reserves the operation, and attempts one official Posts request.
+- Image and multi-image post preview/approve/create tools use the same receipt, media validation and durable no-duplicate boundaries.
+- `linkedin.comments.get`, `linkedin.comments.list`, `linkedin.comments.inbox` read explicit bounded comment threads only when restricted access is enabled.
+- Reply and reaction preview/approve/write tools require separate Community Management permissions and trusted approval grants.
 
 Preview and approval use `LOCAL_ONLY` provenance. Preview data identifies `OFFICIAL_API` as its publication target. Publication uses `OFFICIAL_API`; static live `post.create.text` availability remains `UNAVAILABLE` until legitimate live evidence exists.
 
 A successful creation returns its provider post URN, replay flag and separate verification state. Read confirmation defaults disabled and requires explicitly configured legitimate member-read access plus granted `r_member_social`. Unavailable or failed confirmation preserves known creation success. No post URL is constructed or labeled verified. Ambiguous remote acceptance is non-retryable `partial/outcome_unknown`; never retry it with a new key or delete its ledger record. Successful replay performs no second POST.
+
+The bundled stdio and HTTP entrypoints have no trusted human approval UI and therefore fail closed when an approval receipt is requested. An embedding host must authenticate the human and display the exact preview before issuing a one-time grant. See `docs/security/TRUSTED-APPROVALS.md` for the host integration contract.
 
 ## Development and transports
 

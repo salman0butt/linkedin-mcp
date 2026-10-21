@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "107ededf02ab147cd5bd3189d537cae552728fe4",
-  "ciStatus": "GREEN_HEAD_107ededf02ab147cd5bd3189d537cae552728fe4_RUN_39577246941_SUCCESS_559_TESTS_62_FILES",
+  "latestVerifiedSha": "6d126472d560fbe428f6bd5d6b099f75b3a071d0",
+  "ciStatus": "GREEN_HEAD_6d126472d560fbe428f6bd5d6b099f75b3a071d0_RUN_39578141149_SUCCESS",
   "criticalFindings": 0,
   "importantFindings": 1,
   "blockers": [
     "M04.7 comment read and nested parent integrity findings were regression-fixed at 107ededf; CI 39577246941 passed 559 tests across 62 files.",
-    "IMPORTANT: MCP approval tools accept caller-supplied approved:true and issue/consume their own mutation receipts without independent trusted human confirmation. This is a merge blocker affecting comments.reply and reactions.add/remove; analogous existing text/media tools need the same trust-boundary review. Keep PR #6 draft and unmerged.",
+    "IMPORTANT: MCP approval self-issuance finding is locally regression-fixed across text, media, replies and reactions with trusted host grants; independent security review and exact-new-head CI remain pending. Keep PR #6 draft and unmerged until verified.",
     "Live LinkedIn Community Management entitlement remains unverified; this is an external capability gate and no live availability is claimed."
   ],
-  "exactNextWork": "Implement and regression-verify a trusted out-of-band human approval grant boundary for consequential MCP writes, including inherited text/media flows, before M04 merge gates.",
-  "activeHeadSha": "107ededf02ab147cd5bd3189d537cae552728fe4"
+  "exactNextWork": "Finish independent security review of the trusted approval grant remediation, persist the reviewed change to PR #6, and verify exact-new-head CI before reconsidering M04 merge gates.",
+  "activeHeadSha": "6d126472d560fbe428f6bd5d6b099f75b3a071d0"
 }

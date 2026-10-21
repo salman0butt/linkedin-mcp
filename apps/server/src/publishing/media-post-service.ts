@@ -45,6 +45,7 @@ export type MediaPostServiceErrorKind =
   | 'approval_expired'
   | 'approval_not_found'
   | 'approval_consumed'
+  | 'trusted_human_approval_required'
   | 'idempotency_conflict'
   | 'storage_failure'
   | 'media_changed'
@@ -87,6 +88,7 @@ export interface MultiImagePostDraft {
 
 export interface ApproveMediaPostInput {
   payloadHash: string;
+  trustedGrantId?: string;
 }
 
 interface CreateMediaPostBaseInput {
@@ -636,8 +638,15 @@ export function createMediaPostService(deps: MediaPostServiceDeps): MediaPostSer
   async function approve(input: ApproveMediaPostInput): Promise<ApprovalReceipt> {
     const context = await providerContext(deps);
     try {
-      return deps.approvals.issue({ payloadHash: input.payloadHash, subject: context.subject });
-    } catch {
+      return deps.approvals.issue({
+        payloadHash: input.payloadHash,
+        subject: context.subject,
+        ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
+      });
+    } catch (error: unknown) {
+      if (error instanceof ApprovalServiceError && error.kind === 'human_approval_required') {
+        throw new MediaPostServiceError('trusted_human_approval_required');
+      }
       throw new MediaPostServiceError('invalid_payload');
     }
   }

@@ -52,7 +52,16 @@ const replyDraftSchema = z
     text: nonEmptyStringSchema,
   })
   .strict();
-const approveInputSchema = z.object({ payloadHash: payloadHashSchema, approved: z.literal(true) }).strict();
+const approveInputSchema = z
+  .object({
+    payloadHash: payloadHashSchema,
+    approved: z.literal(true),
+    trustedGrantId: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{43}$/)
+      .optional(),
+  })
+  .strict();
 const createReplyInputSchema = z
   .object({
     draft: replyDraftSchema,
@@ -159,6 +168,10 @@ function mapFailure(error: unknown, deps: RegisterEngagementToolsDeps, provider:
   if (error instanceof EngagementServiceError) {
     code = error.kind;
     switch (error.kind) {
+      case 'trusted_human_approval_required':
+        status = 'human_action_required';
+        message = 'Trusted host approval is required.';
+        break;
       case 'auth_unconfigured':
       case 'not_connected':
       case 'reauth_required':
@@ -313,7 +326,7 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
   server.registerTool(
     'linkedin.comments.reply.approve',
     {
-      description: 'Issue a short-lived subject-bound approval receipt for a reply preview.',
+      description: 'Request a reply receipt after independent trusted host confirmation of the preview.',
       inputSchema: approveInputSchema,
       outputSchema,
     },
@@ -322,7 +335,10 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: await writes.approveReply({ payloadHash: input.payloadHash }),
+          data: await writes.approveReply({
+            payloadHash: input.payloadHash,
+            ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
+          }),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -373,7 +389,8 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
   server.registerTool(
     'linkedin.reactions.add.approve',
     {
-      description: 'Issue a short-lived subject-bound approval receipt for a reaction-add preview.',
+      description:
+        'Request a reaction-add receipt after independent trusted host confirmation of the preview.',
       inputSchema: approveInputSchema,
       outputSchema,
     },
@@ -382,7 +399,10 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: await writes.approveReactionAdd({ payloadHash: input.payloadHash }),
+          data: await writes.approveReactionAdd({
+            payloadHash: input.payloadHash,
+            ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
+          }),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');
@@ -433,7 +453,8 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
   server.registerTool(
     'linkedin.reactions.remove.approve',
     {
-      description: 'Issue a short-lived subject-bound approval receipt for a reaction-removal preview.',
+      description:
+        'Request a reaction-removal receipt after independent trusted host confirmation of the preview.',
       inputSchema: approveInputSchema,
       outputSchema,
     },
@@ -442,7 +463,10 @@ export function registerEngagementTools(server: McpServer, deps: RegisterEngagem
       if (writes === undefined) return unavailable(deps, 'LOCAL_ONLY');
       try {
         return result(deps, 'succeeded', 'LOCAL_ONLY', {
-          data: await writes.approveReactionRemove({ payloadHash: input.payloadHash }),
+          data: await writes.approveReactionRemove({
+            payloadHash: input.payloadHash,
+            ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
+          }),
         });
       } catch (error: unknown) {
         return mapFailure(error, deps, 'LOCAL_ONLY');

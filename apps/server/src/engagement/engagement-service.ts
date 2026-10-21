@@ -43,6 +43,7 @@ export type EngagementServiceErrorKind =
   | 'approval_expired'
   | 'approval_not_found'
   | 'approval_consumed'
+  | 'trusted_human_approval_required'
   | 'idempotency_conflict'
   | 'storage_failure'
   | 'rate_limited'
@@ -61,6 +62,7 @@ export class EngagementServiceError extends Error {
 
 export interface ApproveReplyInput {
   payloadHash: string;
+  trustedGrantId?: string;
 }
 
 export interface CreateReplyInput {
@@ -216,6 +218,8 @@ async function providerContext(deps: EngagementServiceDeps): Promise<ProviderCon
 function errorForApproval(error: unknown): EngagementServiceError {
   if (error instanceof ApprovalServiceError) {
     switch (error.kind) {
+      case 'human_approval_required':
+        return new EngagementServiceError('trusted_human_approval_required');
       case 'mismatch':
         return new EngagementServiceError('approval_mismatch');
       case 'expired':
@@ -352,9 +356,10 @@ async function approveReactionFor(
     return scopeApprovalService(deps.approvals, `reactions.${operation}`).issue({
       payloadHash: input.payloadHash,
       subject: context.subject,
+      ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
     });
-  } catch {
-    throw new EngagementServiceError('storage_failure');
+  } catch (error: unknown) {
+    throw errorForApproval(error);
   }
 }
 
@@ -613,9 +618,10 @@ export function createEngagementService(deps: EngagementServiceDeps): Engagement
         return scopeApprovalService(deps.approvals, 'comments.reply').issue({
           payloadHash: input.payloadHash,
           subject: context.subject,
+          ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
         });
-      } catch {
-        throw new EngagementServiceError('storage_failure');
+      } catch (error: unknown) {
+        throw errorForApproval(error);
       }
     },
 

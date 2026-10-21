@@ -11,6 +11,14 @@ Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
 Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`.
 Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
 
+## M04.7 Trusted Human Approval Boundary — LOCAL REGRESSION-FIX, REVIEW PENDING
+
+The Important MCP self-approval finding has a local fail-closed remediation under independent review. A trusted embedding host must authenticate the human and issue a one-time subject/purpose/payload grant outside MCP; the shared production runtime consumes the grant before minting any text, media, reply or reaction receipt. Caller-provided `approved:true` alone cannot mint a receipt. The bundled stdio/HTTP servers intentionally have no host approval UI and default to `human_action_required` on otherwise eligible approval requests.
+
+Observed local RED: absent grant module; two unauthorized runtime issuance tests; six MCP denial status tests; a second-client grant theft regression; and a test showing that an injected receipt store received a spent grant ID. Observed local GREEN: **579/579 tests across 64 files**, real stdio/HTTP smokes, lint, typecheck, formatting and build (with an additional 25/25 focused GREEN after the grant-ID leak fix). On macOS, `TMPDIR=/private/tmp` avoids a pre-existing `/var` alias mismatch in media-config tests. No live LinkedIn operation was performed.
+
+Current previously verified remote PR head: `6d126472d560fbe428f6bd5d6b099f75b3a071d0`, exact-head CI `39578141149` succeeded; the new changes must be verified at their own remote commit. Two independent review workers timed out without producing findings, so no independent review is claimed. Independent security review and exact-new-head CI remain merge blockers. See `docs/security/TRUSTED-APPROVALS.md` and `docs/superpowers/evidence/2026-10-21-trusted-approval.md`.
+
 ## M04.6 Strict MCP/Transport Integration — GREEN
 
 Behavioral RED: `656d1b819358ffa9feaa403646d35d4365a4e2c6`, CI `39038187921`: 524 existing tests passed, nine engagement MCP contract tests failed because the twelve engagement tools were not registered.

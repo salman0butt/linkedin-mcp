@@ -519,7 +519,12 @@ describe('M02 text-post MCP contract', () => {
     const distributionProperties = properties(payloadProperties?.distribution);
 
     expect(Object.keys(previewProperties ?? {}).sort()).toEqual(['disableReshare', 'text', 'visibility']);
-    expect(Object.keys(approvalProperties ?? {}).sort()).toEqual(['approved', 'payload', 'payloadHash']);
+    expect(Object.keys(approvalProperties ?? {}).sort()).toEqual([
+      'approved',
+      'payload',
+      'payloadHash',
+      'trustedGrantId',
+    ]);
     expect(Object.keys(publishProperties ?? {}).sort()).toEqual([
       'approvalReceiptId',
       'idempotencyKey',

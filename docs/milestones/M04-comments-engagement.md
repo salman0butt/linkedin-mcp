@@ -2,6 +2,8 @@
 
 Status: **ACTIVE — M04.7 whole-milestone review and closeout**
 
+M04.7 local security checkpoint (2026-10-21): trusted host grant issuance is separated from MCP tool calls. The production runtime requires a one-time subject/purpose/payload grant before issuing text, media, reply or reaction receipts. New behavioral tests were observed RED before implementation; local 578/578 tests across 64 files, real stdio/HTTP smokes, lint, typecheck and build passed. Independent security review and exact-new-head CI are pending. The default server has no human approval UI and fails closed; live Community Management access remains unverified.
+
 ## Goal
 
 Support capability-aware member comment reading/replies, reactions and bounded contextual engagement workflows.

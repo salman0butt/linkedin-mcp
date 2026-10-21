@@ -1,7 +1,8 @@
 # Current Milestone
 
 Milestone: M04 — Comments & Engagement
-Status: ACTIVE — M04.7 whole-milestone review and closeout
+Status: ACTIVE — M04.7 security review and closeout
+Local checkpoint (2026-10-21): trusted host grant validation is implemented and locally tested. Independent review and new-head CI are pending; PR #6 remains draft.
 Iteration: M04.7
 Branch: `feat/m04-comments-engagement`
 PR: #6 — draft

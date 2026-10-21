@@ -11,6 +11,7 @@ import { createHttpServer } from '../src/http.js';
 import type { AuthService } from '../src/auth/auth-service.js';
 import { createLinkedInRuntime } from '../src/runtime.js';
 import type { LinkedInPostsAdapter } from '../src/publishing/linkedin-posts.js';
+import { createTrustedApprovalGrantStore } from '../src/publishing/trusted-approval-grants.js';
 
 function getStatus(port: number, headers: Record<string, string>): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -58,6 +59,7 @@ function postStatus(port: number, body: Buffer): Promise<number> {
 describe('createHttpServer', () => {
   it('shares injected approval and publishing state across real HTTP MCP clients', async () => {
     const now = () => new Date('2026-10-08T12:00:00.000Z');
+    const grants = createTrustedApprovalGrantStore({ now });
     const directory = await mkdtemp(join(tmpdir(), 'm02-http-runtime-'));
     let postedInput: Parameters<LinkedInPostsAdapter['createTextPost']>[0] | undefined;
     const createTextPost = vi.fn((input: Parameters<LinkedInPostsAdapter['createTextPost']>[0]) => {
@@ -99,7 +101,7 @@ describe('createHttpServer', () => {
         LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: join(directory, 'ledger.json'),
         LINKEDIN_MCP_MEMBER_POST_READ_ENABLED: 'true',
       }),
-      { authService, posts: { createTextPost, getTextPost }, now },
+      { authService, posts: { createTextPost, getTextPost }, now, trustedApprovalGrants: grants.consumer },
     );
     const server = await createHttpServer({ host: '127.0.0.1', port: 0, runtime });
     const endpoint = new URL(`http://${server.address.host}:${server.address.port}/mcp`);
@@ -119,12 +121,18 @@ describe('createHttpServer', () => {
       expect(getTextPost).not.toHaveBeenCalled();
       expect(await readdir(directory)).toEqual([]);
 
+      const trustedGrantId = grants.issuer.grant({
+        subject: 'member-123',
+        purpose: 'posts.text',
+        payloadHash: previewData.data.payloadHash,
+      });
       const approval = await first.callTool({
         name: 'linkedin.post.approve.text',
         arguments: {
           payload: previewData.data.payload,
           payloadHash: previewData.data.payloadHash,
           approved: true,
+          trustedGrantId,
         },
       });
       const receipt = (approval.structuredContent as { data: { receiptId: string } }).data.receiptId;
