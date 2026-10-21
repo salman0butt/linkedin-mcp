@@ -286,6 +286,13 @@ function parseCanonicalComment(value: unknown, allowMissingLikesSummary = false)
   if (conflictsWithSameFamilyRoot(parsedCommentUrn, objectUrn)) {
     throw new LinkedInCommentsError('malformed_response');
   }
+  if (
+    parentCommentUrn !== undefined &&
+    (conflictsWithSameFamilyRoot(parsedCommentUrn, parentCommentUrn) ||
+      conflictsWithSameFamilyRoot(objectUrn, parentCommentUrn))
+  ) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
 
   return {
     id: candidate.id,

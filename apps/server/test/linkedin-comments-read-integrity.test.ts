@@ -63,6 +63,50 @@ describe('Comments response-to-request integrity', () => {
     ).rejects.toMatchObject({ kind: 'malformed_response', retryable: false });
   });
 
+  it('rejects GET replies whose parent belongs to an unrelated same-family activity', async () => {
+    const wrongParent = `urn:li:comment:(${unrelatedRoot},888)`;
+    await expect(
+      clientFor({ ...comment, parentComment: wrongParent }).getComment({
+        accessToken: 'token',
+        targetUrn: requestedRoot,
+        commentId,
+      }),
+    ).rejects.toMatchObject({ kind: 'malformed_response', retryable: false });
+  });
+
+  it('rejects LIST replies whose parent belongs to an unrelated same-family activity', async () => {
+    const wrongParent = `urn:li:comment:(${unrelatedRoot},888)`;
+    await expect(
+      clientFor({
+        elements: [{ ...comment, parentComment: wrongParent }],
+        paging: { start: 0, count: 10, total: 1 },
+      }).listComments({
+        accessToken: 'token',
+        targetUrn: requestedRoot,
+      }),
+    ).rejects.toMatchObject({ kind: 'malformed_response', retryable: false });
+  });
+
+  it('accepts a same-root parent with a distinct comment ID', async () => {
+    const validParent = `urn:li:comment:(${requestedRoot},888)`;
+    const value = await clientFor({ ...comment, parentComment: validParent }).getComment({
+      accessToken: 'token',
+      targetUrn: requestedRoot,
+      commentId,
+    });
+    expect(value.parentCommentUrn).toBe(validParent);
+  });
+
+  it('preserves a different-family share parent representation for an activity comment', async () => {
+    const aliasParent = 'urn:li:comment:(urn:li:share:6666666666666666666,888)';
+    const value = await clientFor({ ...comment, parentComment: aliasParent }).getComment({
+      accessToken: 'token',
+      targetUrn: requestedRoot,
+      commentId,
+    });
+    expect(value.parentCommentUrn).toBe(aliasParent);
+  });
+
   it('rejects a provider page that reports a different start from the requested window', async () => {
     await expect(
       clientFor({ elements: [comment], paging: { start: 500, count: 10, total: 501 } }).listComments({
