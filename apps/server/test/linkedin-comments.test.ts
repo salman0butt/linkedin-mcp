@@ -107,7 +107,7 @@ describe('official LinkedIn Comments read client', () => {
   });
 
   it('lists an explicit nested comment thread with bounded paging', async () => {
-    const nestedTarget = 'urn:li:comment:(urn:li:activity:6273189577469632512,6275822846992351232)';
+    const nestedTarget = commentBody.parentComment;
     const recorded = recorder(
       Response.json({
         elements: [commentBody],

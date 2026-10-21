@@ -215,6 +215,16 @@ function parseCommentUrn(value: unknown): string {
   return value;
 }
 
+function conflictsWithSameFamilyRoot(left: string, right: string): boolean {
+  const rootOf = (urn: string): string =>
+    /^urn:li:comment:\((urn:li:(?:share|ugcPost|activity):\d+),\d+\)$/.exec(urn)?.[1] ?? urn;
+  const leftRoot = rootOf(left);
+  const rightRoot = rootOf(right);
+  const leftFamily = /^urn:li:(share|ugcPost|activity):\d+$/.exec(leftRoot)?.[1];
+  const rightFamily = /^urn:li:(share|ugcPost|activity):\d+$/.exec(rightRoot)?.[1];
+  return leftFamily !== undefined && leftFamily === rightFamily && leftRoot !== rightRoot;
+}
+
 function parseTimestampContainer(value: unknown): string {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new LinkedInCommentsError('malformed_response');
@@ -271,6 +281,9 @@ function parseCanonicalComment(value: unknown, allowMissingLikesSummary = false)
     candidate.parentComment === undefined ? undefined : parseCommentUrn(candidate.parentComment);
   const parsedCommentUrn = parseCommentUrn(candidate.commentUrn);
   if (parsedCommentUrn.slice(parsedCommentUrn.lastIndexOf(',') + 1, -1) !== candidate.id) {
+    throw new LinkedInCommentsError('malformed_response');
+  }
+  if (conflictsWithSameFamilyRoot(parsedCommentUrn, objectUrn)) {
     throw new LinkedInCommentsError('malformed_response');
   }
 
@@ -330,6 +343,7 @@ function parsePaging(value: unknown): CommentPage['paging'] {
   const start = candidate.start as number;
   const count = candidate.count as number;
   const total = candidate.total as number | undefined;
+  if (!Number.isSafeInteger(start + count)) throw new LinkedInCommentsError('malformed_response');
   const nextStart = total !== undefined && start + count < total ? start + count : undefined;
 
   return {
@@ -382,7 +396,13 @@ export function createLinkedInCommentsClient(
 
       if (response.status !== 200) throw classifyHttpError(response.status);
       const comment = parseCanonicalComment(await readBoundedJson(response));
-      if (comment.id !== commentId) throw new LinkedInCommentsError('malformed_response');
+      if (
+        comment.id !== commentId ||
+        conflictsWithSameFamilyRoot(targetUrn, comment.commentUrn) ||
+        conflictsWithSameFamilyRoot(targetUrn, comment.objectUrn)
+      ) {
+        throw new LinkedInCommentsError('malformed_response');
+      }
       return comment;
     },
 
@@ -406,7 +426,20 @@ export function createLinkedInCommentsClient(
       }
 
       if (response.status !== 200) throw classifyHttpError(response.status);
-      return parseCommentPage(await readBoundedJson(response));
+      const page = parseCommentPage(await readBoundedJson(response));
+      if (
+        page.paging.start !== start ||
+        page.paging.count > count ||
+        page.elements.length > page.paging.count ||
+        page.elements.some(
+          (comment) =>
+            conflictsWithSameFamilyRoot(targetUrn, comment.commentUrn) ||
+            conflictsWithSameFamilyRoot(targetUrn, comment.objectUrn),
+        )
+      ) {
+        throw new LinkedInCommentsError('malformed_response');
+      }
+      return page;
     },
 
     async createReply(input) {

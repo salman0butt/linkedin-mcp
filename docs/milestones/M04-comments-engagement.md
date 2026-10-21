@@ -67,7 +67,7 @@ Primary boundaries: restricted read entitlements, subject-derived actor identity
 
 M04.1 enforces actor-free canonical reply/reaction payload identity, excludes deprecated `MAYBE`, rejects unsupported caller fields, defaults engagement reads OFF and keeps live capabilities unavailable.
 
-M04.2 validates canonical targets before URL construction, fully encodes explicit targets, restricts request paging to 1–100 items, stream-bounds successful provider JSON to 64 KiB before parsing, sanitizes failures, performs no BATCH_GET and never retries reads.
+M04.2 validates canonical targets before URL construction, fully encodes explicit targets, restricts request paging to 1–100 items, stream-bounds successful provider JSON to 256 KiB before parsing (allowing substantive 100-comment pages), sanitizes failures, performs no BATCH_GET and never retries reads.
 
 M04.3 derives reply actor exclusively from authenticated subject, binds approval/idempotency, rejects target/parent mismatches before approval, validates returned and replayed composite identity, terminally records malformed provider success as `outcome_unknown`, never retries uncertain POSTs and permits documented create success without `likesSummary` while reads remain strict.
 
