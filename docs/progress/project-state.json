@@ -6,14 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "e33ba384df4ae0a5492f20d85e98458e91142011",
-  "ciStatus": "GREEN_HEAD_e33ba384df4ae0a5492f20d85e98458e91142011_RUN_39575410269_SUCCESS_555_TESTS_62_FILES",
+  "latestVerifiedSha": "107ededf02ab147cd5bd3189d537cae552728fe4",
+  "ciStatus": "GREEN_HEAD_107ededf02ab147cd5bd3189d537cae552728fe4_RUN_39577246941_SUCCESS_559_TESTS_62_FILES",
   "criticalFindings": 0,
-  "importantFindings": 0,
+  "importantFindings": 1,
   "blockers": [
-    "M04.7 response-integrity findings were regression-fixed at e33ba384 and verified by CI 39575410269 (555 tests); independent whole-branch review, final merge gates and post-merge main CI remain pending.",
+    "M04.7 comment read and nested parent integrity findings were regression-fixed at 107ededf; CI 39577246941 passed 559 tests across 62 files.",
+    "IMPORTANT: MCP approval tools accept caller-supplied approved:true and issue/consume their own mutation receipts without independent trusted human confirmation. This is a merge blocker affecting comments.reply and reactions.add/remove; analogous existing text/media tools need the same trust-boundary review. Keep PR #6 draft and unmerged.",
     "Live LinkedIn Community Management entitlement remains unverified; this is an external capability gate and no live availability is claimed."
   ],
-  "exactNextWork": "Finish the independent M04.7 review and resolve any verified Critical/Important findings before the exact-final-head merge gates.",
-  "activeHeadSha": "e33ba384df4ae0a5492f20d85e98458e91142011"
+  "exactNextWork": "Implement and regression-verify a trusted out-of-band human approval grant boundary for consequential MCP writes, including inherited text/media flows, before M04 merge gates.",
+  "activeHeadSha": "107ededf02ab147cd5bd3189d537cae552728fe4"
 }

@@ -78,10 +78,11 @@ LinkedIn Community Management comments/reactions use versioned official APIs. Me
 ## Findings / Blockers
 
 Unresolved Critical findings: **0 known**.
-Unresolved Important findings: **0 known** (M04.7 Comments identity and response-to-request integrity regression-fixed and GREEN; independent review pending).
-Pending: complete M04.7 whole-branch correctness/security/provenance review, verify current traceability and exact-final-head CI, then apply merge gates. PR #6 remains a draft until those checks pass.
+Unresolved Important findings: **1 verified** (M04 MCP approval receipt issuance accepts model/client-supplied `approved:true` without trusted human attestation; existing text/media approval paths require the same trust-boundary review).
+Latest verified M04 code head: `107ededf02ab147cd5bd3189d537cae552728fe4` / CI `39577246941`: **559/559 tests in 62 files** and all required quality gates. Two independent-review parent/root regressions were verified RED then fixed, with same-root and cross-family compatibility tests.
+M04.7 skeptical/security review found the approval trust-boundary blocker, so PR #6 **must remain draft and unmerged** until regression-fixed and independently verified.
 Live Community Management entitlement remains an external verification gate; deterministic CI does not establish actual product/scope access.
 
 ## Handoff
 
-Exact next work: **Complete the independent whole-branch M04.7 correctness/security/provenance review at the current head and regression-fix any new Critical/Important findings before merging.**
+Exact next work: **Implement and regression-verify a trusted out-of-band human approval grant boundary for consequential MCP writes, including inherited text/media flows, before M04 merge gates.**

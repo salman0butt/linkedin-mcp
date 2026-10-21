@@ -59,6 +59,8 @@ M04.7 read identity-integrity finding RED: `d906d730617e8931945478d187bc784c200a
 
 M04.7 further response-integrity RED: six locally executed tests on previous source `dd8f1b802d4cc3104b4969049838252fcdb31adf` failed by accepting unrelated same-family activity roots or incorrect response paging windows/counts. GREEN: `e33ba384df4ae0a5492f20d85e98458e91142011`, CI `39575410269` — **555/555 tests across 62 files** plus all quality gates and real transport smoke tests. Legitimate cross-family LinkedIn URN representations remain accepted; a nested-thread test fixture was corrected to refer to the requested parent.
 
+M04.7 independent nested-parent read integrity review: two new local RED tests showed that GET/list returned an unrelated same-family `parentComment` root; two corresponding root-validation fixes and positive compatibility checks for differing comment IDs and cross-family URN aliases passed local GREEN and exact-head CI `39577246941` at `107ededf02ab147cd5bd3189d537cae552728fe4` — **559/559 tests across 62 files** and all required quality gates.
+
 ## Integration Test Evidence
 
 M04.1–M04.5 use deterministic injected-provider/local derivation tests; no live LinkedIn Community Management request has been performed. M04.6 registers all twelve engagement MCP tools with strict schemas and authenticated runtime wiring. Real stdio/HTTP smoke suites verify 28 tools. Read disabled/permission-required states and sanitized Comments rate-limit taxonomy are exercised. No live LinkedIn Community Management request has been performed.
@@ -85,7 +87,7 @@ M04.4 reaction behavior initially reached GREEN before a later fresh security re
 
 M04.5 scoped correctness/security review after exact-head GREEN found 0 Critical findings and 0 Important findings.
 
-Full M04 whole-branch correctness/security/provenance review remains required in M04.7.
+Independent M04 whole-branch correctness/security/provenance review revealed one unresolved **Important security blocker**: the same model/MCP caller can issue and consume its own consequential mutation approval receipt with a caller-controlled `approved:true`, without trusted human confirmation. This applies to M04 reply/reaction MCP approvals, and shared inherited text/media flows require remediation. PR #6 must remain draft and unmerged; see `docs/progress/KNOWN-ISSUES.md`. Code-level permission checks, purpose isolation and idempotency do not satisfy the human approval boundary.
 
 ## Fresh Verification Results
 
@@ -97,7 +99,7 @@ M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 
 
 M04.3 exact source head: `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`: 483/483 tests across 53 files plus all quality gates.
 
-Latest verified source head: `e33ba384df4ae0a5492f20d85e98458e91142011`, CI `39575410269`: 555/555 tests across 62 files plus frozen install, format, lint, typecheck and build.
+Latest verified source head: `107ededf02ab147cd5bd3189d537cae552728fe4`, CI `39577246941`: 559/559 tests across 62 files plus frozen install, format, lint, typecheck and build. This green CI does **not** resolve the Important human-approval security finding.
 
 ## Durable Recovery Sources
 
@@ -109,4 +111,4 @@ Latest verified source head: `e33ba384df4ae0a5492f20d85e98458e91142011`, CI `395
 - [ ] Overall M04 Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Perform M04.7 whole-branch skeptical correctness/security/provenance review, then regression-fix any Critical/Important findings before final merge gates.**
+Exact next work: **Implement and regression-verify a trusted out-of-band human approval grant boundary for consequential MCP writes, including inherited text/media flows, before M04 merge gates.**

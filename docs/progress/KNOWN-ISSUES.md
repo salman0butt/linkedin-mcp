@@ -2,6 +2,12 @@
 
 ## Current unresolved issues
 
+### IMPORTANT — consequential MCP approvals can be self-issued by a caller
+
+Independent exact-head M04.7 security review reproduced a serious approval trust-boundary defect. `apps/server/src/engagement-mcp.ts` exposes `linkedin.comments.reply.approve`, `linkedin.reactions.add.approve` and `linkedin.reactions.remove.approve` accepting only the model/client-supplied payload hash and `approved:true`. The engagement service and shared approval service issue and consume subject/purpose-bound receipts without independent human/host confirmation. A same-client sequence preview → approve → create/add/remove can therefore authorize a consequential provider write (if valid LinkedIn write access and a ledger are configured), even without user approval. Source and a read-only approval issue/consume probe independently demonstrate receipt issuance without external confirmation. The shared existing text/image/multi-image MCP approval flows appear structurally similar and must be included in the trusted-boundary remediation.
+
+**Severity:** Important; PR #6 **must remain draft and unmerged**. Approval receipt purpose scoping and idempotency do not establish user consent. Preserve preview/read and no-duplicate write protections, but require an independent authenticated trusted human/host approval grant source; fail closed where absent. No generic user-supplied boolean, model-invokable approve tool, or untrusted callback may mint the receipt on its own. This finding has **not** been regression-fixed. The one next work action is specified in `project-state.json`.
+
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
@@ -21,6 +27,8 @@ GitHub Actions remains authoritative exact-SHA execution evidence when an intera
 ### Resolved M04.7 — Comments response-to-request thread and page integrity
 
 Six local behavioral tests on the previous PR head `dd8f1b802d4cc3104b4969049838252fcdb31adf` failed because same-family mismatched activity roots and provider pagination window/count violations were accepted. The adapter now rejects them with sanitized `malformed_response` while preserving cross-family URN representations. Existing test fixture for a nested thread was corrected to use its actual parent. Exact-head CI `39575410269` at `e33ba384df4ae0a5492f20d85e98458e91142011` passed 555/555 tests in 62 files and all required quality gates. Full independent M04.7 review remains pending.
+
+Independent M04.7 review additionally found an Important nested-parent integrity gap: a reply's `parentComment` composite root could belong to a different same-family activity than its own comment/object root. Two behavioral tests were verified RED before the fix; after adding the fail-closed parent-root checks and two compatibility tests for same-root/different-comment IDs and cross-family aliases, exact-head `107ededf02ab147cd5bd3189d537cae552728fe4` / CI `39577246941` passed **559/559 tests across 62 files** and all quality gates. This nested-parent finding is resolved; the separate approval-boundary Important finding remains open.
 
 ### Resolved M04.7 — Comments read response identity consistency
 
