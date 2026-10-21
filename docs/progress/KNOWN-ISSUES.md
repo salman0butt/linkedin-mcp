@@ -18,6 +18,10 @@ GitHub Actions remains authoritative exact-SHA execution evidence when an intera
 
 ## Resolved during M04
 
+### Resolved M04.7 — Comments response-to-request thread and page integrity
+
+Six local behavioral tests on the previous PR head `dd8f1b802d4cc3104b4969049838252fcdb31adf` failed because same-family mismatched activity roots and provider pagination window/count violations were accepted. The adapter now rejects them with sanitized `malformed_response` while preserving cross-family URN representations. Existing test fixture for a nested thread was corrected to use its actual parent. Exact-head CI `39575410269` at `e33ba384df4ae0a5492f20d85e98458e91142011` passed 555/555 tests in 62 files and all required quality gates. Full independent M04.7 review remains pending.
+
 ### Resolved M04.7 — Comments read response identity consistency
 
 GET response IDs are now checked against the requested comment ID; GET/list composite comment URN numeric IDs are validated against the returned comment ID. Three automated regressions were proven RED at `d906d730617e8931945478d187bc784c200a622a` / CI `39392445179`, then all 542 tests and quality gates passed at `92a8ca816ca4c300c624360acde0afd6599512bf` / CI `39392843550`. Invalid successful provider responses fail with sanitized `malformed_response`. No live Community Management entitlement was tested.

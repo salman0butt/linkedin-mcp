@@ -57,6 +57,8 @@ M04.6 behavioral RED: `656d1b819358ffa9feaa403646d35d4365a4e2c6`, CI `3903818792
 
 M04.7 read identity-integrity finding RED: `d906d730617e8931945478d187bc784c200a622a`, CI `39392445179` — three intended failures detecting requested-ID and composite comment URN mismatches. GREEN: `92a8ca816ca4c300c624360acde0afd6599512bf`, CI `39392843550` — 542/542 tests across 60 files and all quality gates. The scoped Important finding was regression-fixed. Whole-milestone skeptical review, durable traceability and final merge gates remain pending.
 
+M04.7 further response-integrity RED: six locally executed tests on previous source `dd8f1b802d4cc3104b4969049838252fcdb31adf` failed by accepting unrelated same-family activity roots or incorrect response paging windows/counts. GREEN: `e33ba384df4ae0a5492f20d85e98458e91142011`, CI `39575410269` — **555/555 tests across 62 files** plus all quality gates and real transport smoke tests. Legitimate cross-family LinkedIn URN representations remain accepted; a nested-thread test fixture was corrected to refer to the requested parent.
+
 ## Integration Test Evidence
 
 M04.1–M04.5 use deterministic injected-provider/local derivation tests; no live LinkedIn Community Management request has been performed. M04.6 registers all twelve engagement MCP tools with strict schemas and authenticated runtime wiring. Real stdio/HTTP smoke suites verify 28 tools. Read disabled/permission-required states and sanitized Comments rate-limit taxonomy are exercised. No live LinkedIn Community Management request has been performed.
@@ -95,7 +97,7 @@ M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 
 
 M04.3 exact source head: `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`: 483/483 tests across 53 files plus all quality gates.
 
-Latest verified source head: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125153`: 539/539 tests across 59 files plus frozen install, format, lint, typecheck and build.
+Latest verified source head: `e33ba384df4ae0a5492f20d85e98458e91142011`, CI `39575410269`: 555/555 tests across 62 files plus frozen install, format, lint, typecheck and build.
 
 ## Durable Recovery Sources
 

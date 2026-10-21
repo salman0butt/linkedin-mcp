@@ -1,6 +1,6 @@
 # Project Status
 
-Last reconciled: 2026-10-20. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-21. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
@@ -19,6 +19,12 @@ M04.6 exact-head GREEN: `79bd4bf19d06e3cc41ccc9c6fd15c00b6d173148`, CI `39058125
 
 M04.7 whole-milestone skeptical/security/provenance review, documentation reconciliation, exact-final-head CI and merge/post-merge verification remain pending.
 
+## M04.7 Response-to-Request Integrity — REGRESSION-FIXED
+
+On the former PR head `dd8f1b802d4cc3104b4969049838252fcdb31adf`, six local behavioral regressions failed as intended: same-family unrelated GET/list thread records, conflicting record object/composite-URN roots, mismatched page start, excess page elements and oversized paging metadata. The adapter now fails closed on these cases while retaining legitimate differing LinkedIn URN families. The existing nested-thread test fixture was corrected to refer to its actual parent. The milestone's provider JSON limit description was reconciled to its tested 256 KiB bound.
+
+Exact-head GREEN: `e33ba384df4ae0a5492f20d85e98458e91142011` / CI `39575410269`: **555/555 tests across 62 files**, frozen install, formatting, lint, typecheck, build and real stdio/HTTP smokes passed. The preceding lint-only fix `dd8f1b802d4cc3104b4969049838252fcdb31adf` passed CI `39574002868` with 549/549 tests. Independent M04.7 whole-branch review and merge gates still remain.
+
 ## M04.7 Comments Read Identity Integrity — REGRESSION-FIXED
 
 Behavioral RED: commit `d906d730617e8931945478d187bc784c200a622a`, CI `39392445179`: formatting passed and three new identity-integrity regression tests failed as intended (returned requested-ID mismatch, composite URN numeric mismatch, and malformed list identity). All 539 prior tests remained green.
@@ -27,7 +33,7 @@ Verified GREEN: commit `92a8ca816ca4c300c624360acde0afd6599512bf`, CI `393928435
 
 Scoped finding closed; currently **0 known unresolved Critical / Important findings**. M04.7 whole-branch skeptical security/provenance review and final merge gates remain pending.
 
-Latest verified exact head before this documentation reconciliation: `b915a38f464be863b12c676a3522bb537a4cc9c5` / CI `39393288032`: **542/542 tests across 60 files** plus frozen install, format, lint, typecheck and build.
+Latest verified source head: `e33ba384df4ae0a5492f20d85e98458e91142011` / CI `39575410269`: **555/555 tests across 62 files** plus frozen install, format, lint, typecheck and build.
 
 Exact next work: **Perform M04.7 whole-branch skeptical correctness/security/provenance review at the exact head and resolve any new Critical/Important findings before merge gates.**
 
@@ -72,7 +78,7 @@ LinkedIn Community Management comments/reactions use versioned official APIs. Me
 ## Findings / Blockers
 
 Unresolved Critical findings: **0 known**.
-Unresolved Important findings: **0 known** (M04.7 Comments identity-integrity regression-fixed and GREEN).
+Unresolved Important findings: **0 known** (M04.7 Comments identity and response-to-request integrity regression-fixed and GREEN; independent review pending).
 Pending: complete M04.7 whole-branch correctness/security/provenance review, verify current traceability and exact-final-head CI, then apply merge gates. PR #6 remains a draft until those checks pass.
 Live Community Management entitlement remains an external verification gate; deterministic CI does not establish actual product/scope access.
 
