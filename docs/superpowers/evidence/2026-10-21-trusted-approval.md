@@ -20,3 +20,7 @@ On Node `v24.11.1` with pnpm `12.9.1`, the updated full suite passed **579/579 t
 The production runtime now gates receipt issuance on a host-owned, single-use subject/purpose/hash grant with an unpredictable bearer ID; it consumes the ID before calling the receipt store and never forwards it there. No model/MCP tool can issue the host grant. Default stdio/HTTP has no trusted host approval UI and intentionally fails closed. A trusted embedding host must privately supply the capability to the intended approved request, not include it in model prompts or logs. This is not a claim that a human approval UI or live LinkedIn Community Management entitlement has been exercised.
 
 Pending: independent security review (the two dispatched remote review workers timed out without reports), durable GitHub write, exact-new-head CI, traceability/merge gates and post-merge verification.
+
+## Durable exact-head verification
+
+The complete reviewed implementation, including the cross-client capability-ID fix and prevention of forwarding consumed grant IDs to injected receipt stores, was committed at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`. GitHub Actions CI run `39589866610` succeeded with **579/579 tests across 64 files**; frozen install, Prettier, ESLint, TypeScript typecheck, build, and real stdio/HTTP smoke tests all passed. The same final suite and gates passed locally. Independent review and merge/post-merge gates remain pending, and live LinkedIn entitlement is still unverified.

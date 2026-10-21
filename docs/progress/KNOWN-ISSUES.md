@@ -2,11 +2,13 @@
 
 ## Current unresolved issues
 
-### IMPORTANT — consequential MCP approvals can be self-issued by a caller
+### IMPORTANT review gate — trusted MCP approval remediation awaiting independent validation
 
 Independent exact-head M04.7 security review reproduced a serious approval trust-boundary defect. `apps/server/src/engagement-mcp.ts` exposes `linkedin.comments.reply.approve`, `linkedin.reactions.add.approve` and `linkedin.reactions.remove.approve` accepting only the model/client-supplied payload hash and `approved:true`. The engagement service and shared approval service issue and consume subject/purpose-bound receipts without independent human/host confirmation. A same-client sequence preview → approve → create/add/remove can therefore authorize a consequential provider write (if valid LinkedIn write access and a ledger are configured), even without user approval. Source and a read-only approval issue/consume probe independently demonstrate receipt issuance without external confirmation. The shared existing text/image/multi-image MCP approval flows appear structurally similar and must be included in the trusted-boundary remediation.
 
-**Severity:** Important; PR #6 **must remain draft and unmerged**. Approval receipt purpose scoping and idempotency do not establish user consent. Preserve preview/read and no-duplicate write protections, but require an independent authenticated trusted human/host approval grant source; fail closed where absent. No generic user-supplied boolean, model-invokable approve tool, or untrusted callback may mint the receipt on its own. This finding has **not** been regression-fixed. The one next work action is specified in `project-state.json`.
+**Remediation:** The original self-approval defect is regression-fixed in commit `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`: shared production issuance now requires a trusted host-issued 256-bit single-use `trustedGrantId` bound to authenticated subject, purpose and payload hash. The ID cannot be minted using an MCP tool or reused and is never passed to a pluggable receipt store. Every text/media/reply/reaction approval path defaults to `human_action_required` without a matching grant. Exact-head CI `39589866610` passed **579/579 tests across 64 files**, including all required gates. No host UI or live entitlement is claimed.
+
+**Remaining gate:** An independent whole-branch security review has not yet returned a usable report (two reviewer worker chats timed out; another was dispatched). Treat the Important finding as **awaiting independent validation**, and leave PR #6 draft and unmerged. One exact next work action is in `project-state.json`.
 
 ### Minor — private package boundary is repository-relative
 

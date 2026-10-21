@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "6d126472d560fbe428f6bd5d6b099f75b3a071d0",
-  "ciStatus": "GREEN_HEAD_6d126472d560fbe428f6bd5d6b099f75b3a071d0_RUN_39578141149_SUCCESS",
+  "latestVerifiedSha": "5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7",
+  "ciStatus": "GREEN_HEAD_5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7_RUN_39589866610_SUCCESS_579_TESTS_64_FILES",
   "criticalFindings": 0,
   "importantFindings": 1,
   "blockers": [
     "M04.7 comment read and nested parent integrity findings were regression-fixed at 107ededf; CI 39577246941 passed 559 tests across 62 files.",
-    "IMPORTANT: MCP approval self-issuance finding is locally regression-fixed across text, media, replies and reactions with trusted host grants; independent security review and exact-new-head CI remain pending. Keep PR #6 draft and unmerged until verified.",
+    "IMPORTANT review gate: MCP approval self-issuance is regression-fixed at 5c2efce using host-issued single-use 256-bit grants across text/media/replies/reactions; GitHub CI 39589866610 passed 579 tests/64 files. A fresh independent review has not yet produced a usable final report. Keep PR #6 draft/unmerged until that gate and final documentation reconciliation pass.",
     "Live LinkedIn Community Management entitlement remains unverified; this is an external capability gate and no live availability is claimed."
   ],
-  "exactNextWork": "Finish independent security review of the trusted approval grant remediation, persist the reviewed change to PR #6, and verify exact-new-head CI before reconsidering M04 merge gates.",
-  "activeHeadSha": "6d126472d560fbe428f6bd5d6b099f75b3a071d0"
+  "exactNextWork": "Complete independent security review of the exact-head trusted approval remediation and resolve any verified Critical/Important issues before final M04 merge gates.",
+  "activeHeadSha": "5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7"
 }

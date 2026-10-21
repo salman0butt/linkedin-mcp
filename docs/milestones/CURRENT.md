@@ -2,7 +2,7 @@
 
 Milestone: M04 — Comments & Engagement
 Status: ACTIVE — M04.7 security review and closeout
-Local checkpoint (2026-10-21): trusted host grant validation is implemented and locally tested. Independent review and new-head CI are pending; PR #6 remains draft.
+Verified checkpoint (2026-10-21): trusted host grant remediation committed at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, GitHub CI `39589866610` **579/579 tests across 64 files** and all required gates. Independent security review remains pending; PR #6 stays draft.
 Iteration: M04.7
 Branch: `feat/m04-comments-engagement`
 PR: #6 — draft
@@ -34,4 +34,4 @@ M04.7 Comments identity-integrity defect: three focused regression tests were co
 
 Independent M04.7 review additionally found a mismatched nested-parent root Important issue, regression-fixed at `107ededf02ab147cd5bd3189d537cae552728fe4` / CI `39577246941` with **559/559 tests across 62 files** and all gates. A separate independent security review found **one still-open Important blocker**: model/MCP callers can mint their own write approval receipts using `approved:true` without independent trusted human confirmation. PR #6 remains draft and unmerged. The existing text/media MCP approval paths require the same trust-boundary review.
 
-Exact next work: **Implement and regression-verify a trusted out-of-band human approval grant boundary for consequential MCP writes, including inherited text/media flows, before M04 merge gates.**
+Exact next work: **Complete independent security review of the exact-head trusted-approval remediation and fix any verified Critical/Important issues before final M04 merge gates.**

@@ -63,5 +63,5 @@
 **Files:** Update project-state, STATUS, known issues, M04 ledger, current milestone, traceability, capability matrix, operator docs and evidence.
 
 - [ ] Perform independent correctness/security review; fix Critical/Important findings with RED first.
-- [ ] Re-check remote branch and PR, persist through connector-first GitHub write, verify exact-head CI.
+- [x] Re-check remote branch and PR, persist through connector-first GitHub write, verify exact-head CI (commit `5c2efce`, CI `39589866610`; 579/579 tests).
 - [ ] Merge only when every gate is green; verify post-merge main before M05.

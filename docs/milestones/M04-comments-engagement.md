@@ -91,6 +91,8 @@ M04.5 scoped correctness/security review after exact-head GREEN found 0 Critical
 
 Independent M04 whole-branch correctness/security/provenance review revealed one unresolved **Important security blocker**: the same model/MCP caller can issue and consume its own consequential mutation approval receipt with a caller-controlled `approved:true`, without trusted human confirmation. This applies to M04 reply/reaction MCP approvals, and shared inherited text/media flows require remediation. PR #6 must remain draft and unmerged; see `docs/progress/KNOWN-ISSUES.md`. Code-level permission checks, purpose isolation and idempotency do not satisfy the human approval boundary.
 
+Trusted-approval remediation is durably verified at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, GitHub CI `39589866610` — **579/579 tests in 64 files** plus full quality gates. The shared receipt issuer fails closed without the host's exact single-use, 256-bit `trustedGrantId`, checked against authenticated subject, purpose and canonical payload hash. Regression tests catch second-client grant theft and accidental forwarding of spent grants to injected receipt stores. The original security mechanism is fixed in source; **independent final security validation has not completed**, so the Important review gate stays open and PR #6 remains draft.
+
 ## Fresh Verification Results
 
 Verified main after M03 hotfix: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`, CI `38153987423`: 427/427 tests across 46 files plus all quality gates.
@@ -101,7 +103,7 @@ M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 
 
 M04.3 exact source head: `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`: 483/483 tests across 53 files plus all quality gates.
 
-Latest verified source head: `107ededf02ab147cd5bd3189d537cae552728fe4`, CI `39577246941`: 559/559 tests across 62 files plus frozen install, format, lint, typecheck and build. This green CI does **not** resolve the Important human-approval security finding.
+Latest verified source head: `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, CI `39589866610`: 579/579 tests across 64 files, frozen install, format, lint, typecheck and build. This proves the regression-fix behavior, not an independent security review or live human-approval integration.
 
 ## Durable Recovery Sources
 
@@ -113,4 +115,4 @@ Latest verified source head: `107ededf02ab147cd5bd3189d537cae552728fe4`, CI `395
 - [ ] Overall M04 Critical/Important resolved.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Implement and regression-verify a trusted out-of-band human approval grant boundary for consequential MCP writes, including inherited text/media flows, before M04 merge gates.**
+Exact next work: **Complete independent security review of exact-head trusted approval and fix any verified Critical/Important issues before final M04 merge gates.**
