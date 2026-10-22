@@ -2,15 +2,17 @@
 
 ## Current checkpoint — 2026-10-22
 
-M05 Post Search is ACTIVE in M05.3, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
+M05 Post Search is ACTIVE in M05.4, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
 
 M04 **COMPLETE**: [PR #6](https://github.com/salman0butt/linkedin-mcp/pull/6) squash merged at `800bf943cf047215bc434206dab1e5b6e2175c10`. Post-merge main CI `39740297020` passed **583/583 tests across 66 files**, frozen install, format, lint, typecheck and build. Independent M04 approval-security and reply-root reviews found no verified Critical/Important defects. No live Community Management entitlement or shipped authenticated host approval UI is claimed.
 
-M05.1 core contract RED→GREEN committed at `1bbc366dda57cc44d10825c6126a6fefd195dd7d`; exact-head CI `39743915175` GREEN (589/589 tests, 67 files, all gates). M05.2 deterministic filtering/dedupe RED (missing module) → exact-head GitHub CI `39744941663` GREEN on `9e6a141` (596/596 tests across 68 files, all quality gates). M05.3 typed provider router RED (missing module) → local GREEN **607/607 tests across 69 files**, format/lint/typecheck/build/real transports; independent review and new-head CI pending.
+M05.1 core contract RED→GREEN committed at `1bbc366dda57cc44d10825c6126a6fefd195dd7d`; exact-head CI `39743915175` GREEN (589/589 tests, 67 files, all gates). M05.2 deterministic filtering/dedupe RED (missing module) → exact-head GitHub CI `39744941663` GREEN on `9e6a141` (596/596 tests across 68 files, all quality gates). M05.3 typed provider router RED (missing module) → verified exact-head `6c7e1ccd99eafdb434e382af99d0698eee748874`, CI `39745975198` GREEN **607/607 tests across 69 files**, frozen install, format/lint/typecheck/build/real transports; independent provider-security review remains pending.
 
 M05 requires provenance-preserving discovery: external/partner discovery only when legitimately configured; official author-scoped read only with the separately verified member/organization roles and restricted scopes. Unavailable is not a successful empty response. Normalized results must not invent publication dates, engagement, canonical URLs, or source authority. No external provider is bundled.
 
-Exact next work: **Persist regression-verified M05.3 provider router to PR #8, verify exact-head CI and assess permission-gated official author finder.**
+M05.3 security review identified one Important capability-provenance defect: an `OFFICIAL_API` adapter could declare broad `topic`, `hashtag` or `recent` search and produce misleading official-search results. A focused regression was verified RED (11 passed, 1 failed); fail-closed correction committed at `35ff359dffecc179aa82f0e41d7c563b559825d7` and exact-head CI `39758769454` passed 608/608 tests across 69 files and quality gates. No external provider entitlement is claimed.
+
+Exact next work: **Implement M05.4 default-OFF single-author official Posts API finder with verified member/organization access and RED→GREEN tests on PR #8.**
 
 ## Historical M04 checkpoint (superseded by merged Git graph)
 

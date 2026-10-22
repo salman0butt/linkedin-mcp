@@ -59,7 +59,7 @@
 
 - [x] RED for absent provider, permission/restriction, rate limits, failures, empty consulted provider, timeout and oversized provider response, hostile result data, response-source spoofing, unsupported-kind routes and bounded fan-out. Assert mixed success/empty plus provider-error => partial not available-empty; all failures => deterministic precedence.
 - [x] GREEN read-only fail-closed service; no client-controlled endpoint, provider fallback only when configured and labelled.
-- [ ] Full regression gates and exact-head CI checkpoint.
+- [x] Full regression gates and exact-head CI checkpoint (M05.3 `6c7e1cc`/`39745975198` 607 tests).
 
 ### Task 4: Documented author finder (M05.4)
 

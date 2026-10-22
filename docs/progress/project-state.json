@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M05",
-  "currentIteration": "M05.3",
+  "currentIteration": "M05.4",
   "status": "ACTIVE",
   "activeBranch": "feat/m05-post-search",
   "activePr": 8,
   "baseBranch": "main",
-  "latestVerifiedSha": "9e6a141c36521305f536167df18ef0be75a72a28",
-  "ciStatus": "GREEN_HEAD_9e6a141c36521305f536167df18ef0be75a72a28_RUN_39744941663_SUCCESS_596_TESTS_68_FILES",
+  "latestVerifiedSha": "35ff359dffecc179aa82f0e41d7c563b559825d7",
+  "ciStatus": "GREEN_HEAD_35ff359dffecc179aa82f0e41d7c563b559825d7_RUN_39758769454_SUCCESS_608_TESTS_69_FILES",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.1 canonical core contracts CI 39743915175 green 589/589. M05.2 deterministic filtering/dedup exact head 9e6a141 CI 39744941663 green 596/596. M05.3 provider router observed RED missing module, locally GREEN 607/607 tests in 69 files plus all gates; exact-new-head CI pending.",
-    "No legal external/partner discovery provider has been configured; no live global search availability is claimed. Official author finder remains unavailable unless restricted scopes, trusted read opt-in and verified member/organization role are demonstrated."
+    "M05.3 official-provider global-mode provenance finding is resolved by 35ff359dffecc179aa82f0e41d7c563b559825d7; exact-head CI 39758769454 succeeded (608 tests, 69 files).",
+    "No lawful external/partner discovery provider is configured. Official Posts API single-author finder requires default-OFF trusted gate, verified member/organization identity or role and restricted read scopes; no entitlement claimed."
   ],
-  "exactNextWork": "Persist M05.3 fail-closed provider router on draft PR #8 and verify exact-head CI; then assess permission-gated official author finder design.",
-  "activeHeadSha": "9e6a141c36521305f536167df18ef0be75a72a28"
+  "exactNextWork": "Implement M05.4 default-OFF single-author official Posts API finder using genuine RED-to-GREEN tests and trusted member/organization authorization; preserve PR #8 boundary.",
+  "activeHeadSha": "35ff359dffecc179aa82f0e41d7c563b559825d7"
 }

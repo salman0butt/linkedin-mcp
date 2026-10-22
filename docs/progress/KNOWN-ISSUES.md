@@ -2,6 +2,10 @@
 
 ## Current unresolved issues
 
+### Resolved — M05.3 official provider mode provenance
+
+The M05.3 router at `6c7e1cc` permitted a trusted `OFFICIAL_API` adapter to declare `topic`, `hashtag` or `recent` global search despite the documented author-scoped-only official API. A concrete read-only probe returned `available` with `OFFICIAL_API` source for a topic query. Regression verified RED (11 passed, 1 failed); commit `35ff359dffecc179aa82f0e41d7c563b559825d7` rejects unsupported modes. Exact-head CI `39758769454` succeeded (608/608 tests, 69 files and quality gates). No live entitlement is claimed.
+
 ### M05 external discovery integration boundary
 
 No legitimate external/partner global post discovery provider has been configured or live-verified. An explicit `unavailable` result is required until a provider with lawful access, provenance and terms exists. LinkedIn's official Posts API finder is author-scoped and permission-dependent, not general keyword search. Do not claim live search availability from deterministic tests.
