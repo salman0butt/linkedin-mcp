@@ -57,6 +57,10 @@ const approveMediaInputSchema = z
   .object({
     payloadHash: payloadHashSchema,
     approved: z.literal(true),
+    trustedGrantId: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{43}$/)
+      .optional(),
   })
   .strict();
 const createImageInputSchema = z
@@ -259,6 +263,10 @@ function mapFailure(
   if (error instanceof MediaPostServiceError) {
     code = error.kind;
     switch (error.kind) {
+      case 'trusted_human_approval_required':
+        status = 'human_action_required';
+        message = 'Approve the exact preview through a trusted host before requesting a receipt.';
+        break;
       case 'approval_mismatch':
       case 'approval_expired':
       case 'approval_not_found':
@@ -363,7 +371,7 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
     'linkedin.post.approve.image',
     {
       description:
-        'Issue a short-lived subject-bound approval receipt for a previously previewed image post.',
+        'Request an image-post receipt after independent trusted host confirmation of the preview.',
       inputSchema: approveMediaInputSchema,
       outputSchema: mediaOutputSchema,
     },
@@ -372,7 +380,10 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
         return unavailable('post.approve.image', 'LOCAL_ONLY', deps);
       }
       try {
-        const receipt = await deps.mediaPostService.approve({ payloadHash: input.payloadHash });
+        const receipt = await deps.mediaPostService.approve({
+          payloadHash: input.payloadHash,
+          ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
+        });
         return response(
           createLocalAuditResult({
             status: 'succeeded',
@@ -461,7 +472,7 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
     'linkedin.post.approve.multi_image',
     {
       description:
-        'Issue a short-lived subject-bound approval receipt for a previously previewed multi-image post.',
+        'Request a multi-image receipt after independent trusted host confirmation of the preview.',
       inputSchema: approveMediaInputSchema,
       outputSchema: mediaOutputSchema,
     },
@@ -470,7 +481,10 @@ export function registerMediaPostTools(server: McpServer, deps: RegisterMediaPos
         return unavailable('post.approve.multi_image', 'LOCAL_ONLY', deps);
       }
       try {
-        const receipt = await deps.mediaPostService.approve({ payloadHash: input.payloadHash });
+        const receipt = await deps.mediaPostService.approve({
+          payloadHash: input.payloadHash,
+          ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
+        });
         return response(
           createLocalAuditResult({
             status: 'succeeded',

@@ -153,6 +153,10 @@ const approveInputSchema = z
     payload: canonicalPayloadSchema,
     payloadHash: z.string().regex(/^[a-f0-9]{64}$/),
     approved: z.literal(true),
+    trustedGrantId: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{43}$/)
+      .optional(),
   })
   .strict();
 const createInputSchema = z
@@ -425,7 +429,7 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
     'linkedin.post.approve.text',
     {
       description:
-        'Issue a short-lived receipt after explicit approval intent and local member-status checks.',
+        'Request a receipt after trusted host confirmation of the exact preview; caller intent alone is insufficient.',
       inputSchema: approveInputSchema,
       outputSchema: textPostOutputSchema,
     },
@@ -534,6 +538,7 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
         const receipt = deps.publishing.approvals.issue({
           payloadHash: computed.payloadHash,
           subject: status.subject,
+          ...(input.trustedGrantId === undefined ? {} : { trustedGrantId: input.trustedGrantId }),
         });
         const result = createLocalAuditResult({
           status: 'succeeded',
@@ -544,7 +549,17 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
           now,
         });
         return textPostResponse(result);
-      } catch {
+      } catch (error: unknown) {
+        if (error instanceof ApprovalServiceError && error.kind === 'human_approval_required') {
+          return textPostResponse(
+            localFailure(
+              'human_action_required',
+              'trusted_human_approval_required',
+              'Approve the exact preview through a trusted host before requesting a receipt.',
+              computed.payloadHash,
+            ),
+          );
+        }
         return textPostResponse(
           localFailure(
             'failed',

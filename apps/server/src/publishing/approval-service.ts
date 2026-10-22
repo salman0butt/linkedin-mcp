@@ -1,10 +1,16 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
+import type { TrustedApprovalGrantConsumer } from './trusted-approval-grants.js';
 
 const provider = 'LOCAL_ONLY' as const;
 const defaultTtlMs = 5 * 60_000;
 const maxTtlMs = 10 * 60_000;
 
-export type ApprovalServiceErrorKind = 'not_found' | 'mismatch' | 'expired' | 'already_consumed';
+export type ApprovalServiceErrorKind =
+  | 'not_found'
+  | 'mismatch'
+  | 'expired'
+  | 'already_consumed'
+  | 'human_approval_required';
 
 export class ApprovalServiceError extends Error {
   readonly kind: ApprovalServiceErrorKind;
@@ -26,6 +32,7 @@ export interface ApprovalReceipt {
 export interface ApprovalIssueInput {
   payloadHash: string;
   subject: string;
+  trustedGrantId?: string;
 }
 
 export interface ApprovalConsumeInput extends ApprovalIssueInput {
@@ -66,6 +73,60 @@ function assertNonEmpty(value: string, name: string): void {
 
 function assertPayloadHash(value: string): void {
   if (!/^[a-f0-9]{64}$/.test(value)) throw new Error('payloadHash must be a lowercase SHA-256 hex digest');
+}
+
+export function purposePayloadHash(purpose: string, payloadHash: string): string {
+  assertNonEmpty(purpose, 'purpose');
+  assertPayloadHash(payloadHash);
+  return createHash('sha256')
+    .update(JSON.stringify(['approval-purpose-v1', purpose, payloadHash]))
+    .digest('hex');
+}
+
+export function scopeApprovalService(service: ApprovalService, purpose: string): ApprovalService {
+  assertNonEmpty(purpose, 'purpose');
+
+  return {
+    issue(input) {
+      const scopedHash = purposePayloadHash(purpose, input.payloadHash);
+      const receipt = service.issue({ ...input, payloadHash: scopedHash });
+      return { ...receipt, payloadHash: input.payloadHash };
+    },
+    consume(input) {
+      return service.consume({
+        ...input,
+        payloadHash: purposePayloadHash(purpose, input.payloadHash),
+      });
+    },
+  };
+}
+
+export function requireTrustedApprovalGrant(
+  service: ApprovalService,
+  grants?: TrustedApprovalGrantConsumer,
+): ApprovalService {
+  return {
+    issue(input) {
+      let approved = false;
+      try {
+        approved =
+          grants?.consume({
+            subject: input.subject,
+            scopedPayloadHash: input.payloadHash,
+            ...(input.trustedGrantId === undefined ? {} : { grantId: input.trustedGrantId }),
+          }) === true;
+      } catch {
+        // A failing host integration cannot authorize a write.
+      }
+      if (!approved) throw new ApprovalServiceError('human_approval_required');
+      // Grant IDs are one-time bearer capabilities. Never forward them to a
+      // pluggable receipt store after the trusted consumer has spent them.
+      return service.issue({ subject: input.subject, payloadHash: input.payloadHash });
+    },
+    consume(input) {
+      return service.consume(input);
+    },
+  };
 }
 
 export function createApprovalService(deps: ApprovalServiceDeps = {}): ApprovalService {

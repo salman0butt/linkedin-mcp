@@ -72,7 +72,7 @@ function callBuiltServer(): unknown {
 }
 
 describe('built stdio server', () => {
-  it('exposes local health, auth, text publishing, and media discovery through the real StdioClientTransport', () => {
+  it('exposes foundation, publishing, and engagement tools through the real StdioClientTransport', () => {
     const result = callBuiltServer() as {
       toolNames: string[];
       toolCount: number;
@@ -104,7 +104,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 16,
+      toolCount: 28,
       preview: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
@@ -136,6 +136,18 @@ describe('built stdio server', () => {
         'linkedin.post.preview.multi_image',
         'linkedin.post.approve.multi_image',
         'linkedin.post.create.multi_image',
+        'linkedin.comments.get',
+        'linkedin.comments.list',
+        'linkedin.comments.inbox',
+        'linkedin.comments.reply.preview',
+        'linkedin.comments.reply.approve',
+        'linkedin.comments.reply.create',
+        'linkedin.reactions.add.preview',
+        'linkedin.reactions.add.approve',
+        'linkedin.reactions.add',
+        'linkedin.reactions.remove.preview',
+        'linkedin.reactions.remove.approve',
+        'linkedin.reactions.remove',
       ]),
     );
     expect(

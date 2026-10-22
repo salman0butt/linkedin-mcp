@@ -9,8 +9,60 @@ import { createTextPostPreview } from '../../../packages/core/dist/index.js';
 import type { AuthService } from '../src/auth/auth-service.js';
 import type { IdempotencyLedger } from '../src/publishing/idempotency-ledger.js';
 import type { LinkedInPostsAdapter } from '../src/publishing/linkedin-posts.js';
+import { ApprovalServiceError } from '../src/publishing/approval-service.js';
+import { createTrustedApprovalGrantStore } from '../src/publishing/trusted-approval-grants.js';
 
 describe('createLinkedInRuntime', () => {
+  it('does not issue any approval receipt without an independent host grant, even with an injected store', () => {
+    const issue = vi.fn();
+    const runtime = createLinkedInRuntime(parseConfig(), {
+      approvals: { issue, consume: vi.fn() },
+    });
+
+    expect(() =>
+      runtime.publishing.approvals.issue({ payloadHash: 'a'.repeat(64), subject: 'member-123' }),
+    ).toThrowError(new ApprovalServiceError('human_approval_required'));
+    expect(issue).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when the trusted host grant consumer throws', () => {
+    const runtime = createLinkedInRuntime(parseConfig(), {
+      trustedApprovalGrants: {
+        consume: () => {
+          throw new Error('host grant store unavailable');
+        },
+      },
+    });
+    expect(() =>
+      runtime.publishing.approvals.issue({ payloadHash: 'a'.repeat(64), subject: 'member-123' }),
+    ).toThrowError(new ApprovalServiceError('human_approval_required'));
+  });
+
+  it('requires a one-time host grant for the exact text purpose, subject and payload hash', () => {
+    const now = () => new Date('2026-10-21T09:00:00.000Z');
+    const grants = createTrustedApprovalGrantStore({ now });
+    const runtime = createLinkedInRuntime(parseConfig(), { now, trustedApprovalGrants: grants.consumer });
+    const input = { payloadHash: 'a'.repeat(64), subject: 'member-123' };
+
+    const wrongPurposeGrant = grants.issuer.grant({ ...input, purpose: 'reactions.add' });
+    expect(() => runtime.publishing.approvals.issue({ ...input, trustedGrantId: wrongPurposeGrant })).toThrow(
+      ApprovalServiceError,
+    );
+    expect(() => runtime.publishing.approvals.issue(input)).toThrow(ApprovalServiceError);
+    const trustedGrantId = grants.issuer.grant({ ...input, purpose: 'posts.text' });
+    const receipt = runtime.publishing.approvals.issue({ ...input, trustedGrantId });
+    expect(receipt.payloadHash).toBe(input.payloadHash);
+    expect(() => runtime.publishing.approvals.issue({ ...input, trustedGrantId })).toThrow(
+      ApprovalServiceError,
+    );
+    expect(
+      runtime.publishing.approvals.consume({
+        ...input,
+        receiptId: receipt.receiptId,
+        idempotencyKey: 'approved-text-operation',
+      }),
+    ).toEqual({ status: 'initiated', idempotencyKey: 'approved-text-operation' });
+  });
   it('keeps a publisher absent when API version or explicit ledger path is missing and creates no files', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'm02-runtime-'));
     const config = parseConfig({
@@ -33,20 +85,29 @@ describe('createLinkedInRuntime', () => {
   });
 
   it('uses the configured approval lifetime without requiring publisher configuration', () => {
+    const grants = createTrustedApprovalGrantStore({ now: () => new Date('2026-10-08T12:00:00.000Z') });
     const runtime = createLinkedInRuntime(parseConfig({ LINKEDIN_MCP_APPROVAL_TTL_MS: '120000' }), {
       now: () => new Date('2026-10-08T12:00:00.000Z'),
+      trustedApprovalGrants: grants.consumer,
     });
 
+    const trustedGrantId = grants.issuer.grant({
+      purpose: 'posts.text',
+      payloadHash: 'a'.repeat(64),
+      subject: 'member-123',
+    });
     const receipt = runtime.publishing.approvals.issue({
       payloadHash: 'a'.repeat(64),
       subject: 'member-123',
+      trustedGrantId,
     });
 
     expect(receipt.expiresAt).toBe('2026-10-08T12:02:00.000Z');
     expect(runtime.publishing.textPostService).toBeUndefined();
   });
 
-  it('shares one injected dependency graph and creates a publisher only with explicit config', () => {
+  it('scopes injected approvals while reusing the injected dependency graph', () => {
+    const grants = createTrustedApprovalGrantStore();
     const authService = { getStatus: vi.fn() } as unknown as AuthService;
     const approvals = { issue: vi.fn(), consume: vi.fn() } as never;
     const ledger = { reserve: vi.fn(), complete: vi.fn() } as unknown as IdempotencyLedger;
@@ -63,16 +124,36 @@ describe('createLinkedInRuntime', () => {
     const runtime = createLinkedInRuntime(config, {
       authService,
       approvals,
+      trustedApprovalGrants: grants.consumer,
       ledger,
       posts,
       now: () => new Date('2026-10-08T12:00:00.000Z'),
     });
 
     expect(runtime.authService).toBe(authService);
-    expect(runtime.publishing.approvals).toBe(approvals);
+    expect(runtime.publishing.approvals).not.toBe(approvals);
     expect(runtime.publishing.textPostService).toBeDefined();
     expect(createTextPost).not.toHaveBeenCalled();
     expect(getTextPost).not.toHaveBeenCalled();
+
+    const publicPayloadHash = 'a'.repeat(64);
+    const trustedGrantId = grants.issuer.grant({
+      purpose: 'posts.text',
+      payloadHash: publicPayloadHash,
+      subject: 'member-123',
+    });
+    runtime.publishing.approvals.issue({
+      payloadHash: publicPayloadHash,
+      subject: 'member-123',
+      trustedGrantId,
+    });
+    const issueMock = (approvals as unknown as { issue: ReturnType<typeof vi.fn> }).issue;
+    expect(issueMock).toHaveBeenCalledTimes(1);
+    const scopedInput = issueMock.mock.calls[0]?.[0] as { payloadHash: string; subject: string };
+    expect(scopedInput.subject).toBe('member-123');
+    expect(scopedInput.payloadHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(scopedInput.payloadHash).not.toBe(publicPayloadHash);
+    expect(scopedInput).not.toHaveProperty('trustedGrantId');
   });
 
   it('forwards trusted member-read enablement to the shared Task 6 service', async () => {
@@ -140,11 +221,24 @@ describe('createLinkedInRuntime', () => {
       LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: '/tmp/runtime-read-ledger.json',
       LINKEDIN_MCP_MEMBER_POST_READ_ENABLED: 'true',
     });
-    const runtime = createLinkedInRuntime(config, { authService, ledger, posts, now });
+    const grants = createTrustedApprovalGrantStore({ now });
+    const runtime = createLinkedInRuntime(config, {
+      authService,
+      ledger,
+      posts,
+      now,
+      trustedApprovalGrants: grants.consumer,
+    });
     const preview = createTextPostPreview({ text: 'runtime verified post' });
+    const trustedGrantId = grants.issuer.grant({
+      purpose: 'posts.text',
+      payloadHash: preview.payloadHash,
+      subject: 'member-123',
+    });
     const receipt = runtime.publishing.approvals.issue({
       payloadHash: preview.payloadHash,
       subject: 'member-123',
+      trustedGrantId,
     });
 
     const published = await runtime.publishing.textPostService?.publish({

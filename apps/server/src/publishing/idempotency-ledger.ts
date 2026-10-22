@@ -7,6 +7,7 @@ import {
   writeFile as fsWriteFile,
 } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 const STORE_VERSION = 2 as const;
 const LEGACY_STORE_VERSION = 1 as const;
@@ -34,6 +35,8 @@ export class IdempotencyLedgerError extends Error {
 
 export interface MutationResult {
   postUrn?: string;
+  resourceUrn?: string;
+  resourceId?: string;
   errorCode?: string;
 }
 
@@ -152,8 +155,14 @@ function parseResult(value: unknown): MutationResult | undefined {
   }
 
   const candidate = value as Record<string, unknown>;
-  assertExactKeys(candidate, ['postUrn', 'errorCode']);
+  assertExactKeys(candidate, ['postUrn', 'resourceUrn', 'resourceId', 'errorCode']);
   if (candidate.postUrn !== undefined && typeof candidate.postUrn !== 'string') {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+  if (candidate.resourceUrn !== undefined && typeof candidate.resourceUrn !== 'string') {
+    throw new IdempotencyLedgerError('corrupt_store');
+  }
+  if (candidate.resourceId !== undefined && typeof candidate.resourceId !== 'string') {
     throw new IdempotencyLedgerError('corrupt_store');
   }
   if (candidate.errorCode !== undefined && typeof candidate.errorCode !== 'string') {
@@ -162,6 +171,8 @@ function parseResult(value: unknown): MutationResult | undefined {
 
   return {
     ...(candidate.postUrn === undefined ? {} : { postUrn: candidate.postUrn }),
+    ...(candidate.resourceUrn === undefined ? {} : { resourceUrn: candidate.resourceUrn }),
+    ...(candidate.resourceId === undefined ? {} : { resourceId: candidate.resourceId }),
     ...(candidate.errorCode === undefined ? {} : { errorCode: candidate.errorCode }),
   };
 }
@@ -292,6 +303,8 @@ function cloneRecord(record: MutationRecord): MutationRecord {
 function validateResult(result: MutationResult | undefined): MutationResult | undefined {
   if (result === undefined) return undefined;
   if (result.postUrn !== undefined) assertNonEmpty(result.postUrn, 'postUrn');
+  if (result.resourceUrn !== undefined) assertNonEmpty(result.resourceUrn, 'resourceUrn');
+  if (result.resourceId !== undefined) assertNonEmpty(result.resourceId, 'resourceId');
   if (result.errorCode !== undefined) assertNonEmpty(result.errorCode, 'errorCode');
   return { ...result };
 }
@@ -336,16 +349,29 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
   const lockPath = join(directory, `.${basename(options.filePath)}.lock`);
   let queue: Promise<void> = Promise.resolve();
 
-  async function withFileLock<T>(action: () => Promise<T>): Promise<T> {
+  async function withFileLock<T>(action: () => Promise<T>, retryCompletionContention = false): Promise<T> {
     try {
       await filesystem.mkdir(directory, { recursive: true, mode: 0o700 });
-      await filesystem.writeFile(lockPath, '', {
-        encoding: 'utf8',
-        mode: 0o600,
-        flag: 'wx',
-      });
     } catch {
       throw new IdempotencyLedgerError('store_unavailable');
+    }
+
+    // Only completion of a known remote outcome may wait for another local writer.
+    // Reservation and media checkpoints retain immediate fail-closed behavior.
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await filesystem.writeFile(lockPath, '', {
+          encoding: 'utf8',
+          mode: 0o600,
+          flag: 'wx',
+        });
+        break;
+      } catch (error: unknown) {
+        if (!retryCompletionContention || !isErrno(error, 'EEXIST') || attempt >= 7) {
+          throw new IdempotencyLedgerError('store_unavailable');
+        }
+        await delay(25);
+      }
     }
 
     let result: T;
@@ -514,7 +540,7 @@ export function createFileIdempotencyLedger(options: FileIdempotencyLedgerOption
           if (result !== undefined) existing.result = result;
           await persist(store);
           return cloneRecord(existing);
-        }),
+        }, true),
       );
     },
   };
