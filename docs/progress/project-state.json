@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M05",
-  "currentIteration": "M05.1",
+  "currentIteration": "M05.2",
   "status": "ACTIVE",
   "activeBranch": "feat/m05-post-search",
   "activePr": 8,
   "baseBranch": "main",
-  "latestVerifiedSha": "800bf943cf047215bc434206dab1e5b6e2175c10",
-  "ciStatus": "GREEN_MAIN_800bf943cf047215bc434206dab1e5b6e2175c10_RUN_39740297020_SUCCESS_583_TESTS_66_FILES",
+  "latestVerifiedSha": "1bbc366dda57cc44d10825c6126a6fefd195dd7d",
+  "ciStatus": "GREEN_HEAD_1bbc366dda57cc44d10825c6126a6fefd195dd7d_RUN_39743915175_SUCCESS_589_TESTS_67_FILES",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.1 canonical post discovery contracts implemented locally with genuine RED (absent module) then GREEN 589/589 tests across 67 files, formatting/lint/typecheck/build and real transports. Exact-new-head CI remains pending; do not claim remote completion.",
-    "Global keyword/hashtag discovery has no configured lawful provider; official Posts API author finder is permission-dependent and remains disabled/unavailable until a verified member/organization resolver and access gate exist."
+    "M05.1 canonical query/provenance contracts committed at 1bbc366, CI 39743915175 passed 589/589 tests in 67 files. M05.2 filtering/dedup is locally RED\u2192GREEN with 596/596 tests across 68 files and all quality gates; GitHub write and exact-head CI pending.",
+    "Global keyword/hashtag discovery requires independently configured lawful third-party/partner access; absent provider => unavailable. Official author finder requires restricted scopes plus verified identity/role and default-off local gate, not yet built."
   ],
-  "exactNextWork": "Persist M05.1 canonical contracts to draft PR #8, verify exact-head GitHub CI and continue M05.2 deterministic filtering/dedupe.",
-  "activeHeadSha": "800bf943cf047215bc434206dab1e5b6e2175c10"
+  "exactNextWork": "Persist M05.2 bounded filtering and deduplication to draft PR #8, verify exact-head GitHub CI and continue M05.3 provider router.",
+  "activeHeadSha": "1bbc366dda57cc44d10825c6126a6fefd195dd7d"
 }

@@ -39,7 +39,7 @@
 - [x] Run `vitest run packages/core/test/post-discovery.test.ts`. Expected RED from absent module/functions, with unrelated tests unaffected.
 - [x] Implement minimal pure contract and result normalization; reject invalid provider labels, out-of-range metrics, wrong URL hosts, missing stable ID, spoofed provider/type, missing trusted context and malformed timestamps. Do not assign sources or metrics implicitly.
 - [x] Run focused GREEN, then `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm format:check`. Expected all green.
-- [ ] Commit to current M05 branch, record test counts/RED-GREEN in M05 milestone ledger and exact-head CI.
+- [x] Commit to current M05 branch, record test counts/RED-GREEN in M05 milestone ledger and exact-head CI (`1bbc366`, run `39743915175` 589 tests).
 
 ### Task 2: Deterministic filtering and deduplication (M05.2)
 
@@ -47,8 +47,8 @@
 
 **Interfaces:** consumes `PostSearchQuery` and normalized posts; produces `filterDiscoveredPosts(posts, query)` with bounded sorted deduped results.
 
-- [ ] RED: test topic, hashtag, explicit author/company, real published date bounds, missing metadata, dedupe only by same-provider ID or independently verified canonical identity (not provider-claimed external URNs), conflicting sources, engagement threshold on real metrics and count clamps.
-- [ ] GREEN with deterministic pure pipeline; no implicit network or invented timestamps.
+- [x] RED: test topic, hashtag, explicit author/company, real published date bounds, missing metadata, dedupe only by same-provider ID or independently verified canonical identity (not provider-claimed external URNs), conflicting sources, engagement threshold on real metrics and count clamps.
+- [x] GREEN with deterministic pure pipeline; no implicit network or invented timestamps.
 - [ ] Full tests/lint/typecheck/build/format; checkpoint CI before continuing.
 
 ### Task 3: Optional provider router and availability taxonomy (M05.3)
