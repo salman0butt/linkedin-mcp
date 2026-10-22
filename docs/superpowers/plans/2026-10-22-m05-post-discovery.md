@@ -49,7 +49,7 @@
 
 - [x] RED: test topic, hashtag, explicit author/company, real published date bounds, missing metadata, dedupe only by same-provider ID or independently verified canonical identity (not provider-claimed external URNs), conflicting sources, engagement threshold on real metrics and count clamps.
 - [x] GREEN with deterministic pure pipeline; no implicit network or invented timestamps.
-- [ ] Full tests/lint/typecheck/build/format; checkpoint CI before continuing.
+- [x] Full tests/lint/typecheck/build/format; checkpoint CI before continuing (M05.2 CI `39744941663`, 596 tests).
 
 ### Task 3: Optional provider router and availability taxonomy (M05.3)
 
@@ -57,8 +57,8 @@
 
 **Interfaces:** `DiscoveryProvider` has trusted immutable `{providerId, providerType, name, supportedKinds}` plus `search(query)`; `createPostSearchService({providers, limits, now})` injects trusted retrieval clock and returns per-provider outcomes with `partial` on mixed success/error, `unavailable` without providers and no network calls.
 
-- [ ] RED for absent provider, permission/restriction, rate limits, failures, empty consulted provider, timeout and oversized provider response, hostile result data, response-source spoofing, unsupported-kind routes and bounded fan-out. Assert mixed success/empty plus provider-error => partial not available-empty; all failures => deterministic precedence.
-- [ ] GREEN read-only fail-closed service; no client-controlled endpoint, provider fallback only when configured and labelled.
+- [x] RED for absent provider, permission/restriction, rate limits, failures, empty consulted provider, timeout and oversized provider response, hostile result data, response-source spoofing, unsupported-kind routes and bounded fan-out. Assert mixed success/empty plus provider-error => partial not available-empty; all failures => deterministic precedence.
+- [x] GREEN read-only fail-closed service; no client-controlled endpoint, provider fallback only when configured and labelled.
 - [ ] Full regression gates and exact-head CI checkpoint.
 
 ### Task 4: Documented author finder (M05.4)

@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M05",
-  "currentIteration": "M05.2",
+  "currentIteration": "M05.3",
   "status": "ACTIVE",
   "activeBranch": "feat/m05-post-search",
   "activePr": 8,
   "baseBranch": "main",
-  "latestVerifiedSha": "1bbc366dda57cc44d10825c6126a6fefd195dd7d",
-  "ciStatus": "GREEN_HEAD_1bbc366dda57cc44d10825c6126a6fefd195dd7d_RUN_39743915175_SUCCESS_589_TESTS_67_FILES",
+  "latestVerifiedSha": "9e6a141c36521305f536167df18ef0be75a72a28",
+  "ciStatus": "GREEN_HEAD_9e6a141c36521305f536167df18ef0be75a72a28_RUN_39744941663_SUCCESS_596_TESTS_68_FILES",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.1 canonical query/provenance contracts committed at 1bbc366, CI 39743915175 passed 589/589 tests in 67 files. M05.2 filtering/dedup is locally RED\u2192GREEN with 596/596 tests across 68 files and all quality gates; GitHub write and exact-head CI pending.",
-    "Global keyword/hashtag discovery requires independently configured lawful third-party/partner access; absent provider => unavailable. Official author finder requires restricted scopes plus verified identity/role and default-off local gate, not yet built."
+    "M05.1 canonical core contracts CI 39743915175 green 589/589. M05.2 deterministic filtering/dedup exact head 9e6a141 CI 39744941663 green 596/596. M05.3 provider router observed RED missing module, locally GREEN 607/607 tests in 69 files plus all gates; exact-new-head CI pending.",
+    "No legal external/partner discovery provider has been configured; no live global search availability is claimed. Official author finder remains unavailable unless restricted scopes, trusted read opt-in and verified member/organization role are demonstrated."
   ],
-  "exactNextWork": "Persist M05.2 bounded filtering and deduplication to draft PR #8, verify exact-head GitHub CI and continue M05.3 provider router.",
-  "activeHeadSha": "1bbc366dda57cc44d10825c6126a6fefd195dd7d"
+  "exactNextWork": "Persist M05.3 fail-closed provider router on draft PR #8 and verify exact-head CI; then assess permission-gated official author finder design.",
+  "activeHeadSha": "9e6a141c36521305f536167df18ef0be75a72a28"
 }
