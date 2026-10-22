@@ -62,6 +62,8 @@ function validateProviders(input: readonly DiscoveryProvider[]): readonly Readon
         Object.prototype.toString.call(provider.supportedKinds) !== '[object Array]' ||
         provider.supportedKinds.length === 0 ||
         provider.supportedKinds.some((kind) => !validKinds.has(kind)) ||
+        (provider.providerType === 'OFFICIAL_API' &&
+          provider.supportedKinds.some((kind) => kind !== 'author' && kind !== 'company')) ||
         typeof provider.search !== 'function'
       ) {
         throw new Error('Invalid or duplicate trusted discovery provider');

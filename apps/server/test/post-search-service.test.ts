@@ -210,4 +210,25 @@ describe('M05 explicit provider router and availability', () => {
       }),
     ).toThrow();
   });
+
+  it('rejects an official provider configured for global topic or hashtag discovery', () => {
+    const search = () => Promise.resolve({ posts: [{ id: 'post', text: 'AI #engineering' }] });
+    for (const kind of ['topic', 'hashtag', 'recent'] as const) {
+      expect(() =>
+        createPostSearchService({ providers: [provider('official', search, [kind], 'OFFICIAL_API')], now }),
+      ).toThrow();
+    }
+    expect(() =>
+      createPostSearchService({
+        providers: [provider('mixed', search, ['author', 'topic'], 'OFFICIAL_API')],
+        now,
+      }),
+    ).toThrow();
+    expect(() =>
+      createPostSearchService({
+        providers: [provider('author-only', search, ['author'], 'OFFICIAL_API')],
+        now,
+      }),
+    ).not.toThrow();
+  });
 });
