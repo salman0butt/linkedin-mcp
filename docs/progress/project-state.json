@@ -6,14 +6,14 @@
   "activeBranch": "feat/m05-post-search",
   "activePr": 8,
   "baseBranch": "main",
-  "latestVerifiedSha": "35ff359dffecc179aa82f0e41d7c563b559825d7",
-  "ciStatus": "GREEN_HEAD_35ff359dffecc179aa82f0e41d7c563b559825d7_RUN_39758769454_SUCCESS_608_TESTS_69_FILES",
+  "latestVerifiedSha": "1c8b6df96f7fa5c120ad5ea5a77f50f3e7d38cd0",
+  "ciStatus": "GREEN_HEAD_1c8b6df96f7fa5c120ad5ea5a77f50f3e7d38cd0_RUN_39759220242_SUCCESS_608_TESTS_69_FILES",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.3 official-provider global-mode provenance finding is resolved by 35ff359dffecc179aa82f0e41d7c563b559825d7; exact-head CI 39758769454 succeeded (608 tests, 69 files).",
-    "No lawful external/partner discovery provider is configured. Official Posts API single-author finder requires default-OFF trusted gate, verified member/organization identity or role and restricted read scopes; no entitlement claimed."
+    "M05.3 official-provider global-mode provenance finding resolved at 35ff359dffecc179aa82f0e41d7c563b559825d7; no unresolved Critical/Important finding known on existing M05.3 code.",
+    "No lawful external/partner global post discovery provider is configured; no live official Posts API entitlement is claimed. M05.4 requires default-OFF trusted author authorization and RED-to-GREEN verification."
   ],
-  "exactNextWork": "Implement M05.4 default-OFF single-author official Posts API finder using genuine RED-to-GREEN tests and trusted member/organization authorization; preserve PR #8 boundary.",
-  "activeHeadSha": "35ff359dffecc179aa82f0e41d7c563b559825d7"
+  "exactNextWork": "Add M05.4 restricted single-author Posts API finder regression tests to existing PR #8 branch, observe genuine RED, then implement and verify GREEN.",
+  "activeHeadSha": "1c8b6df96f7fa5c120ad5ea5a77f50f3e7d38cd0"
 }
