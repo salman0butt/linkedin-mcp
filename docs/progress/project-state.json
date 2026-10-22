@@ -4,16 +4,16 @@
   "currentIteration": "M05.1",
   "status": "ACTIVE",
   "activeBranch": "feat/m05-post-search",
-  "activePr": null,
+  "activePr": 8,
   "baseBranch": "main",
   "latestVerifiedSha": "800bf943cf047215bc434206dab1e5b6e2175c10",
   "ciStatus": "GREEN_MAIN_800bf943cf047215bc434206dab1e5b6e2175c10_RUN_39740297020_SUCCESS_583_TESTS_66_FILES",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M04 merged through PR #6 squash at 800bf943; post-merge main CI 39740297020 passed 583/583 tests and all quality gates.",
-    "M05 general keyword/hashtag discovery needs a separately configured lawful external/partner provider. None is bundled; official author finder requires separately verified restricted scopes and role/identity. No live entitlement is claimed."
+    "M05.1 canonical post discovery contracts implemented locally with genuine RED (absent module) then GREEN 589/589 tests across 67 files, formatting/lint/typecheck/build and real transports. Exact-new-head CI remains pending; do not claim remote completion.",
+    "Global keyword/hashtag discovery has no configured lawful provider; official Posts API author finder is permission-dependent and remains disabled/unavailable until a verified member/organization resolver and access gate exist."
   ],
-  "exactNextWork": "Implement M05.1 canonical post-discovery contracts with verified RED\u2192GREEN tests on the M05 branch.",
+  "exactNextWork": "Persist M05.1 canonical contracts to draft PR #8, verify exact-head GitHub CI and continue M05.2 deterministic filtering/dedupe.",
   "activeHeadSha": "800bf943cf047215bc434206dab1e5b6e2175c10"
 }

@@ -35,10 +35,10 @@
 
 **Interfaces produced:** `PostSearchKind`, `PostSearchQuery`, `NormalizedPost`, `PostSearchResult`, `createPostSearchQuery(input: unknown): PostSearchQuery`, `normalizeDiscoveredPost(input: unknown, context: TrustedDiscoveryContext): NormalizedPost`.
 
-- [ ] Test invalid search mode, empty/oversized query, missing/wrong URNs, non-ISO or reversed date ranges, limit 0/51, and valid topic/hashtag/author/company/recent. Expected: invalid throws before network; valid returns frozen normalized canonical query.
-- [ ] Run `vitest run packages/core/test/post-discovery.test.ts`. Expected RED from absent module/functions, with unrelated tests unaffected.
-- [ ] Implement minimal pure contract and result normalization; reject invalid provider labels, out-of-range metrics, wrong URL hosts, missing stable ID, spoofed provider/type, missing trusted context and malformed timestamps. Do not assign sources or metrics implicitly.
-- [ ] Run focused GREEN, then `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm format:check`. Expected all green.
+- [x] Test invalid search mode, empty/oversized query, missing/wrong URNs, non-ISO or reversed date ranges, limit 0/51, and valid topic/hashtag/author/company/recent. Expected: invalid throws before network; valid returns frozen normalized canonical query.
+- [x] Run `vitest run packages/core/test/post-discovery.test.ts`. Expected RED from absent module/functions, with unrelated tests unaffected.
+- [x] Implement minimal pure contract and result normalization; reject invalid provider labels, out-of-range metrics, wrong URL hosts, missing stable ID, spoofed provider/type, missing trusted context and malformed timestamps. Do not assign sources or metrics implicitly.
+- [x] Run focused GREEN, then `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm format:check`. Expected all green.
 - [ ] Commit to current M05 branch, record test counts/RED-GREEN in M05 milestone ledger and exact-head CI.
 
 ### Task 2: Deterministic filtering and deduplication (M05.2)

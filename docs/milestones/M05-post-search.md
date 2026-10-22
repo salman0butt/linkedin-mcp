@@ -28,7 +28,9 @@ M05.1 core canonical search contract; M05.2 dedupe/filter; M05.3 explicit provid
 
 ## TDD Evidence
 
-Pending.
+M05.1 canonical core discovery contract: RED locally observed (Vitest import failed because `packages/core/src/post-discovery.ts` did not yet exist). GREEN locally after implementation: six new contract tests passed for strict mode-specific queries, date/limits/engagement validation, trusted source normalization, URL/URN safety, no fabricated metadata and untrusted input rejection. Full local suite **589/589 tests across 67 files**, lint, typecheck, formatting, build and stdio/HTTP smoke successful. Exact-new-head GitHub CI pending.
+
+Next: persist M05.1 on the existing draft PR #8 and verify CI before M05.2.
 
 ## Integration Test Evidence
 

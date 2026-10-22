@@ -2,13 +2,15 @@
 
 ## Current checkpoint — 2026-10-22
 
-M05 Post Search is ACTIVE in M05.1 on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
+M05 Post Search is ACTIVE in M05.1, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
 
 M04 **COMPLETE**: [PR #6](https://github.com/salman0butt/linkedin-mcp/pull/6) squash merged at `800bf943cf047215bc434206dab1e5b6e2175c10`. Post-merge main CI `39740297020` passed **583/583 tests across 66 files**, frozen install, format, lint, typecheck and build. Independent M04 approval-security and reply-root reviews found no verified Critical/Important defects. No live Community Management entitlement or shipped authenticated host approval UI is claimed.
 
+M05.1 core contract: observed RED on missing module, then local GREEN **589/589 tests across 67 files**, all quality gates and real transports. Source has not yet been committed to PR #8 or verified by new-head GitHub CI.
+
 M05 requires provenance-preserving discovery: external/partner discovery only when legitimately configured; official author-scoped read only with the separately verified member/organization roles and restricted scopes. Unavailable is not a successful empty response. Normalized results must not invent publication dates, engagement, canonical URLs, or source authority. No external provider is bundled.
 
-Exact next work: **Implement M05.1 canonical post-discovery contracts with genuine RED→GREEN and exact-head CI.**
+Exact next work: **Persist locally regression-verified M05.1 canonical contracts on draft PR #8 and verify exact-head CI before M05.2.**
 
 ## Historical M04 checkpoint (superseded by merged Git graph)
 
