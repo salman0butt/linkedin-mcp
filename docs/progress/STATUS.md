@@ -1,12 +1,12 @@
 # Project Status
 
-## Latest checkpoint — 2026-10-22 (local only; remote write blocked)
+## Latest checkpoint — 2026-10-22 (remote regression-fix verified)
 
-Remote PR #6 head `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` has two expected RED reply-root regressions (CI `39655379215`). A third provider-adapter regression was independently observed RED locally. The minimal same-family root/parent integrity fix now passes **583/583 tests across 66 files**, formatting, lint, typecheck, build, and real stdio/HTTP smoke tests locally under Node 24 with `TMPDIR=/private/tmp`. Cross-family aliases remain supported. **No new remote SHA or CI GREEN is claimed.** The GitHub connector rejected a blob write through safety checks; PR #6 stays draft/unmerged. Earlier checkpoint sections below are historical.
+RED PR head `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` / CI `39655379215` had two expected failing reply-root core tests; a third provider-adapter regression was locally RED. The fix is now committed at `75205ae47a29d98e60a9087a9f5703d40dd8d36e`; exact-head GitHub CI `39739059007` passed **583/583 tests across 66 files**, frozen install, formatting, lint, typecheck, build and real stdio/HTTP smoke tests. Cross-family aliases remain supported. Independent reply-integrity reviewer found no Critical/Important defect in this fix. Independent reply-root review and fresh six-path trusted-grant security review found **0 verified Critical/Important defects**. Final exact-head merge and post-merge main CI gates remain; PR #6 stays draft until they pass. Earlier sections below are historical.
 
-Exact next work: **Persist the locally verified reply-root fix to the existing PR branch once the GitHub write boundary permits, using a fresh remote-head lease check.**
+Exact next work: **Verify exact-final-head PR gates, squash-merge M04 when green, and confirm post-merge main CI.**
 
-Last reconciled: 2026-10-21. Git/code/exact-SHA CI outrank these notes.
+Last reconciled: 2026-10-22. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone
 
@@ -17,13 +17,13 @@ Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
 Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`.
 Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
 
-## M04.7 Trusted Human Approval Boundary — LOCAL REGRESSION-FIX, REVIEW PENDING
+## M04.7 Trusted Human Approval Boundary — CI VERIFIED, INDEPENDENTLY REVIEWED
 
 The Important MCP self-approval finding has a local fail-closed remediation under independent review. A trusted embedding host must authenticate the human and issue a one-time subject/purpose/payload grant outside MCP; the shared production runtime consumes the grant before minting any text, media, reply or reaction receipt. Caller-provided `approved:true` alone cannot mint a receipt. The bundled stdio/HTTP servers intentionally have no host approval UI and default to `human_action_required` on otherwise eligible approval requests.
 
 Observed local RED: absent grant module; two unauthorized runtime issuance tests; six MCP denial status tests; a second-client grant theft regression; and a test showing that an injected receipt store received a spent grant ID. Observed local GREEN: **579/579 tests across 64 files**, real stdio/HTTP smokes, lint, typecheck, formatting and build (with an additional 25/25 focused GREEN after the grant-ID leak fix). On macOS, `TMPDIR=/private/tmp` avoids a pre-existing `/var` alias mismatch in media-config tests. No live LinkedIn operation was performed.
 
-Trusted-approval implementation is now durably committed at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`; exact-head GitHub Actions CI `39589866610` passed **579/579 tests across 64 files**, frozen install, formatting, lint, typecheck and build, including real stdio/HTTP smokes. Local and CI passes cover missing/incorrect/unspent host grant IDs, binding, expiry and receipt-store isolation. Two independent review workers timed out without producing findings, so no independent review is claimed; a fresh reviewer was dispatched separately. PR #6 remains draft until review and merge gates. See `docs/security/TRUSTED-APPROVALS.md` and `docs/superpowers/evidence/2026-10-21-trusted-approval.md`.
+Trusted-approval implementation is now durably committed at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`; exact-head GitHub Actions CI `39589866610` passed **579/579 tests across 64 files**, frozen install, formatting, lint, typecheck and build, including real stdio/HTTP smokes. Local and CI passes cover missing/incorrect/unspent host grant IDs, binding, expiry and receipt-store isolation. Two earlier review workers timed out, but a fresh independent reviewer on 2026-10-22 subsequently traced all six approval paths, verified 33 focused tests and reported zero verified new Critical/Important defects. PR #6 remains draft until review and merge gates. See `docs/security/TRUSTED-APPROVALS.md` and `docs/superpowers/evidence/2026-10-21-trusted-approval.md`.
 
 ## M04.6 Strict MCP/Transport Integration — GREEN
 
@@ -92,11 +92,11 @@ LinkedIn Community Management comments/reactions use versioned official APIs. Me
 ## Findings / Blockers
 
 Unresolved Critical findings: **0 known**.
-Unresolved Important findings: **1 verified** (M04 MCP approval receipt issuance accepts model/client-supplied `approved:true` without trusted human attestation; existing text/media approval paths require the same trust-boundary review).
-Latest verified M04 code head: `107ededf02ab147cd5bd3189d537cae552728fe4` / CI `39577246941`: **559/559 tests in 62 files** and all required quality gates. Two independent-review parent/root regressions were verified RED then fixed, with same-root and cross-family compatibility tests.
-M04.7 skeptical/security review found the approval trust-boundary blocker, so PR #6 **must remain draft and unmerged** until regression-fixed and independently verified.
+Unresolved Important findings: **0 verified**, following regression-fixed subject/purpose-bound trusted grants and nested reply-root integrity plus independent reviews.
+Latest verified M04 source head: `75205ae47a29d98e60a9087a9f5703d40dd8d36e` / CI `39739059007`: **583/583 tests in 66 files** and all required quality gates, with explicit cross-family compatibility regressions.
+M04.7 trusted-approval and reply-root blockers are regression-fixed and independently reviewed; merge and post-merge main CI gates still apply.
 Live Community Management entitlement remains an external verification gate; deterministic CI does not establish actual product/scope access.
 
 ## Handoff
 
-Exact next work: **Implement and regression-verify a trusted out-of-band human approval grant boundary for consequential MCP writes, including inherited text/media flows, before M04 merge gates.**
+The one current next action is specified in the latest checkpoint at the top of this file.

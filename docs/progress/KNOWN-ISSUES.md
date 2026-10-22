@@ -2,18 +2,6 @@
 
 ## Current unresolved issues
 
-### IMPORTANT — reply-root integrity fix verified locally, not persisted remotely (2026-10-22)
-
-PR #6 remote head `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` intentionally fails two regression tests in CI `39655379215`: a same-family unrelated root is accepted in `createReplyPreview` and `matchesReplyIdentity`. A separate provider-adapter regression was confirmed RED locally before the provider request. The minimal correction rejects conflicting same-family root/parent pairs while preserving cross-family aliases. Local verification passed 583/583 tests in 66 files, formatting, lint, typecheck, build and stdio/HTTP smoke. A GitHub `create_blob` write was rejected by the connected safety layer, so **this fix is not on the remote PR and has no exact-head GREEN CI**. Leave the Important gate open and PR draft. Exactly one next action is recorded in `project-state.json`.
-
-### IMPORTANT review gate — trusted MCP approval remediation awaiting independent validation
-
-Independent exact-head M04.7 security review reproduced a serious approval trust-boundary defect. `apps/server/src/engagement-mcp.ts` exposes `linkedin.comments.reply.approve`, `linkedin.reactions.add.approve` and `linkedin.reactions.remove.approve` accepting only the model/client-supplied payload hash and `approved:true`. The engagement service and shared approval service issue and consume subject/purpose-bound receipts without independent human/host confirmation. A same-client sequence preview → approve → create/add/remove can therefore authorize a consequential provider write (if valid LinkedIn write access and a ledger are configured), even without user approval. Source and a read-only approval issue/consume probe independently demonstrate receipt issuance without external confirmation. The shared existing text/image/multi-image MCP approval flows appear structurally similar and must be included in the trusted-boundary remediation.
-
-**Remediation:** The original self-approval defect is regression-fixed in commit `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`: shared production issuance now requires a trusted host-issued 256-bit single-use `trustedGrantId` bound to authenticated subject, purpose and payload hash. The ID cannot be minted using an MCP tool or reused and is never passed to a pluggable receipt store. Every text/media/reply/reaction approval path defaults to `human_action_required` without a matching grant. Exact-head CI `39589866610` passed **579/579 tests across 64 files**, including all required gates. No host UI or live entitlement is claimed.
-
-**Remaining gate:** An independent whole-branch security review has not yet returned a usable report (two reviewer worker chats timed out; another was dispatched). Treat the Important finding as **awaiting independent validation**, and leave PR #6 draft and unmerged. One exact next work action is in `project-state.json`.
-
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.
@@ -30,11 +18,19 @@ GitHub Actions remains authoritative exact-SHA execution evidence when an intera
 
 ## Resolved during M04
 
+### Resolved M04.7 — trusted human approval security boundary
+
+The original Important MCP caller self-approval defect is regression-fixed in commit `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`: shared receipt issuance requires a trusted host-issued, unpredictable 256-bit, single-use `trustedGrantId` bound to authenticated subject, purpose and canonical payload hash. The model cannot mint a grant; the ID is never forwarded to injected receipt stores, and the six text/media/reply/reaction approvals return `human_action_required` without a matching grant. GitHub CI `39589866610` passed 579/579 tests across 64 files. A fresh 2026-10-22 independent reviewer traced all six paths, the grant issuer/consumer, purpose isolation, and idempotency; 33 focused tests passed and **zero new Critical/Important defects were verified**. No hosted human approval UI or live LinkedIn entitlement is claimed; defaults remain fail-closed.
+
+### Resolved M04.7 — nested reply-root integrity on create/identity
+
+RED commit `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` / CI `39655379215`: 580 tests passed, two new core regression tests failed as intended for unrelated same-family reply roots. A third provider-adapter regression was independently confirmed RED locally. Commit `75205ae47a29d98e60a9087a9f5703d40dd8d36e` rejects mismatched same-family parent/root pairs during canonical preview and provider request validation, preserving legitimate cross-family aliases. Exact-head CI `39739059007` passed **583/583 tests across 66 files** and format, lint, typecheck, build and smoke tests. An independent read-integrity reviewer found no remaining verified Critical/Important issues in this fix.
+
 ### Resolved M04.7 — Comments response-to-request thread and page integrity
 
 Six local behavioral tests on the previous PR head `dd8f1b802d4cc3104b4969049838252fcdb31adf` failed because same-family mismatched activity roots and provider pagination window/count violations were accepted. The adapter now rejects them with sanitized `malformed_response` while preserving cross-family URN representations. Existing test fixture for a nested thread was corrected to use its actual parent. Exact-head CI `39575410269` at `e33ba384df4ae0a5492f20d85e98458e91142011` passed 555/555 tests in 62 files and all required quality gates. Full independent M04.7 review remains pending.
 
-Independent M04.7 review additionally found an Important nested-parent integrity gap: a reply's `parentComment` composite root could belong to a different same-family activity than its own comment/object root. Two behavioral tests were verified RED before the fix; after adding the fail-closed parent-root checks and two compatibility tests for same-root/different-comment IDs and cross-family aliases, exact-head `107ededf02ab147cd5bd3189d537cae552728fe4` / CI `39577246941` passed **559/559 tests across 62 files** and all quality gates. This nested-parent finding is resolved; the separate approval-boundary Important finding remains open.
+Independent M04.7 review additionally found an Important nested-parent integrity gap: a reply's `parentComment` composite root could belong to a different same-family activity than its own comment/object root. Two behavioral tests were verified RED before the fix; after adding the fail-closed parent-root checks and two compatibility tests for same-root/different-comment IDs and cross-family aliases, exact-head `107ededf02ab147cd5bd3189d537cae552728fe4` / CI `39577246941` passed **559/559 tests across 62 files** and all quality gates. This nested-parent finding and the separately reviewed approval-boundary finding are resolved.
 
 ### Resolved M04.7 — Comments read response identity consistency
 

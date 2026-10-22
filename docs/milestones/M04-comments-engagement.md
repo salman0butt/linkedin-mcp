@@ -1,6 +1,6 @@
 # M04 — Comments & Engagement
 
-M04.7 checkpoint (2026-10-22): Remote head `2d90e3f` / CI `39655379215` remains intentionally RED on two reply-root tests. A third provider-adapter test was verified RED locally. The minimal root/parent correction passed 583/583 local tests across 66 files, formatting, lint, typecheck, build and real stdio/HTTP smokes. GitHub rejected the attempted blob write through safety checks, so the fix is not on the remote branch and the Important merge gate remains open. Preserve cross-family URN aliases. Exactly one next action is in `docs/progress/project-state.json`.
+M04.7 checkpoint (2026-10-22): RED commit `2d90e3f` / CI `39655379215` had two expected failing reply-root core tests, and a third provider-adapter test was independently RED locally. The root/parent correction was committed at `75205ae47a29d98e60a9087a9f5703d40dd8d36e`; exact-head CI `39739059007` passed **583/583 tests across 66 files** plus all quality gates and real stdio/HTTP smokes. Cross-family URN aliases are preserved and an independent read-integrity reviewer found no Critical/Important defect in the fix. Fresh independent read-integrity and six-path trusted-grant security reviewers found zero verified Critical/Important blockers. Final merge and post-merge gates remain pending; exactly one next action is in `docs/progress/project-state.json`.
 
 Status: **ACTIVE — M04.7 whole-milestone review and closeout**
 
@@ -93,7 +93,7 @@ M04.5 scoped correctness/security review after exact-head GREEN found 0 Critical
 
 Independent M04 whole-branch correctness/security/provenance review revealed one unresolved **Important security blocker**: the same model/MCP caller can issue and consume its own consequential mutation approval receipt with a caller-controlled `approved:true`, without trusted human confirmation. This applies to M04 reply/reaction MCP approvals, and shared inherited text/media flows require remediation. PR #6 must remain draft and unmerged; see `docs/progress/KNOWN-ISSUES.md`. Code-level permission checks, purpose isolation and idempotency do not satisfy the human approval boundary.
 
-Trusted-approval remediation is durably verified at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, GitHub CI `39589866610` — **579/579 tests in 64 files** plus full quality gates. The shared receipt issuer fails closed without the host's exact single-use, 256-bit `trustedGrantId`, checked against authenticated subject, purpose and canonical payload hash. Regression tests catch second-client grant theft and accidental forwarding of spent grants to injected receipt stores. The original security mechanism is fixed in source; **independent final security validation has not completed**, so the Important review gate stays open and PR #6 remains draft.
+Trusted-approval remediation is durably verified at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, GitHub CI `39589866610` — **579/579 tests in 64 files** plus full quality gates. The shared receipt issuer fails closed without the host's exact single-use, 256-bit `trustedGrantId`, checked against authenticated subject, purpose and canonical payload hash. Regression tests catch second-client grant theft and accidental forwarding of spent grants to injected receipt stores. The original security mechanism is regression-fixed and independently reviewed on 2026-10-22: a fresh reviewer traced all six MCP approval paths and reported **0 verified new Critical/Important defects**, with 33 focused tests passing. PR #6 stays draft until final exact-head merge gates.
 
 ## Fresh Verification Results
 
@@ -105,7 +105,7 @@ M04.2 exact head: `26ecce969e4d4935ddcd7babd93c6b46085a03b1`, CI `38160896542`: 
 
 M04.3 exact source head: `4c9a5bd418b33d588d0b61b09ce3003532e8dcf9`, CI `38902517595`: 483/483 tests across 53 files plus all quality gates.
 
-Latest verified source head: `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, CI `39589866610`: 579/579 tests across 64 files, frozen install, format, lint, typecheck and build. This proves the regression-fix behavior, not an independent security review or live human-approval integration.
+Latest verified source head: `75205ae47a29d98e60a9087a9f5703d40dd8d36e`, CI `39739059007`: 583/583 tests across 66 files and all required quality gates. Independent reviewers found no verified Critical/Important defects. No host approval UI or live LinkedIn entitlement is claimed.
 
 ## Durable Recovery Sources
 
@@ -113,8 +113,8 @@ Latest verified source head: `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, CI `395
 
 ## Completion Checklist
 
-- [ ] Overall M04 acceptance verified.
-- [ ] Overall M04 Critical/Important resolved.
+- [x] Overall M04 deterministic acceptance verified.
+- [x] Overall M04 Critical/Important resolved; independent reviews received.
 - [ ] Exact-final-head/post-merge CI green.
 
-Exact next work: **Complete independent security review of exact-head trusted approval and fix any verified Critical/Important issues before final M04 merge gates.**
+Exact next work: **Verify exact-final-head PR gates, squash-merge M04 when green and confirm post-merge main CI.**

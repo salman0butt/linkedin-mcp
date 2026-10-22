@@ -1,6 +1,6 @@
 # Current Milestone
 
-2026-10-22 checkpoint: M04.7 remains active and PR #6 remains draft. Remote head `2d90e3f` is expected RED (CI `39655379215`, two reply-root regressions). The provider-adapter regression was observed RED locally, and the minimal correction passed 583/583 tests, format, lint, typecheck, build and transport smokes locally. GitHub rejected the attempted write; no remote GREEN or merge is claimed. See `docs/progress/project-state.json` for the single next action.
+2026-10-22 checkpoint: M04.7 remains active and PR #6 remains draft. RED commit `2d90e3f` (CI `39655379215`, two expected failing core reply-root tests plus an independent local adapter RED) was regression-fixed at `75205ae47a29d98e60a9087a9f5703d40dd8d36e`. Exact-head CI `39739059007` passed **583/583 tests across 66 files** and all quality gates. Independent read-integrity review identified no Critical/Important defects in the fix. Separate independent read-integrity and six-path trusted-grant security reviewers identified **0 verified Critical/Important defects**. Final exact-head merge and post-merge main CI checks remain. See `docs/progress/project-state.json` for the single next action.
 
 Milestone: M04 — Comments & Engagement
 Status: ACTIVE — M04.7 security review and closeout
@@ -36,4 +36,4 @@ M04.7 Comments identity-integrity defect: three focused regression tests were co
 
 Independent M04.7 review additionally found a mismatched nested-parent root Important issue, regression-fixed at `107ededf02ab147cd5bd3189d537cae552728fe4` / CI `39577246941` with **559/559 tests across 62 files** and all gates. A separate independent security review found **one still-open Important blocker**: model/MCP callers can mint their own write approval receipts using `approved:true` without independent trusted human confirmation. PR #6 remains draft and unmerged. The existing text/media MCP approval paths require the same trust-boundary review.
 
-Exact next work: **Complete independent security review of the exact-head trusted-approval remediation and fix any verified Critical/Important issues before final M04 merge gates.**
+Exact next work: **Verify exact-final-head PR gates, squash-merge M04 when green, and confirm post-merge main CI.**
