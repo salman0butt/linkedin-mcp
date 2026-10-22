@@ -1,20 +1,19 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M04",
-  "currentIteration": "M04.7",
+  "currentMilestone": "M05",
+  "currentIteration": "M05.1",
   "status": "ACTIVE",
-  "activeBranch": "feat/m04-comments-engagement",
-  "activePr": 6,
+  "activeBranch": "feat/m05-post-search",
+  "activePr": null,
   "baseBranch": "main",
-  "latestVerifiedSha": "75205ae47a29d98e60a9087a9f5703d40dd8d36e",
-  "ciStatus": "GREEN_HEAD_75205ae47a29d98e60a9087a9f5703d40dd8d36e_RUN_39739059007_SUCCESS_583_TESTS_66_FILES",
+  "latestVerifiedSha": "800bf943cf047215bc434206dab1e5b6e2175c10",
+  "ciStatus": "GREEN_MAIN_800bf943cf047215bc434206dab1e5b6e2175c10_RUN_39740297020_SUCCESS_583_TESTS_66_FILES",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M04.7 reply-root regression: RED head 2d90e3f CI 39655379215 (580 passed, 2 expected failures) and provider-adapter local RED; regression-fixed at 75205ae with exact-head GREEN CI 39739059007 (583/583 tests, 66 files, all gates). Independent reply-integrity reviewer found no Critical/Important defects in this fix.",
-    "Independent reply-root integrity and all-six-path trusted approval security reviewers reported 0 verified Critical/Important defects. Final PR merge gates and post-merge main CI remain pending.",
-    "Live LinkedIn Community Management product/scope entitlement is unverified; no live capability availability is claimed."
+    "M04 merged through PR #6 squash at 800bf943; post-merge main CI 39740297020 passed 583/583 tests and all quality gates.",
+    "M05 general keyword/hashtag discovery needs a separately configured lawful external/partner provider. None is bundled; official author finder requires separately verified restricted scopes and role/identity. No live entitlement is claimed."
   ],
-  "exactNextWork": "Verify final PR head and merge gates, squash-merge M04 PR #6 when exact-head CI is green, and verify post-merge main CI.",
-  "activeHeadSha": "75205ae47a29d98e60a9087a9f5703d40dd8d36e"
+  "exactNextWork": "Implement M05.1 canonical post-discovery contracts with verified RED\u2192GREEN tests on the M05 branch.",
+  "activeHeadSha": "800bf943cf047215bc434206dab1e5b6e2175c10"
 }

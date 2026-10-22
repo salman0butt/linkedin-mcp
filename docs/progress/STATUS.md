@@ -1,29 +1,16 @@
 # Project Status
 
-## Latest checkpoint — 2026-10-22 (remote regression-fix verified)
+## Current checkpoint — 2026-10-22
 
-RED PR head `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` / CI `39655379215` had two expected failing reply-root core tests; a third provider-adapter regression was locally RED. The fix is now committed at `75205ae47a29d98e60a9087a9f5703d40dd8d36e`; exact-head GitHub CI `39739059007` passed **583/583 tests across 66 files**, frozen install, formatting, lint, typecheck, build and real stdio/HTTP smoke tests. Cross-family aliases remain supported. Independent reply-integrity reviewer found no Critical/Important defect in this fix. Independent reply-root review and fresh six-path trusted-grant security review found **0 verified Critical/Important defects**. Final exact-head merge and post-merge main CI gates remain; PR #6 stays draft until they pass. Earlier sections below are historical.
+M05 Post Search is ACTIVE in M05.1 on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
 
-Exact next work: **Verify exact-final-head PR gates, squash-merge M04 when green, and confirm post-merge main CI.**
+M04 **COMPLETE**: [PR #6](https://github.com/salman0butt/linkedin-mcp/pull/6) squash merged at `800bf943cf047215bc434206dab1e5b6e2175c10`. Post-merge main CI `39740297020` passed **583/583 tests across 66 files**, frozen install, format, lint, typecheck and build. Independent M04 approval-security and reply-root reviews found no verified Critical/Important defects. No live Community Management entitlement or shipped authenticated host approval UI is claimed.
 
-Last reconciled: 2026-10-22. Git/code/exact-SHA CI outrank these notes.
+M05 requires provenance-preserving discovery: external/partner discovery only when legitimately configured; official author-scoped read only with the separately verified member/organization roles and restricted scopes. Unavailable is not a successful empty response. Normalized results must not invent publication dates, engagement, canonical URLs, or source authority. No external provider is bundled.
 
-## Current Milestone
+Exact next work: **Implement M05.1 canonical post-discovery contracts with genuine RED→GREEN and exact-head CI.**
 
-M04 — Comments & Engagement — **ACTIVE, M04.7 whole-milestone review and closeout**.
-
-Active branch: `feat/m04-comments-engagement`. Draft PR #6 remains the milestone integration boundary.
-Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
-Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`.
-Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
-
-## M04.7 Trusted Human Approval Boundary — CI VERIFIED, INDEPENDENTLY REVIEWED
-
-The Important MCP self-approval finding has a local fail-closed remediation under independent review. A trusted embedding host must authenticate the human and issue a one-time subject/purpose/payload grant outside MCP; the shared production runtime consumes the grant before minting any text, media, reply or reaction receipt. Caller-provided `approved:true` alone cannot mint a receipt. The bundled stdio/HTTP servers intentionally have no host approval UI and default to `human_action_required` on otherwise eligible approval requests.
-
-Observed local RED: absent grant module; two unauthorized runtime issuance tests; six MCP denial status tests; a second-client grant theft regression; and a test showing that an injected receipt store received a spent grant ID. Observed local GREEN: **579/579 tests across 64 files**, real stdio/HTTP smokes, lint, typecheck, formatting and build (with an additional 25/25 focused GREEN after the grant-ID leak fix). On macOS, `TMPDIR=/private/tmp` avoids a pre-existing `/var` alias mismatch in media-config tests. No live LinkedIn operation was performed.
-
-Trusted-approval implementation is now durably committed at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`; exact-head GitHub Actions CI `39589866610` passed **579/579 tests across 64 files**, frozen install, formatting, lint, typecheck and build, including real stdio/HTTP smokes. Local and CI passes cover missing/incorrect/unspent host grant IDs, binding, expiry and receipt-store isolation. Two earlier review workers timed out, but a fresh independent reviewer on 2026-10-22 subsequently traced all six approval paths, verified 33 focused tests and reported zero verified new Critical/Important defects. PR #6 remains draft until review and merge gates. See `docs/security/TRUSTED-APPROVALS.md` and `docs/superpowers/evidence/2026-10-21-trusted-approval.md`.
+## Historical M04 checkpoint (superseded by merged Git graph)
 
 ## M04.6 Strict MCP/Transport Integration — GREEN
 

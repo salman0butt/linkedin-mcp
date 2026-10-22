@@ -2,6 +2,10 @@
 
 ## Current unresolved issues
 
+### M05 external discovery integration boundary
+
+No legitimate external/partner global post discovery provider has been configured or live-verified. An explicit `unavailable` result is required until a provider with lawful access, provenance and terms exists. LinkedIn's official Posts API finder is author-scoped and permission-dependent, not general keyword search. Do not claim live search availability from deterministic tests.
+
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.

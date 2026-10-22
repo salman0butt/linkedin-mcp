@@ -1,6 +1,6 @@
 # M05 — Post Search
 
-Status: **PLANNED**
+Status: **ACTIVE — M05.1 canonical post discovery**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
 
 ## Goal
 
@@ -24,7 +24,7 @@ Every result identifies source/provider; filters are deterministic; unavailable 
 
 ## Tasks / Iterations
 
-Design/plan; normalized schema; discovery provider; optional interactive provider boundary; dedupe; closeout.
+M05.1 core canonical search contract; M05.2 dedupe/filter; M05.3 explicit provider availability; M05.4 independently gated official single-author finder; M05.5 strict MCP transports; M05.6 closeout. Design: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md`; plan: `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`. No external discovery provider configured by default.
 
 ## TDD Evidence
 

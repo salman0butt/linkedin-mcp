@@ -2,7 +2,7 @@
 
 M04.7 checkpoint (2026-10-22): RED commit `2d90e3f` / CI `39655379215` had two expected failing reply-root core tests, and a third provider-adapter test was independently RED locally. The root/parent correction was committed at `75205ae47a29d98e60a9087a9f5703d40dd8d36e`; exact-head CI `39739059007` passed **583/583 tests across 66 files** plus all quality gates and real stdio/HTTP smokes. Cross-family URN aliases are preserved and an independent read-integrity reviewer found no Critical/Important defect in the fix. Fresh independent read-integrity and six-path trusted-grant security reviewers found zero verified Critical/Important blockers. Final merge and post-merge gates remain pending; exactly one next action is in `docs/progress/project-state.json`.
 
-Status: **ACTIVE — M04.7 whole-milestone review and closeout**
+Status: **COMPLETE — squash merged PR #6 at `800bf943cf047215bc434206dab1e5b6e2175c10`**, post-merge main CI `39740297020` passed 583/583 tests across 66 files, full quality gates.
 
 M04.7 local security checkpoint (2026-10-21): trusted host grant issuance is separated from MCP tool calls. The production runtime requires a one-time subject/purpose/payload grant before issuing text, media, reply or reaction receipts. New behavioral tests were observed RED before implementation; local 578/578 tests across 64 files, real stdio/HTTP smokes, lint, typecheck and build passed. Independent security review and exact-new-head CI are pending. The default server has no human approval UI and fails closed; live Community Management access remains unverified.
 
@@ -115,6 +115,10 @@ Latest verified source head: `75205ae47a29d98e60a9087a9f5703d40dd8d36e`, CI `397
 
 - [x] Overall M04 deterministic acceptance verified.
 - [x] Overall M04 Critical/Important resolved; independent reviews received.
-- [ ] Exact-final-head/post-merge CI green.
+- [x] Exact-final-head/post-merge CI green.
 
 Exact next work: **Verify exact-final-head PR gates, squash-merge M04 when green and confirm post-merge main CI.**
+
+## M04 final closeout — 2026-10-22
+
+PR #6 squash merged on main at `800bf943cf047215bc434206dab1e5b6e2175c10`; exact-main CI `39740297020` passed 583/583 tests, 66 files plus full quality gates. Independent reviews identified no unresolved Critical/Important defects. M05 activated on its own branch. No live Community Management or hosted human approval entitlement is claimed. Historical previous next-action lines above are superseded by `docs/progress/project-state.json`.
