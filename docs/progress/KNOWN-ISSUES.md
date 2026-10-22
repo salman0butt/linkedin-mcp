@@ -2,6 +2,10 @@
 
 ## Current unresolved issues
 
+### IMPORTANT — reply-root integrity fix verified locally, not persisted remotely (2026-10-22)
+
+PR #6 remote head `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` intentionally fails two regression tests in CI `39655379215`: a same-family unrelated root is accepted in `createReplyPreview` and `matchesReplyIdentity`. A separate provider-adapter regression was confirmed RED locally before the provider request. The minimal correction rejects conflicting same-family root/parent pairs while preserving cross-family aliases. Local verification passed 583/583 tests in 66 files, formatting, lint, typecheck, build and stdio/HTTP smoke. A GitHub `create_blob` write was rejected by the connected safety layer, so **this fix is not on the remote PR and has no exact-head GREEN CI**. Leave the Important gate open and PR draft. Exactly one next action is recorded in `project-state.json`.
+
 ### IMPORTANT review gate — trusted MCP approval remediation awaiting independent validation
 
 Independent exact-head M04.7 security review reproduced a serious approval trust-boundary defect. `apps/server/src/engagement-mcp.ts` exposes `linkedin.comments.reply.approve`, `linkedin.reactions.add.approve` and `linkedin.reactions.remove.approve` accepting only the model/client-supplied payload hash and `approved:true`. The engagement service and shared approval service issue and consume subject/purpose-bound receipts without independent human/host confirmation. A same-client sequence preview → approve → create/add/remove can therefore authorize a consequential provider write (if valid LinkedIn write access and a ledger are configured), even without user approval. Source and a read-only approval issue/consume probe independently demonstrate receipt issuance without external confirmation. The shared existing text/image/multi-image MCP approval flows appear structurally similar and must be included in the trusted-boundary remediation.

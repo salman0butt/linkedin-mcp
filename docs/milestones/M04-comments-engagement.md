@@ -1,5 +1,7 @@
 # M04 — Comments & Engagement
 
+M04.7 checkpoint (2026-10-22): Remote head `2d90e3f` / CI `39655379215` remains intentionally RED on two reply-root tests. A third provider-adapter test was verified RED locally. The minimal root/parent correction passed 583/583 local tests across 66 files, formatting, lint, typecheck, build and real stdio/HTTP smokes. GitHub rejected the attempted blob write through safety checks, so the fix is not on the remote branch and the Important merge gate remains open. Preserve cross-family URN aliases. Exactly one next action is in `docs/progress/project-state.json`.
+
 Status: **ACTIVE — M04.7 whole-milestone review and closeout**
 
 M04.7 local security checkpoint (2026-10-21): trusted host grant issuance is separated from MCP tool calls. The production runtime requires a one-time subject/purpose/payload grant before issuing text, media, reply or reaction receipts. New behavioral tests were observed RED before implementation; local 578/578 tests across 64 files, real stdio/HTTP smokes, lint, typecheck and build passed. Independent security review and exact-new-head CI are pending. The default server has no human approval UI and fails closed; live Community Management access remains unverified.

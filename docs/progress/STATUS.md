@@ -1,5 +1,11 @@
 # Project Status
 
+## Latest checkpoint — 2026-10-22 (local only; remote write blocked)
+
+Remote PR #6 head `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` has two expected RED reply-root regressions (CI `39655379215`). A third provider-adapter regression was independently observed RED locally. The minimal same-family root/parent integrity fix now passes **583/583 tests across 66 files**, formatting, lint, typecheck, build, and real stdio/HTTP smoke tests locally under Node 24 with `TMPDIR=/private/tmp`. Cross-family aliases remain supported. **No new remote SHA or CI GREEN is claimed.** The GitHub connector rejected a blob write through safety checks; PR #6 stays draft/unmerged. Earlier checkpoint sections below are historical.
+
+Exact next work: **Persist the locally verified reply-root fix to the existing PR branch once the GitHub write boundary permits, using a fresh remote-head lease check.**
+
 Last reconciled: 2026-10-21. Git/code/exact-SHA CI outrank these notes.
 
 ## Current Milestone

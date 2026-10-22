@@ -93,6 +93,11 @@ export interface ReactionPreview {
 const simpleTargetPattern = /^urn:li:(?:share|ugcPost|activity):\d+$/;
 const commentTargetPattern = /^urn:li:comment:\(urn:li:(?:share|ugcPost|activity):\d+,\d+\)$/;
 
+function conflictsWithSameFamilyReplyRoot(parentCommentUrn: string, rootUrn: string): boolean {
+  const parent = /^urn:li:comment:\((urn:li:(share|ugcPost|activity):\d+),\d+\)$/.exec(parentCommentUrn);
+  return parent !== null && rootUrn.startsWith(`urn:li:${parent[2]}:`) && parent[1] !== rootUrn;
+}
+
 export function matchesReplyIdentity(
   commentUrn: string,
   commentId: string,
@@ -102,6 +107,9 @@ export function matchesReplyIdentity(
   if (!/^\d+$/.test(commentId) || !commentTargetPattern.test(commentUrn)) return false;
   const parent = /^urn:li:comment:\((urn:li:(?:share|ugcPost|activity):\d+),\d+\)$/.exec(parentCommentUrn);
   if (parent === null) return false;
+  if (rootUrn !== undefined && conflictsWithSameFamilyReplyRoot(parentCommentUrn, rootUrn)) {
+    return false;
+  }
   return (
     commentUrn === `urn:li:comment:(${parent[1]},${commentId})` ||
     (rootUrn !== undefined &&
@@ -161,6 +169,9 @@ export function createReplyPreview(input: ReplyDraft): ReplyPreview {
 
   if (payload.targetUrn !== payload.parentCommentUrn) {
     throw new Error('Reply target must match parent comment');
+  }
+  if (conflictsWithSameFamilyReplyRoot(payload.parentCommentUrn, payload.rootUrn)) {
+    throw new Error('Reply root must match parent comment thread');
   }
 
   const canonicalJson = JSON.stringify(payload);

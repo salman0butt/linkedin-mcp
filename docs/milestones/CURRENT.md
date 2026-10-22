@@ -1,5 +1,7 @@
 # Current Milestone
 
+2026-10-22 checkpoint: M04.7 remains active and PR #6 remains draft. Remote head `2d90e3f` is expected RED (CI `39655379215`, two reply-root regressions). The provider-adapter regression was observed RED locally, and the minimal correction passed 583/583 tests, format, lint, typecheck, build and transport smokes locally. GitHub rejected the attempted write; no remote GREEN or merge is claimed. See `docs/progress/project-state.json` for the single next action.
+
 Milestone: M04 — Comments & Engagement
 Status: ACTIVE — M04.7 security review and closeout
 Verified checkpoint (2026-10-21): trusted host grant remediation committed at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`, GitHub CI `39589866610` **579/579 tests across 64 files** and all required gates. Independent security review remains pending; PR #6 stays draft.

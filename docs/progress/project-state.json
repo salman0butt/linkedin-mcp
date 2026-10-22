@@ -6,15 +6,15 @@
   "activeBranch": "feat/m04-comments-engagement",
   "activePr": 6,
   "baseBranch": "main",
-  "latestVerifiedSha": "5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7",
-  "ciStatus": "GREEN_HEAD_5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7_RUN_39589866610_SUCCESS_579_TESTS_64_FILES",
+  "latestVerifiedSha": "c43e92315c4291fe8a48ab977b3f46b344e8295d",
+  "ciStatus": "RED_HEAD_2d90e3fba449e1baed28dc47d120f0bcd6d983e7_RUN_39655379215_580_PASS_2_EXPECTED_FAIL",
   "criticalFindings": 0,
   "importantFindings": 1,
   "blockers": [
-    "M04.7 comment read and nested parent integrity findings were regression-fixed at 107ededf; CI 39577246941 passed 559 tests across 62 files.",
-    "IMPORTANT review gate: MCP approval self-issuance is regression-fixed at 5c2efce using host-issued single-use 256-bit grants across text/media/replies/reactions; GitHub CI 39589866610 passed 579 tests/64 files. A fresh independent review has not yet produced a usable final report. Keep PR #6 draft/unmerged until that gate and final documentation reconciliation pass.",
-    "Live LinkedIn Community Management entitlement remains unverified; this is an external capability gate and no live availability is claimed."
+    "IMPORTANT: Remote PR #6 head 2d90e3f has two expected RED same-family reply-root failures, CI 39655379215. Provider-adapter RED and local GREEN fix were verified 2026-10-22: 583/583 tests across 66 files plus format/lint/typecheck/build/transport smokes. GitHub create_blob was rejected by connected safety checks; fix is NOT persisted remotely and exact-head GREEN CI is absent.",
+    "Independent M04.7 whole-branch security/provenance review and final merge gates remain pending. Trusted host-issued approval grants were fixed at 5c2efce but the final independent review is not complete.",
+    "Live LinkedIn Community Management product/scope entitlement is unverified; no live capability availability is claimed."
   ],
-  "exactNextWork": "Complete independent security review of the exact-head trusted approval remediation and resolve any verified Critical/Important issues before final M04 merge gates.",
-  "activeHeadSha": "5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7"
+  "exactNextWork": "Persist the locally verified reply-root integrity fix to the existing PR #6 branch once GitHub write approval permits, after rechecking the exact remote head and concurrency.",
+  "activeHeadSha": "2d90e3fba449e1baed28dc47d120f0bcd6d983e7"
 }

@@ -462,6 +462,9 @@ export function createLinkedInCommentsClient(
       if (!COMMENT_URN_PATTERN.test(targetUrn) || parentCommentUrn !== targetUrn) {
         throw new Error('LinkedIn reply target must match its parent comment');
       }
+      if (conflictsWithSameFamilyRoot(objectUrn, parentCommentUrn)) {
+        throw new Error('LinkedIn reply root must match parent comment thread');
+      }
 
       let response: Response;
       try {
