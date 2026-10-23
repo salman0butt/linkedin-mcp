@@ -2,6 +2,22 @@
 
 ## Current unresolved issues
 
+### Resolved locally — M05.6 eligibility dedupe and canonical post permalink provenance
+
+Independent M05.6 whole-branch audit found two Important defects: ineligible same-source duplicates could suppress later eligible records; LinkedIn-owned login/help/redirect links could masquerade as canonical post permalinks or conflict with a post URN. Both were reproduced RED and repaired GREEN, with post-fix **647/647 local tests across 71 files**, real stdio/HTTP, lint, typecheck, format and build passing. The reviewer found no additional confirmed Critical/Important issues. Exact-final-head CI and post-merge main gates still require verification. Strict permalink validation excludes tracking query parameters; trusted providers should supply the clean permalink.
+
+### M05.4 restricted official author finder — CI GREEN / live access unavailable
+
+The optional single-author Posts API adapter has 23 focused GREEN tests and exact-head CI `39915436774` on `e517d57` passing 631 tests across 70 files, including independently reviewed fail-closed default access and pagination-integrity regressions. No credential-bound member ID or APPROVED organization-role access resolver or live restricted Community Management entitlement is configured. The finder is disabled by default and must not be advertised as available without that verified host integration. M05.5 MCP exact-head CI `39918895858` is GREEN (645 tests in 71 files); M05.6 whole-branch review is pending.
+
+### Resolved — M05.3 official provider mode provenance
+
+The M05.3 router at `6c7e1cc` permitted a trusted `OFFICIAL_API` adapter to declare `topic`, `hashtag` or `recent` global search despite the documented author-scoped-only official API. A concrete read-only probe returned `available` with `OFFICIAL_API` source for a topic query. Regression verified RED (11 passed, 1 failed); commit `35ff359dffecc179aa82f0e41d7c563b559825d7` rejects unsupported modes. Exact-head CI `39758769454` succeeded (608/608 tests, 69 files and quality gates). No live entitlement is claimed.
+
+### M05 external discovery integration boundary
+
+No legitimate external/partner global post discovery provider has been configured or live-verified. An explicit `unavailable` result is required until a provider with lawful access, provenance and terms exists. LinkedIn's official Posts API finder is author-scoped and permission-dependent, not general keyword search. Do not claim live search availability from deterministic tests.
+
 ### Minor — private package boundary is repository-relative
 
 `@linkedin-mcp/server` remains private and imports built private core through a repository-relative path while its build script builds core first. Current monorepo tests/build/transports verify this arrangement. Replace it with an explicit workspace dependency when package-consumer boundaries expand.

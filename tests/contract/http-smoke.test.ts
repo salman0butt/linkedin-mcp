@@ -35,6 +35,7 @@ try {
     },
   });
   const capabilities = await client.callTool({ name: 'linkedin.capabilities', arguments: {} });
+  const postSearch = await client.callTool({ name: 'linkedin.posts.search', arguments: { kind: 'topic', term: 'AI' } });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
     authStatus: authStatus.structuredContent,
@@ -45,6 +46,8 @@ try {
     publish: publish.structuredContent,
     mediaPreview: mediaPreview.structuredContent,
     capabilities: capabilities.structuredContent,
+    postSearch: postSearch.structuredContent,
+    postSearchIsError: postSearch.isError,
   }));
 } finally {
   await client.close();
@@ -70,7 +73,7 @@ function callBuiltHttpServer(): unknown {
 }
 
 describe('built HTTP server', () => {
-  it('exposes foundation, publishing, and engagement tools through real loopback HTTP', () => {
+  it('exposes foundation, publishing, engagement and unavailable post search through loopback HTTP', () => {
     const result = callBuiltHttpServer() as {
       toolNames: string[];
       toolCount: number;
@@ -81,6 +84,8 @@ describe('built HTTP server', () => {
       approval: unknown;
       publish: unknown;
       mediaPreview: unknown;
+      postSearch: unknown;
+      postSearchIsError: boolean;
     };
     expect(result).toMatchObject({
       health: {
@@ -102,7 +107,12 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 28,
+      toolCount: 29,
+      postSearch: {
+        status: 'unsupported',
+        data: { status: 'unavailable', providerOutcomes: [] },
+      },
+      postSearchIsError: true,
       preview: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
@@ -146,6 +156,7 @@ describe('built HTTP server', () => {
         'linkedin.reactions.remove.preview',
         'linkedin.reactions.remove.approve',
         'linkedin.reactions.remove',
+        'linkedin.posts.search',
       ]),
     );
     expect(
@@ -154,6 +165,10 @@ describe('built HTTP server', () => {
     ).toBe('UNAVAILABLE');
     expect(
       result.capabilities.data.capabilities.find((capability) => capability.id === 'post.create.image')
+        ?.availability,
+    ).toBe('UNAVAILABLE');
+    expect(
+      result.capabilities.data.capabilities.find((capability) => capability.id === 'posts.search')
         ?.availability,
     ).toBe('UNAVAILABLE');
   });

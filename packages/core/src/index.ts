@@ -4,3 +4,4 @@ export * from './engagement.js';
 export * from './media-post.js';
 export * from './result.js';
 export * from './text-post.js';
+export * from './post-discovery.js';

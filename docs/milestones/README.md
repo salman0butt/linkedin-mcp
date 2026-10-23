@@ -4,12 +4,12 @@ Valid milestone states: NOT_STARTED, DESIGN, PLANNED, IMPLEMENTING, VERIFYING, R
 
 | Milestone | Name                                  | State        |
 | --------- | ------------------------------------- | ------------ |
-| M00       | Foundation + Autonomous Control Plane | IMPLEMENTING |
-| M01       | Authentication & Identity             | PLANNED      |
-| M02       | Text Publishing                       | PLANNED      |
-| M03       | Media Publishing                      | PLANNED      |
-| M04       | Comments & Engagement                 | PLANNED      |
-| M05       | Post Search                           | PLANNED      |
+| M00       | Foundation + Autonomous Control Plane | COMPLETE     |
+| M01       | Authentication & Identity             | COMPLETE     |
+| M02       | Text Publishing                       | COMPLETE     |
+| M03       | Media Publishing                      | COMPLETE     |
+| M04       | Comments & Engagement                 | COMPLETE     |
+| M05       | Post Search                           | IMPLEMENTING |
 | M06       | Job Search                            | PLANNED      |
 | M07       | Job Intelligence                      | PLANNED      |
 | M08       | Article Authoring Engine              | PLANNED      |

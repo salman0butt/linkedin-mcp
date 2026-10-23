@@ -203,8 +203,9 @@ const descriptors: CapabilityDescriptor[] = [
     provider: 'EXTERNAL_DISCOVERY',
     availability: 'UNAVAILABLE',
     milestone: 'M05',
-    status: 'PLANNED',
-    accessNote: 'Broad search is not represented as ordinary LinkedIn official API access.',
+    status: 'ACTIVE',
+    accessNote:
+      'Read-only MCP contract is implemented. Broad search requires a legitimate configured external/partner provider; restricted official author retrieval needs separately verified identity and scopes.',
     approvalRequired: false,
   },
   {

@@ -1,29 +1,34 @@
 # Project Status
 
-## Latest checkpoint — 2026-10-22 (remote regression-fix verified)
+## Current checkpoint — 2026-10-23 (M05.6 full-branch review)
 
-RED PR head `2d90e3fba449e1baed28dc47d120f0bcd6d983e7` / CI `39655379215` had two expected failing reply-root core tests; a third provider-adapter regression was locally RED. The fix is now committed at `75205ae47a29d98e60a9087a9f5703d40dd8d36e`; exact-head GitHub CI `39739059007` passed **583/583 tests across 66 files**, frozen install, formatting, lint, typecheck, build and real stdio/HTTP smoke tests. Cross-family aliases remain supported. Independent reply-integrity reviewer found no Critical/Important defect in this fix. Independent reply-root review and fresh six-path trusted-grant security review found **0 verified Critical/Important defects**. Final exact-head merge and post-merge main CI gates remain; PR #6 stays draft until they pass. Earlier sections below are historical.
+M05.5 committed to the existing PR #8 branch at `1c0762c91113f0c23d27ee03d4631b5988f1cdc2`. Exact-head GitHub Actions CI `39918895858` passed **645/645 tests in 71 files**, frozen install, formatting, lint, typecheck and build. Real stdio and HTTP MCP transport tests verify 29 tools, explicit default unavailable, configured provider provenance, and mixed-source partial failure reporting. The independent M05.6 reviewer found two Important defects, both now regression-fixed: dedupe before filtering hid eligible records, and non-post LinkedIn URLs could masquerade as canonical permalinks. Focused tests failed RED before the fixes and passed GREEN afterward. Full local **647/647 tests in 71 files**, lint, typecheck, formatting and build passed. Reviewer concluded zero further confirmed Critical/Important findings; final remote SHA/CI and squash merge remain pending. No live external discovery or restricted official Posts entitlement has been verified.
 
-Exact next work: **Verify exact-final-head PR gates, squash-merge M04 when green, and confirm post-merge main CI.**
+Exact next work: **Persist M05.6 fixes and review evidence on PR #8, verify exact-final-head CI, and squash-merge when all gates pass.**
 
-Last reconciled: 2026-10-22. Git/code/exact-SHA CI outrank these notes.
+M05.4 default-OFF author finder committed at `e517d5747622cf9d3289bda6ae08151fa637878a`; exact-head CI `39915436774` passed **631/631 tests in 70 files** and frozen install, Prettier, lint, types and build. M05.5 implements strict read-only `linkedin.posts.search` using an injected `PostSearchService` shared by stdio and HTTP. The default provider list is empty; `unavailable` maps to non-success `unsupported` without fabricated posts. Mixed failures preserve `partial` and source provenance. Genuine local RED (four missing-tool tests failed) became GREEN, followed by M05.5 exact-head CI `39918895858` (645/645 tests). No external discovery or credential-bound official author access is bundled.
 
-## Current Milestone
+Historical M05.5 handoff (completed): commit existing draft PR #8, obtain exact-head CI green and begin M05.6 review.
 
-M04 — Comments & Engagement — **ACTIVE, M04.7 whole-milestone review and closeout**.
+M05.5 independent review's two Important findings (malformed input misclassified as upstream failure, and trusted class-based providers losing prototype-defined methods) were regression-fixed RED→GREEN. Additional direct MCP checks confirm the five strict mode alternatives in published tool-list JSON Schema, scoped same-ID posts from different providers, no spoofed source authority, no invented engagement or permalink, and all failure-only statuses. Two real HTTP clients received the same auditable partial outcomes. No unresolved Critical/Important finding is known in this M05.5 review; whole-branch closeout is still pending.
 
-Active branch: `feat/m04-comments-engagement`. Draft PR #6 remains the milestone integration boundary.
-Base/main: `03f31814ea809f9fc4a82e5f7ac1ed37fbeda8c0`.
-Design: `docs/superpowers/specs/2026-10-11-m04-comments-engagement-design.md`.
-Plan: `docs/superpowers/plans/2026-10-11-m04-comments-engagement.md`.
+Historical M05.4 RED-to-GREEN checkpoint: PR #8 test-only head `4b6673fe4c423deff22f26c5b8a9f191cb87a3a8` failed CI `39907383505` at Prettier. Local implementation and independently reviewed filtering, pagination, resolver taxonomy, default-OFF and UTF-8 regressions became GREEN; these were later verified by the M05.4 CI above.
 
-## M04.7 Trusted Human Approval Boundary — CI VERIFIED, INDEPENDENTLY REVIEWED
+Historical M05.4 next action (completed): persist M05.4, obtain exact-head green CI and start M05.5.
 
-The Important MCP self-approval finding has a local fail-closed remediation under independent review. A trusted embedding host must authenticate the human and issue a one-time subject/purpose/payload grant outside MCP; the shared production runtime consumes the grant before minting any text, media, reply or reaction receipt. Caller-provided `approved:true` alone cannot mint a receipt. The bundled stdio/HTTP servers intentionally have no host approval UI and default to `human_action_required` on otherwise eligible approval requests.
+M05 Post Search is ACTIVE in M05.6, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
 
-Observed local RED: absent grant module; two unauthorized runtime issuance tests; six MCP denial status tests; a second-client grant theft regression; and a test showing that an injected receipt store received a spent grant ID. Observed local GREEN: **579/579 tests across 64 files**, real stdio/HTTP smokes, lint, typecheck, formatting and build (with an additional 25/25 focused GREEN after the grant-ID leak fix). On macOS, `TMPDIR=/private/tmp` avoids a pre-existing `/var` alias mismatch in media-config tests. No live LinkedIn operation was performed.
+M04 **COMPLETE**: [PR #6](https://github.com/salman0butt/linkedin-mcp/pull/6) squash merged at `800bf943cf047215bc434206dab1e5b6e2175c10`. Post-merge main CI `39740297020` passed **583/583 tests across 66 files**, frozen install, format, lint, typecheck and build. Independent M04 approval-security and reply-root reviews found no verified Critical/Important defects. No live Community Management entitlement or shipped authenticated host approval UI is claimed.
 
-Trusted-approval implementation is now durably committed at `5c2efcebd1cf3f7bac1a76d3a619cb771da4bfc7`; exact-head GitHub Actions CI `39589866610` passed **579/579 tests across 64 files**, frozen install, formatting, lint, typecheck and build, including real stdio/HTTP smokes. Local and CI passes cover missing/incorrect/unspent host grant IDs, binding, expiry and receipt-store isolation. Two earlier review workers timed out, but a fresh independent reviewer on 2026-10-22 subsequently traced all six approval paths, verified 33 focused tests and reported zero verified new Critical/Important defects. PR #6 remains draft until review and merge gates. See `docs/security/TRUSTED-APPROVALS.md` and `docs/superpowers/evidence/2026-10-21-trusted-approval.md`.
+M05.1 core contract RED→GREEN committed at `1bbc366dda57cc44d10825c6126a6fefd195dd7d`; exact-head CI `39743915175` GREEN (589/589 tests, 67 files, all gates). M05.2 deterministic filtering/dedupe RED (missing module) → exact-head GitHub CI `39744941663` GREEN on `9e6a141` (596/596 tests across 68 files, all quality gates). M05.3 typed provider router RED (missing module) → verified exact-head `6c7e1ccd99eafdb434e382af99d0698eee748874`, CI `39745975198` GREEN **607/607 tests across 69 files**, frozen install, format/lint/typecheck/build/real transports; independent provider-security review remains pending.
+
+M05 requires provenance-preserving discovery: external/partner discovery only when legitimately configured; official author-scoped read only with the separately verified member/organization roles and restricted scopes. Unavailable is not a successful empty response. Normalized results must not invent publication dates, engagement, canonical URLs, or source authority. No external provider is bundled.
+
+M05.3 security review identified one Important capability-provenance defect: an `OFFICIAL_API` adapter could declare broad `topic`, `hashtag` or `recent` search and produce misleading official-search results. A focused regression was verified RED (11 passed, 1 failed); fail-closed correction committed at `35ff359dffecc179aa82f0e41d7c563b559825d7` and exact-head CI `39758769454` passed 608/608 tests across 69 files and quality gates. No external provider entitlement is claimed.
+
+Historical M05.3 handoff: M05.4 default-OFF single-author official Posts API finder was the next task (now locally implemented as documented above).
+
+## Historical M04 checkpoint (superseded by merged Git graph)
 
 ## M04.6 Strict MCP/Transport Integration — GREEN
 

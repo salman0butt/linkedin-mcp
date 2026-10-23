@@ -1,20 +1,19 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M04",
-  "currentIteration": "M04.7",
+  "currentMilestone": "M05",
+  "currentIteration": "M05.6",
   "status": "ACTIVE",
-  "activeBranch": "feat/m04-comments-engagement",
-  "activePr": 6,
+  "activeBranch": "feat/m05-post-search",
+  "activePr": 8,
   "baseBranch": "main",
-  "latestVerifiedSha": "75205ae47a29d98e60a9087a9f5703d40dd8d36e",
-  "ciStatus": "GREEN_HEAD_75205ae47a29d98e60a9087a9f5703d40dd8d36e_RUN_39739059007_SUCCESS_583_TESTS_66_FILES",
+  "latestVerifiedSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2",
+  "ciStatus": "GREEN_M05_5_HEAD_1c0762c91113f0c23d27ee03d4631b5988f1cdc2_RUN_39918895858_645_TESTS_71_FILES; M05_6_LOCAL_647_TESTS_71_FILES_FINAL_HEAD_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M04.7 reply-root regression: RED head 2d90e3f CI 39655379215 (580 passed, 2 expected failures) and provider-adapter local RED; regression-fixed at 75205ae with exact-head GREEN CI 39739059007 (583/583 tests, 66 files, all gates). Independent reply-integrity reviewer found no Critical/Important defects in this fix.",
-    "Independent reply-root integrity and all-six-path trusted approval security reviewers reported 0 verified Critical/Important defects. Final PR merge gates and post-merge main CI remain pending.",
-    "Live LinkedIn Community Management product/scope entitlement is unverified; no live capability availability is claimed."
+    "M05.5 CI 39918895858 passed at 1c0762c (645/645 tests in 71 files). M05.6 independent audit found two Important issues (pre-filter dedupe, non-post canonical URLs); both reproduced RED and fixed GREEN. Full local 647/647 tests in 71 files, all gates green. Exact-final-head remote CI pending.",
+    "No lawful external/partner global post discovery provider or credential-bound official Posts author/organization resolver is configured. Author finder is default OFF; no live author read or broad official search availability is claimed."
   ],
-  "exactNextWork": "Verify final PR head and merge gates, squash-merge M04 PR #6 when exact-head CI is green, and verify post-merge main CI.",
-  "activeHeadSha": "75205ae47a29d98e60a9087a9f5703d40dd8d36e"
+  "exactNextWork": "Persist M05.6 final regressions and review evidence on PR #8, verify exact-final-head CI, and squash-merge if all gates remain satisfied.",
+  "activeHeadSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2"
 }

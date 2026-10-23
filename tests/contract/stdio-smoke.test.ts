@@ -38,6 +38,7 @@ try {
     },
   });
   const capabilities = await client.callTool({ name: 'linkedin.capabilities', arguments: {} });
+  const postSearch = await client.callTool({ name: 'linkedin.posts.search', arguments: { kind: 'topic', term: 'AI' } });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
     authStatus: authStatus.structuredContent,
@@ -48,6 +49,8 @@ try {
     publish: publish.structuredContent,
     mediaPreview: mediaPreview.structuredContent,
     capabilities: capabilities.structuredContent,
+    postSearch: postSearch.structuredContent,
+    postSearchIsError: postSearch.isError,
   }));
 } finally {
   await client.close();
@@ -72,7 +75,7 @@ function callBuiltServer(): unknown {
 }
 
 describe('built stdio server', () => {
-  it('exposes foundation, publishing, and engagement tools through the real StdioClientTransport', () => {
+  it('exposes foundation, publishing, engagement and unavailable post search through real stdio', () => {
     const result = callBuiltServer() as {
       toolNames: string[];
       toolCount: number;
@@ -83,6 +86,8 @@ describe('built stdio server', () => {
       approval: unknown;
       publish: unknown;
       mediaPreview: unknown;
+      postSearch: unknown;
+      postSearchIsError: boolean;
     };
     expect(result).toMatchObject({
       health: {
@@ -104,7 +109,12 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 28,
+      toolCount: 29,
+      postSearch: {
+        status: 'unsupported',
+        data: { status: 'unavailable', providerOutcomes: [] },
+      },
+      postSearchIsError: true,
       preview: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
@@ -148,6 +158,7 @@ describe('built stdio server', () => {
         'linkedin.reactions.remove.preview',
         'linkedin.reactions.remove.approve',
         'linkedin.reactions.remove',
+        'linkedin.posts.search',
       ]),
     );
     expect(
@@ -156,6 +167,10 @@ describe('built stdio server', () => {
     ).toBe('UNAVAILABLE');
     expect(
       result.capabilities.data.capabilities.find((capability) => capability.id === 'post.create.image')
+        ?.availability,
+    ).toBe('UNAVAILABLE');
+    expect(
+      result.capabilities.data.capabilities.find((capability) => capability.id === 'posts.search')
         ?.availability,
     ).toBe('UNAVAILABLE');
   });
