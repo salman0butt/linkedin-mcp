@@ -65,8 +65,8 @@
 
 **Files:** Create `apps/server/src/discovery/linkedin-author-posts.ts`; test `apps/server/test/linkedin-author-posts.test.ts`; wire only with restricted local authorization.
 
-- [ ] RED for missing restricted scope/default-off trusted read gate, absent verified author member ID/organization role, wrong author URN, `viewContext=READER`, published/public-only results, versioned headers, wrong HTTP taxonomy, body/paging bounds, and forbidden bulk author requests.
-- [ ] GREEN for _single-author_ official Posts API finder using configured app context only; do not convert to global keyword search.
+- [x] RED for missing restricted scope/default-off trusted read gate, absent verified author member ID/organization role, wrong author URN, `viewContext=READER`, published/public-only results, versioned headers, wrong HTTP taxonomy, body/paging bounds, and forbidden bulk author requests. Initial missing-module RED and independent review regressions verified locally.
+- [x] GREEN for _single-author_ official Posts API finder using configured app context only; do not convert to global keyword search. Local 23 focused / 631 full tests GREEN, no real host resolver installed.
 - [ ] Full verification and exact-head CI, verify restricted access defaults off.
 
 ### Task 5: MCP surface and transport (M05.5)

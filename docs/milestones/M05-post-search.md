@@ -1,6 +1,6 @@
 # M05 — Post Search
 
-Status: **ACTIVE — M05.4 restricted official author finder**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
+Status: **ACTIVE — M05.4 local GREEN, remote CI pending**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
 
 ## Goal
 
@@ -36,7 +36,9 @@ M05.3 typed provider router: RED missing `post-search-service.ts`; eleven focuse
 
 M05.3 independent security/provenance review found an Important official-provider classification gap: trusted adapters could configure `OFFICIAL_API` for unsupported global `topic`, `hashtag` or `recent` search. Focused test RED: 11 passed, 1 failed on `6c7e1cc`; minimal configuration validation rejects these modes (including mixed author/global declarations) while retaining official author/company configurations. GREEN commit `35ff359dffecc179aa82f0e41d7c563b559825d7`, exact-head CI `39758769454` succeeded with 608/608 tests across 69 files and required quality gates. Finding resolved; no live provider entitlement claimed.
 
-Next: implement M05.4 default-OFF, verified-identity single-author official Posts API finder with RED→GREEN tests on PR #8.
+M05.4: Remote RED test-only head `4b6673fe4c423deff22f26c5b8a9f191cb87a3a8` failed Prettier in CI `39907383505`; locally the test also failed because the `linkedin-author-posts.ts` provider was missing. Expanded TDD covered restricted read scopes, trusted verified person/organization authorization, default OFF, a fixed versioned `q=author`/`READER` finder request, published/public filtering, error taxonomy, strict body/UTF-8 bounds, and bounded pagination. Independent review found four Important defects: counting unfiltered or duplicate posts before stopping paging, misclassified resolver errors, missing resolver default-OFF initialization, and trusting unvalidated next-page links. Regression tests reproduced the issues (focused 23 tests, 5 RED before fixes), with invalid UTF-8 additionally rejected. Local final: **23/23 M05.4 focused tests, 631/631 full tests across 70 files**, plus real stdio/HTTP smoke, lint, typecheck, build and Prettier GREEN (Node 24, macOS `TMPDIR=/private/tmp`). Trusted resolver is injected but no real credential-bound resolver or live entitlement is bundled; official finder remains disabled unless a verified host supplies it. Await new remote exact-head CI before marking this iteration remotely verified.
+
+Next: persist the M05.4 checkpoint on draft PR #8, verify exact remote head and CI, then implement M05.5 MCP surface and transports.
 
 ## Integration Test Evidence
 

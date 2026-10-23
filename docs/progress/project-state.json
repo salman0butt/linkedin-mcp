@@ -7,13 +7,13 @@
   "activePr": 8,
   "baseBranch": "main",
   "latestVerifiedSha": "1c8b6df96f7fa5c120ad5ea5a77f50f3e7d38cd0",
-  "ciStatus": "GREEN_HEAD_1c8b6df96f7fa5c120ad5ea5a77f50f3e7d38cd0_RUN_39759220242_SUCCESS_608_TESTS_69_FILES",
+  "ciStatus": "PENDING_M05_4_GREEN_REMOTE_VERIFICATION_LOCAL_631_TESTS_70_FILES; LAST_REMOTE_HEAD_4b6673f_RUN_39907383505_FORMAT_FAILURE",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.3 official-provider global-mode provenance finding resolved at 35ff359dffecc179aa82f0e41d7c563b559825d7; no unresolved Critical/Important finding known on existing M05.3 code.",
-    "No lawful external/partner global post discovery provider is configured; no live official Posts API entitlement is claimed. M05.4 requires default-OFF trusted author authorization and RED-to-GREEN verification."
+    "The remote M05.4 RED test head 4b6673f failed CI 39907383505 formatting; new implementation and formatting fix pass 631/631 local tests in 70 files with Node 24 and TMPDIR=/private/tmp, plus lint, formatting, types and build. Exact updated remote SHA/CI still pending.",
+    "No lawful external/partner global post discovery provider or credential-bound official Posts author/organization resolver is configured. The official finder is default OFF; no live author read or broad official search availability is claimed."
   ],
-  "exactNextWork": "Add M05.4 restricted single-author Posts API finder regression tests to existing PR #8 branch, observe genuine RED, then implement and verify GREEN.",
-  "activeHeadSha": "1c8b6df96f7fa5c120ad5ea5a77f50f3e7d38cd0"
+  "exactNextWork": "Persist verified M05.4 source and tests on existing PR #8, verify the exact new remote SHA/CI, then begin M05.5 MCP transport integration.",
+  "activeHeadSha": "4b6673fe4c423deff22f26c5b8a9f191cb87a3a8"
 }

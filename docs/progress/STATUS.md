@@ -1,6 +1,10 @@
 # Project Status
 
-## Current checkpoint — 2026-10-22
+## Current checkpoint — 2026-10-23 (M05.4 local GREEN; remote CI pending)
+
+The latest PR #8 remote test-only head `4b6673fe4c423deff22f26c5b8a9f191cb87a3a8` failed CI `39907383505` at Prettier for `apps/server/test/linkedin-author-posts.test.ts`. Locally M05.4 then reproduced RED for the missing official author provider module, and independently discovered filtering, pagination, resolver-taxonomy, default-OFF and UTF-8 defects were reproduced with focused failing regressions before fixes. The optional, fixed-endpoint, single-author Posts API adapter now defaults OFF, requires verified credential-bound member identity or APPROVED organization role plus restricted scope, excludes private/draft posts, validates next-page cursors and never claims global official search. With Node 24 and macOS `TMPDIR=/private/tmp`, **631/631 tests across 70 files** plus real stdio/HTTP smoke, lint, typecheck, build and formatting are locally GREEN. These checks **do not** establish remote exact-head CI or live LinkedIn entitlement; the existing draft PR #8 remains open.
+
+Exact next work: **Persist the M05.4 local GREEN checkpoint on PR #8, verify exact new-head CI, then proceed to M05.5 MCP transport integration.**
 
 M05 Post Search is ACTIVE in M05.4, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
 
@@ -12,7 +16,7 @@ M05 requires provenance-preserving discovery: external/partner discovery only wh
 
 M05.3 security review identified one Important capability-provenance defect: an `OFFICIAL_API` adapter could declare broad `topic`, `hashtag` or `recent` search and produce misleading official-search results. A focused regression was verified RED (11 passed, 1 failed); fail-closed correction committed at `35ff359dffecc179aa82f0e41d7c563b559825d7` and exact-head CI `39758769454` passed 608/608 tests across 69 files and quality gates. No external provider entitlement is claimed.
 
-Exact next work: **Implement M05.4 default-OFF single-author official Posts API finder with verified member/organization access and RED→GREEN tests on PR #8.**
+Historical M05.3 handoff: M05.4 default-OFF single-author official Posts API finder was the next task (now locally implemented as documented above).
 
 ## Historical M04 checkpoint (superseded by merged Git graph)
 

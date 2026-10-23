@@ -1,7 +1,7 @@
 # Current Milestone
 
 Milestone: M05 — Post Search
-Status: ACTIVE — M05.4 restricted official author finder
+Status: ACTIVE — M05.4 local GREEN, exact-head remote CI pending
 Iteration: M05.4
 Branch: `feat/m05-post-search`
 PR: #8 — draft
@@ -17,7 +17,7 @@ M04 is COMPLETE: PR #6 merged (squash) at `800bf943cf047215bc434206dab1e5b6e2175
 
 M05 global keyword/hashtag search is **not** a normal documented official LinkedIn API feature. External discovery requires legitimate configured third-party/partner access. The documented official Posts API finder is narrowly author-scoped with restricted permissions. The default no-provider state must be explicitly `unavailable`, not fake empty success.
 
-Exact next work: **Implement M05.4 single-author official Posts API finder with default-OFF trusted access and RED→GREEN tests on existing PR #8.**
+Exact next work: **Persist M05.4 default-OFF official author finder on PR #8 and verify exact new-head GitHub CI; start M05.5 strict MCP integration after green.** Local: 631/631 tests across 70 files, lint, typecheck, format and build GREEN on 2026-10-23, with macOS `TMPDIR=/private/tmp`; no live restricted entitlement is claimed.
 
 M05.1 exact-head GitHub CI: `1bbc366dda57cc44d10825c6126a6fefd195dd7d`, run `39743915175`, **589/589 tests** across 67 files plus quality gates. M05.2 local GREEN: **596/596 tests** across 68 files after a genuine missing-module RED, lint, formatting, typecheck, build and transport smokes. Remote CI for M05.2 pending.
 
