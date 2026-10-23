@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { parseConfig } from '../src/config.js';
 import { createHttpServer } from '../src/http.js';
+import { DiscoveryProviderError, type DiscoveryProvider } from '../src/discovery/post-search-service.js';
 import type { AuthService } from '../src/auth/auth-service.js';
 import { createLinkedInRuntime } from '../src/runtime.js';
 import type { LinkedInPostsAdapter } from '../src/publishing/linkedin-posts.js';
@@ -57,6 +58,115 @@ function postStatus(port: number, body: Buffer): Promise<number> {
 }
 
 describe('createHttpServer', () => {
+  it('uses only trusted runtime-injected discovery adapters across the real HTTP transport', async () => {
+    class AuthorizedDiscovery implements DiscoveryProvider {
+      readonly providerId = 'configured-discovery';
+      readonly providerType = 'EXTERNAL_DISCOVERY' as const;
+      readonly name = 'Configured independent discovery';
+      readonly supportedKinds = ['topic'] as const;
+      readonly calls: unknown[] = [];
+
+      search(query: Parameters<DiscoveryProvider['search']>[0]) {
+        this.calls.push(query);
+        return Promise.resolve({ posts: [{ id: 'external-1', text: 'AI deployment overview' }] });
+      }
+    }
+    const configured = new AuthorizedDiscovery();
+    const runtime = createLinkedInRuntime(parseConfig(), {
+      now: () => new Date('2026-10-23T09:00:00.000Z'),
+      discoveryProviders: [configured],
+    });
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, runtime });
+    const client = new Client({ name: 'trusted-discovery-http', version: '1.0.0' });
+    try {
+      const endpoint = new URL(`http://${server.address.host}:${server.address.port}/mcp`);
+      await client.connect(new StreamableHTTPClientTransport(endpoint));
+      const result = await client.callTool({
+        name: 'linkedin.posts.search',
+        arguments: { kind: 'topic', term: 'AI', limit: 1 },
+      });
+      expect(result.isError).not.toBe(true);
+      expect(result.structuredContent).toMatchObject({
+        status: 'succeeded',
+        provider: { type: 'LOCAL_ONLY' },
+        data: {
+          status: 'available',
+          posts: [
+            {
+              id: 'external-1',
+              source: {
+                provider: 'EXTERNAL_DISCOVERY',
+                id: 'configured-discovery',
+                retrievedAt: '2026-10-23T09:00:00.000Z',
+              },
+            },
+          ],
+        },
+      });
+      expect(configured.calls).toHaveLength(1);
+      expect(configured.calls[0]).toMatchObject({ kind: 'topic', term: 'AI', limit: 1 });
+    } finally {
+      await client.close();
+      await server.close();
+    }
+  });
+
+  it('preserves partial source results and error flags for two real loopback MCP clients', async () => {
+    const runtime = createLinkedInRuntime(parseConfig(), {
+      now: () => new Date('2026-10-23T09:00:00.000Z'),
+      discoveryProviders: [
+        {
+          providerId: 'published',
+          providerType: 'EXTERNAL_DISCOVERY',
+          name: 'Published data source',
+          supportedKinds: ['topic'],
+          search: () => Promise.resolve({ posts: [{ id: 'p100', text: 'AI methods' }] }),
+        },
+        {
+          providerId: 'limited',
+          providerType: 'EXTERNAL_DISCOVERY',
+          name: 'Rate limited source',
+          supportedKinds: ['topic'],
+          search: () => Promise.reject(new DiscoveryProviderError('rate_limited')),
+        },
+      ],
+    });
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, runtime });
+    const endpoint = new URL(`http://${server.address.host}:${server.address.port}/mcp`);
+    const clients = [
+      new Client({ name: 'discovery-client-a', version: '1.0.0' }),
+      new Client({ name: 'discovery-client-b', version: '1.0.0' }),
+    ];
+    try {
+      for (const client of clients) {
+        await client.connect(new StreamableHTTPClientTransport(endpoint));
+        const result = await client.callTool({
+          name: 'linkedin.posts.search',
+          arguments: { kind: 'topic', term: 'AI' },
+        });
+        expect(result.isError).toBe(true);
+        expect(result.structuredContent).toMatchObject({
+          status: 'partial',
+          data: {
+            status: 'partial',
+            posts: [{ id: 'p100', source: { id: 'published', provider: 'EXTERNAL_DISCOVERY' } }],
+            providerOutcomes: [
+              { providerId: 'published', state: 'success', consulted: true },
+              { providerId: 'limited', state: 'rate_limited', consulted: true },
+            ],
+          },
+        });
+        expect(result.content[0]).toMatchObject({
+          type: 'text',
+          text: JSON.stringify(result.structuredContent),
+        });
+      }
+    } finally {
+      await Promise.all(clients.map((client) => client.close()));
+      await server.close();
+    }
+  });
+
   it('shares injected approval and publishing state across real HTTP MCP clients', async () => {
     const now = () => new Date('2026-10-08T12:00:00.000Z');
     const grants = createTrustedApprovalGrantStore({ now });

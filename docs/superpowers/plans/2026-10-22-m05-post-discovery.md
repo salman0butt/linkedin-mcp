@@ -67,14 +67,14 @@
 
 - [x] RED for missing restricted scope/default-off trusted read gate, absent verified author member ID/organization role, wrong author URN, `viewContext=READER`, published/public-only results, versioned headers, wrong HTTP taxonomy, body/paging bounds, and forbidden bulk author requests. Initial missing-module RED and independent review regressions verified locally.
 - [x] GREEN for _single-author_ official Posts API finder using configured app context only; do not convert to global keyword search. Local 23 focused / 631 full tests GREEN, no real host resolver installed.
-- [ ] Full verification and exact-head CI, verify restricted access defaults off.
+- [x] Full verification and exact-head CI, verify restricted access defaults off. Commit `e517d57`, CI `39915436774` GREEN with 631/631 tests in 70 files plus quality gates.
 
 ### Task 5: MCP surface and transport (M05.5)
 
 **Files:** Add `apps/server/src/discovery-mcp.ts`; update `apps/server/src/create-server.ts`, `apps/server/src/runtime.ts`, capability registry, stdio/HTTP contract tests and capability matrix.
 
-- [ ] RED: `linkedin.posts.search` strict input, zero configured provider => explicit unavailable; partial mixed-provider response maps to a distinct non-success MCP representation; source provenance and bounded output, no access token/endpoint field, real transport contracts.
-- [ ] GREEN: shared runtime injection and truthful capability state, no false availability.
+- [x] RED: `linkedin.posts.search` strict input, zero configured provider => explicit unavailable; partial mixed-provider response maps to a distinct non-success MCP representation; source provenance and bounded output, no access token/endpoint field, real transport contracts. Four missing-tool contract tests genuinely failed before implementation.
+- [x] GREEN: shared runtime injection and truthful capability state, no false availability. Eleven focused contract tests, real HTTP injected-provider verification and default-off stdio/HTTP smoke passed locally; 645 tests in 71 files.
 - [ ] Full suite, lint, typecheck, formatting, build and real transports; exact-head CI.
 
 ### Task 6: Independent closeout and integration (M05.6)

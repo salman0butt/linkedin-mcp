@@ -1,6 +1,11 @@
 import { createAuthService, type AuthService } from './auth/auth-service.js';
 import type { ServerConfig } from './config.js';
 import {
+  createPostSearchService,
+  type DiscoveryProvider,
+  type PostSearchService,
+} from './discovery/post-search-service.js';
+import {
   createEngagementReadService,
   type EngagementReadService,
 } from './engagement/engagement-read-service.js';
@@ -35,6 +40,7 @@ import { createTextPostService, type TextPostService } from './publishing/text-p
 export interface LinkedInRuntime {
   version: string;
   authService: AuthService;
+  discovery: PostSearchService;
   publishing: {
     approvals: ApprovalService;
     textPostService?: TextPostService;
@@ -55,6 +61,8 @@ export interface LinkedInRuntimeOverrides {
   comments?: LinkedInCommentsClient;
   reactions?: LinkedInReactionsClient;
   now?: () => Date;
+  /** Trusted host-only adapters; never constructed from MCP arguments. Defaults to no providers. */
+  discoveryProviders?: readonly DiscoveryProvider[];
 }
 
 function isMediaLedger(ledger: IdempotencyLedger): ledger is MediaIdempotencyLedger {
@@ -153,6 +161,10 @@ export function createLinkedInRuntime(
   return {
     version: config.serverVersion,
     authService,
+    discovery: createPostSearchService({
+      providers: overrides.discoveryProviders ?? [],
+      ...(overrides.now === undefined ? {} : { now: overrides.now }),
+    }),
     publishing: {
       approvals: textApprovals,
       ...(textPostService === undefined ? {} : { textPostService }),

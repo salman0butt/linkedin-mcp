@@ -147,7 +147,7 @@ describe('LinkedIn MCP server contract', () => {
     }
   });
 
-  it('advertises foundation, publishing, and engagement tools before authentication is configured', async () => {
+  it('advertises foundation, publishing, engagement and discovery tools before authentication', async () => {
     const handler = createMcpHandler(() => createLinkedInMcpServer({ version: '1.2.3' }));
     const transport = new StreamableHTTPClientTransport(new URL('http://test.local/mcp'), {
       fetch: (url, init) => handler.fetch(new Request(url, init)),
@@ -176,6 +176,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.post.preview.image',
         'linkedin.post.preview.multi_image',
         'linkedin.post.preview.text',
+        'linkedin.posts.search',
         'linkedin.reactions.add',
         'linkedin.reactions.add.approve',
         'linkedin.reactions.add.preview',

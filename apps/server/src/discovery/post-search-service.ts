@@ -69,7 +69,14 @@ function validateProviders(input: readonly DiscoveryProvider[]): readonly Readon
         throw new Error('Invalid or duplicate trusted discovery provider');
       }
       ids.add(provider.providerId);
-      return Object.freeze({ ...provider, supportedKinds: Object.freeze([...provider.supportedKinds]) });
+      return Object.freeze({
+        ...provider,
+        // Trusted provider classes commonly define search on the prototype. A
+        // shallow spread alone silently drops it, turning an available source
+        // into an apparent provider failure. Preserve its original receiver.
+        search: provider.search.bind(provider),
+        supportedKinds: Object.freeze([...provider.supportedKinds]),
+      });
     }),
   );
 }

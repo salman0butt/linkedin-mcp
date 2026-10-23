@@ -20,6 +20,28 @@ function provider(
 const topic = { kind: 'topic', term: 'AI' } as const;
 
 describe('M05 explicit provider router and availability', () => {
+  it('preserves prototype-defined search methods for trusted host adapter classes', async () => {
+    class ConfiguredProvider implements DiscoveryProvider {
+      readonly providerId = 'prototype-provider';
+      readonly providerType = 'EXTERNAL_DISCOVERY' as const;
+      readonly name = 'Configured provider class';
+      readonly supportedKinds = ['topic'] as const;
+      private readonly records = [{ id: 'post-1', text: 'AI overview' }];
+
+      search() {
+        return Promise.resolve({ posts: this.records });
+      }
+    }
+
+    const service = createPostSearchService({ providers: [new ConfiguredProvider()], now });
+    const result = await service.search(topic);
+    expect(result).toMatchObject({
+      status: 'available',
+      posts: [{ id: 'post-1', source: { id: 'prototype-provider', provider: 'EXTERNAL_DISCOVERY' } }],
+      providerOutcomes: [{ state: 'success', consulted: true }],
+    });
+  });
+
   it('reports unavailable without contacting anyone when no provider is configured', async () => {
     const result = await createPostSearchService({ providers: [], now }).search(topic);
     expect(result).toEqual({

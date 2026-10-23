@@ -1,6 +1,6 @@
 # M05 — Post Search
 
-Status: **ACTIVE — M05.4 local GREEN, remote CI pending**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
+Status: **ACTIVE — M05.5 local GREEN, exact-head remote CI pending**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
 
 ## Goal
 
@@ -38,11 +38,15 @@ M05.3 independent security/provenance review found an Important official-provide
 
 M05.4: Remote RED test-only head `4b6673fe4c423deff22f26c5b8a9f191cb87a3a8` failed Prettier in CI `39907383505`; locally the test also failed because the `linkedin-author-posts.ts` provider was missing. Expanded TDD covered restricted read scopes, trusted verified person/organization authorization, default OFF, a fixed versioned `q=author`/`READER` finder request, published/public filtering, error taxonomy, strict body/UTF-8 bounds, and bounded pagination. Independent review found four Important defects: counting unfiltered or duplicate posts before stopping paging, misclassified resolver errors, missing resolver default-OFF initialization, and trusting unvalidated next-page links. Regression tests reproduced the issues (focused 23 tests, 5 RED before fixes), with invalid UTF-8 additionally rejected. Local final: **23/23 M05.4 focused tests, 631/631 full tests across 70 files**, plus real stdio/HTTP smoke, lint, typecheck, build and Prettier GREEN (Node 24, macOS `TMPDIR=/private/tmp`). Trusted resolver is injected but no real credential-bound resolver or live entitlement is bundled; official finder remains disabled unless a verified host supplies it. Await new remote exact-head CI before marking this iteration remotely verified.
 
-Next: persist the M05.4 checkpoint on draft PR #8, verify exact remote head and CI, then implement M05.5 MCP surface and transports.
+M05.4 exact-head GREEN: commit `e517d5747622cf9d3289bda6ae08151fa637878a` and GitHub CI `39915436774`, **631/631 tests across 70 files**, frozen install, formatting, lint, typecheck and build succeeded. Live restricted permission remains unverified.
+
+M05.5: Genuine behavioral RED before implementation: new MCP contract tests had four failures (`linkedin.posts.search` not registered) and one unrelated validation test passed. Implemented strict five-mode input, read-only aggregate source behavior, `unavailable` => `unsupported` without posts, partial provider outcomes preserved with `isError=true`, sane error taxonomy and sanitized metadata, immutable provider identity from trusted adapters, no caller-supplied token/endpoint/provider choice. Shared `LinkedInRuntime` injects configured providers, default empty, into both real stdio and HTTP MCP paths; existing 28 tools become 29. Independent read-only reviewer identified two Important issues: invalid canonical query inputs misclassified as provider failures, and prototype-defined provider search methods silently lost on copying. Both reproduced RED, then fixed GREEN; also verified advertised strict five-mode JSON Schema, real nonempty provider-scoped provenance, malicious source spoofing ignored, no invented post metadata, sanitized failure-only results and two-client partial loopback HTTP. **Eleven focused MCP tests, 645/645 tests across 71 files** locally GREEN, plus real transports, lint, typecheck, formatting and build (Node 24, macOS `TMPDIR=/private/tmp`). No unresolved Critical/Important issue from M05.5 review; new remote exact-head CI pending. No external source or live official finder access wired by default.
+
+Next: persist M05.5 to draft PR #8, verify exact-head CI, then proceed to M05.6 whole-milestone review and merge gates.
 
 ## Integration Test Evidence
 
-Pending.
+M05.5 real stdio/HTTP smoke and loopback provider-injection tests pass; 29 MCP tools are registered even when there is no provider. M05.4 official author finder is intentionally host-injected only and remains unavailable by default.
 
 ## Security Review
 

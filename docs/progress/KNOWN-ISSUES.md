@@ -2,9 +2,9 @@
 
 ## Current unresolved issues
 
-### M05.4 restricted official author finder — local GREEN / live access unavailable
+### M05.4 restricted official author finder — CI GREEN / live access unavailable
 
-The optional single-author Posts API adapter has 23 focused GREEN tests and full local GREEN (631 tests in 70 files, Node 24, macOS `TMPDIR=/private/tmp`), including independently reviewed fail-closed default access and pagination-integrity regressions. Updated exact-head GitHub CI has not yet been observed. No credential-bound member ID or APPROVED organization-role access resolver or live restricted Community Management entitlement is configured. The finder is disabled by default and must not be advertised as available without that verified host integration.
+The optional single-author Posts API adapter has 23 focused GREEN tests and exact-head CI `39915436774` on `e517d57` passing 631 tests across 70 files, including independently reviewed fail-closed default access and pagination-integrity regressions. No credential-bound member ID or APPROVED organization-role access resolver or live restricted Community Management entitlement is configured. The finder is disabled by default and must not be advertised as available without that verified host integration. M05.5 MCP surface is locally GREEN but remote CI remains pending.
 
 ### Resolved — M05.3 official provider mode provenance
 

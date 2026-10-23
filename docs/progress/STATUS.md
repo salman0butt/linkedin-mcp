@@ -1,12 +1,18 @@
 # Project Status
 
-## Current checkpoint — 2026-10-23 (M05.4 local GREEN; remote CI pending)
+## Current checkpoint — 2026-10-23 (M05.5 local GREEN; remote CI pending)
 
-The latest PR #8 remote test-only head `4b6673fe4c423deff22f26c5b8a9f191cb87a3a8` failed CI `39907383505` at Prettier for `apps/server/test/linkedin-author-posts.test.ts`. Locally M05.4 then reproduced RED for the missing official author provider module, and independently discovered filtering, pagination, resolver-taxonomy, default-OFF and UTF-8 defects were reproduced with focused failing regressions before fixes. The optional, fixed-endpoint, single-author Posts API adapter now defaults OFF, requires verified credential-bound member identity or APPROVED organization role plus restricted scope, excludes private/draft posts, validates next-page cursors and never claims global official search. With Node 24 and macOS `TMPDIR=/private/tmp`, **631/631 tests across 70 files** plus real stdio/HTTP smoke, lint, typecheck, build and formatting are locally GREEN. These checks **do not** establish remote exact-head CI or live LinkedIn entitlement; the existing draft PR #8 remains open.
+M05.4 default-OFF author finder committed at `e517d5747622cf9d3289bda6ae08151fa637878a`; exact-head CI `39915436774` passed **631/631 tests in 70 files** and frozen install, Prettier, lint, types and build. Local checkout matched all nine remote blobs and was clean. M05.5 now implements a strict read-only `linkedin.posts.search` MCP tool using an explicitly injected `PostSearchService` shared by stdio and HTTP. The default provider list is empty, so `unavailable` maps to non-success `unsupported` with auditable query/outcomes but no fabricated empty result; mixed provider failures preserve `partial`, and real posts retain per-source provenance. Genuine local RED (four missing-tool contract tests failed) became GREEN, with real transport smokes and injected-provider HTTP verification: **645/645 tests across 71 files**; lint, typecheck, formatting and build passed. The remote M05.5 exact-head CI is pending. No external discovery or credential-bound official author access is bundled.
 
-Exact next work: **Persist the M05.4 local GREEN checkpoint on PR #8, verify exact new-head CI, then proceed to M05.5 MCP transport integration.**
+Exact next work: **Commit M05.5 to existing draft PR #8 and verify new-head CI before starting M05.6 whole-branch security and provenance review.**
 
-M05 Post Search is ACTIVE in M05.4, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
+M05.5 independent review's two Important findings (malformed input misclassified as upstream failure, and trusted class-based providers losing prototype-defined methods) were regression-fixed RED→GREEN. Additional direct MCP checks confirm the five strict mode alternatives in published tool-list JSON Schema, scoped same-ID posts from different providers, no spoofed source authority, no invented engagement or permalink, and all failure-only statuses. Two real HTTP clients received the same auditable partial outcomes. No unresolved Critical/Important finding is known in this M05.5 review; whole-branch closeout is still pending.
+
+Historical M05.4 RED-to-GREEN checkpoint: PR #8 test-only head `4b6673fe4c423deff22f26c5b8a9f191cb87a3a8` failed CI `39907383505` at Prettier. Local implementation and independently reviewed filtering, pagination, resolver taxonomy, default-OFF and UTF-8 regressions became GREEN; these were later verified by the M05.4 CI above.
+
+Historical M05.4 next action (completed): persist M05.4, obtain exact-head green CI and start M05.5.
+
+M05 Post Search is ACTIVE in M05.5, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
 
 M04 **COMPLETE**: [PR #6](https://github.com/salman0butt/linkedin-mcp/pull/6) squash merged at `800bf943cf047215bc434206dab1e5b6e2175c10`. Post-merge main CI `39740297020` passed **583/583 tests across 66 files**, frozen install, format, lint, typecheck and build. Independent M04 approval-security and reply-root reviews found no verified Critical/Important defects. No live Community Management entitlement or shipped authenticated host approval UI is claimed.
 
