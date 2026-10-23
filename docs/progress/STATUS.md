@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-23 (M05.6 full-branch review)
+## Current checkpoint — 2026-10-23 (M06.1 active, M05 complete)
+
+M05 **COMPLETE**: PR [#8](https://github.com/salman0butt/linkedin-mcp/pull/8) squash-merged at `01fb37d3b762f2b1775c8845daba61c98054d6ed`; exact post-merge main CI `39920255603` GREEN (647/647 tests in 71 files, frozen install, formatting, lint, typecheck and build). Independent M05.6 audit identified two Important source/provenance defects, both reproduced RED and fixed GREEN; no additional confirmed Critical/Important defects. New M06 Job Search branch `feat/m06-job-search` starts from that verified main. M06.1 has a draft design/plan specifying trusted source provenance, posting-date evidence and default unavailability without authorized job discovery providers. A single M06 draft PR will be created for implementation checkpoints.
+
+Exact next work: **Implement M06.1 strict query/normalized job/evidence contract through genuine RED→GREEN tests and create the first M06 PR checkpoint.**
+
+M06.1 local checkpoint: seven focused contract tests genuinely failed before implementation because the core job-discovery module was missing; now seven GREEN. Full local **654/654 tests across 72 files**, real stdio/HTTP, Prettier, ESLint, TypeScript and build passed. Independent source review and first M06 draft PR exact-head CI remain pending.
+
+M06.1 independent review found three Important URL/date evidence issues: credential-bearing query aliases, unbound attested canonical URL and private-IP wildcard DNS aliases. All reproduced RED then fixed GREEN with focused tests. Normalization remains pure and never fetches URLs; any future fetching adapter must independently verify resolved IPs on every hop. Final new-head CI and reviewer closure pending.
 
 M05.5 committed to the existing PR #8 branch at `1c0762c91113f0c23d27ee03d4631b5988f1cdc2`. Exact-head GitHub Actions CI `39918895858` passed **645/645 tests in 71 files**, frozen install, formatting, lint, typecheck and build. Real stdio and HTTP MCP transport tests verify 29 tools, explicit default unavailable, configured provider provenance, and mixed-source partial failure reporting. The independent M05.6 reviewer found two Important defects, both now regression-fixed: dedupe before filtering hid eligible records, and non-post LinkedIn URLs could masquerade as canonical permalinks. Focused tests failed RED before the fixes and passed GREEN afterward. Full local **647/647 tests in 71 files**, lint, typecheck, formatting and build passed. Reviewer concluded zero further confirmed Critical/Important findings; final remote SHA/CI and squash merge remain pending. No live external discovery or restricted official Posts entitlement has been verified.
 

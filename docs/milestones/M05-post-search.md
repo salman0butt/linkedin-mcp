@@ -1,6 +1,6 @@
 # M05 — Post Search
 
-Status: **ACTIVE — M05.6 full-branch review and merge gates**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
+Status: **COMPLETE — PR #8 squash-merged**, commit `01fb37d3b762f2b1775c8845daba61c98054d6ed`, exact post-merge main CI `39920255603` GREEN (647 tests in 71 files), zero confirmed unresolved Critical/Important findings.
 
 ## Goal
 
@@ -62,7 +62,7 @@ M05.5 reviewer verified no Critical issue in new MCP routing; its two Important 
 
 ## Fresh Verification Results
 
-M05.5 exact remote commit `1c0762c` CI `39918895858` passed 645/645 tests in 71 files. Post-merge main verification is pending.
+M05.5 exact remote commit `1c0762c` CI `39918895858` passed 645/645 tests in 71 files. Final M05.6 head `6a40bed73d3fe0aacf625e06057be725c8918fb7` CI `39920032492` passed 647/647 tests across 71 files plus all gates. PR #8 squash-merged at `01fb37d3b762f2b1775c8845daba61c98054d6ed`; post-merge main CI `39920255603` passed the same 647 tests and quality gates. M06 is now active on its own milestone branch.
 
 ## Durable Recovery Sources
 
@@ -72,4 +72,4 @@ PRD, capability matrix, M05 spec/plan, Git/PR/CI.
 
 - [x] Acceptance verified (scoped deterministic contracts and configured-provider real MCP transports; default unavailable remains explicit).
 - [x] Critical/Important resolved (independent M05.6 re-review; final CI gate pending).
-- [ ] Exact-final-head/post-merge CI green.
+- [x] Exact-final-head/post-merge CI green (PR head `6a40bed`, run `39920032492`; main merge `01fb37d`, run `39920255603`).

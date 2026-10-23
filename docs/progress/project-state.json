@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M05",
-  "currentIteration": "M05.6",
+  "currentMilestone": "M06",
+  "currentIteration": "M06.1",
   "status": "ACTIVE",
-  "activeBranch": "feat/m05-post-search",
-  "activePr": 8,
+  "activeBranch": "feat/m06-job-search",
+  "activePr": null,
   "baseBranch": "main",
-  "latestVerifiedSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2",
-  "ciStatus": "GREEN_M05_5_HEAD_1c0762c91113f0c23d27ee03d4631b5988f1cdc2_RUN_39918895858_645_TESTS_71_FILES; M05_6_LOCAL_647_TESTS_71_FILES_FINAL_HEAD_CI_PENDING",
+  "latestVerifiedSha": "01fb37d3b762f2b1775c8845daba61c98054d6ed",
+  "ciStatus": "GREEN_M05_POSTMERGE_MAIN_SHA_01fb37d3b762f2b1775c8845daba61c98054d6ed_RUN_39920255603_647_TESTS_71_FILES; M06_1_LOCAL_654_TESTS_72_FILES_REMOTE_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.5 CI 39918895858 passed at 1c0762c (645/645 tests in 71 files). M05.6 independent audit found two Important issues (pre-filter dedupe, non-post canonical URLs); both reproduced RED and fixed GREEN. Full local 647/647 tests in 71 files, all gates green. Exact-final-head remote CI pending.",
-    "No lawful external/partner global post discovery provider or credential-bound official Posts author/organization resolver is configured. Author finder is default OFF; no live author read or broad official search availability is claimed."
+    "M05 COMPLETE: PR #8 squash-merged at 01fb37d, exact post-merge main CI 39920255603 succeeded (647 tests in 71 files). No unresolved Critical/Important milestone finding.",
+    "M06 no legitimate live jobs discovery or LinkedIn Talent partner entitlement is configured. M06.1 654/654 local tests GREEN; independent review and remote exact-head CI pending."
   ],
-  "exactNextWork": "Persist M05.6 final regressions and review evidence on PR #8, verify exact-final-head CI, and squash-merge if all gates remain satisfied.",
-  "activeHeadSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2"
+  "exactNextWork": "Finish M06.1 independent review, save a first draft M06 PR and verify exact-head CI, then begin M06.2 freshness/dedupe.",
+  "activeHeadSha": "01fb37d3b762f2b1775c8845daba61c98054d6ed"
 }

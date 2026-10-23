@@ -2,6 +2,14 @@
 
 ## Current unresolved issues
 
+### M06.1 URL and verified posting-date source integrity — regression-fixed locally
+
+Independent source review found three Important issues in the new canonical job contract. Common credential parameter aliases (`apiKey`, `auth_token`) were accepted in returned URLs; verified posting dates could omit canonical-link binding for jobs with a canonical URL; and known dynamic IP wildcard domains could encode private destinations. Targeted regression tests failed before code changes and pass after correction. The core validator performs no network/DNS lookups; every future HTTP-capable adapter must separately validate resolved public A/AAAA addresses at each hop, including redirects and DNS rebinding. Final exact-head CI/reviewer sign-off pending.
+
+### M06 job discovery and Talent access boundary
+
+M05 was repository-verified at final PR head `6a40bed`/CI `39920032492` and post-merge main `01fb37d`/CI `39920255603`. M06 begins without a legitimate configured jobs search source or verified LinkedIn Talent partner entitlement. Never present job-search functionality as live/official on the basis of deterministic tests, standard LinkedIn OAuth, or generated postings. Missing providers must return unavailable with explicit provenance and freshness uncertainty; no automated applications are in scope.
+
 ### Resolved locally — M05.6 eligibility dedupe and canonical post permalink provenance
 
 Independent M05.6 whole-branch audit found two Important defects: ineligible same-source duplicates could suppress later eligible records; LinkedIn-owned login/help/redirect links could masquerade as canonical post permalinks or conflict with a post URN. Both were reproduced RED and repaired GREEN, with post-fix **647/647 local tests across 71 files**, real stdio/HTTP, lint, typecheck, format and build passing. The reviewer found no additional confirmed Critical/Important issues. Exact-final-head CI and post-merge main gates still require verification. Strict permalink validation excludes tracking query parameters; trusted providers should supply the clean permalink.
