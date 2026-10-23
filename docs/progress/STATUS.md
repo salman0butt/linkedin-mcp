@@ -1,6 +1,10 @@
 # Project Status
 
-## Current checkpoint — 2026-10-23 (M06.1 active, M05 complete)
+## Current checkpoint — 2026-10-23 (M06.2 local GREEN; exact-head CI pending)
+
+M06.1 branch commit `8fb06bb26055af7e3ac23f004dbf4461c269f3a8` on draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9) passed exact-head CI `39923182814` (654/654 tests in 72 files, quality gates). M06.2 now has 11 focused RED→GREEN tests for deterministic sourced criteria, date-evidence buckets, verified-only `postedSince`, stable source-scoped dedupe and sorting, local truncation and conflicting verified evidence. Full local **665/665 tests in 73 files**, real stdio/HTTP smokes and quality gates GREEN. Provider/source query exhaustiveness is not derived from the local filter; M06.3 will check trusted provider coverage before offering an `available` result. No live job source or Talent entitlement claimed.
+
+Exact next work: **Commit M06.2 on PR #9, verify new-head CI, then implement M06.3 trusted bounded provider router and source-scoped details.**
 
 M05 **COMPLETE**: PR [#8](https://github.com/salman0butt/linkedin-mcp/pull/8) squash-merged at `01fb37d3b762f2b1775c8845daba61c98054d6ed`; exact post-merge main CI `39920255603` GREEN (647/647 tests in 71 files, frozen install, formatting, lint, typecheck and build). Independent M05.6 audit identified two Important source/provenance defects, both reproduced RED and fixed GREEN; no additional confirmed Critical/Important defects. New M06 Job Search branch `feat/m06-job-search` starts from that verified main. M06.1 has a draft design/plan specifying trusted source provenance, posting-date evidence and default unavailability without authorized job discovery providers. A single M06 draft PR will be created for implementation checkpoints.
 

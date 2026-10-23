@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M06",
-  "currentIteration": "M06.1",
+  "currentIteration": "M06.2",
   "status": "ACTIVE",
   "activeBranch": "feat/m06-job-search",
-  "activePr": null,
+  "activePr": 9,
   "baseBranch": "main",
-  "latestVerifiedSha": "01fb37d3b762f2b1775c8845daba61c98054d6ed",
-  "ciStatus": "GREEN_M05_POSTMERGE_MAIN_SHA_01fb37d3b762f2b1775c8845daba61c98054d6ed_RUN_39920255603_647_TESTS_71_FILES; M06_1_LOCAL_654_TESTS_72_FILES_REMOTE_CI_PENDING",
+  "latestVerifiedSha": "8fb06bb26055af7e3ac23f004dbf4461c269f3a8",
+  "ciStatus": "GREEN_M06_1_HEAD_8fb06bb26055af7e3ac23f004dbf4461c269f3a8_RUN_39923182814_654_TESTS_72_FILES; M06_2_LOCAL_665_TESTS_73_FILES_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
     "M05 COMPLETE: PR #8 squash-merged at 01fb37d, exact post-merge main CI 39920255603 succeeded (647 tests in 71 files). No unresolved Critical/Important milestone finding.",
-    "M06 no legitimate live jobs discovery or LinkedIn Talent partner entitlement is configured. M06.1 654/654 local tests GREEN; independent review and remote exact-head CI pending."
+    "M06.1 exact-head CI 39923182814 succeeded (654/654 tests in 72 files). M06.2 local 665/665 tests in 73 files plus lint/types/format/build; new exact-head CI pending. No legitimate live jobs provider or LinkedIn Talent partner entitlement is configured."
   ],
-  "exactNextWork": "Finish M06.1 independent review, save a first draft M06 PR and verify exact-head CI, then begin M06.2 freshness/dedupe.",
-  "activeHeadSha": "01fb37d3b762f2b1775c8845daba61c98054d6ed"
+  "exactNextWork": "Persist M06.2 deterministic local freshness/dedupe on draft PR #9, verify exact-head CI, then implement M06.3 trusted provider coverage and source-scoped details.",
+  "activeHeadSha": "8fb06bb26055af7e3ac23f004dbf4461c269f3a8"
 }
