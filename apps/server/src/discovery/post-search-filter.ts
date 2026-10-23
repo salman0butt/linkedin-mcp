@@ -24,10 +24,6 @@ export function filterDiscoveredPosts(
       : undefined;
 
   for (const [index, post] of posts.entries()) {
-    const identity = JSON.stringify([post.source.id, post.id]);
-    if (seen.has(identity)) continue;
-    seen.add(identity);
-
     if (
       query.kind === 'topic' &&
       !post.text.toLocaleLowerCase('en').includes(query.term.toLocaleLowerCase('en'))
@@ -51,6 +47,11 @@ export function filterDiscoveredPosts(
       if (post.likes === undefined || post.comments === undefined) continue;
       if (post.likes + post.comments < query.minimumEngagement) continue;
     }
+    // Deduplicate only eligible records; an older/incomplete duplicate must
+    // never consume the source identity before a genuinely matching record.
+    const identity = JSON.stringify([post.source.id, post.id]);
+    if (seen.has(identity)) continue;
+    seen.add(identity);
     filtered.push({ post, index });
   }
 

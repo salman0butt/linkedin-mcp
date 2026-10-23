@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M05",
-  "currentIteration": "M05.5",
+  "currentIteration": "M05.6",
   "status": "ACTIVE",
   "activeBranch": "feat/m05-post-search",
   "activePr": 8,
   "baseBranch": "main",
-  "latestVerifiedSha": "e517d5747622cf9d3289bda6ae08151fa637878a",
-  "ciStatus": "GREEN_M05_4_HEAD_e517d5747622cf9d3289bda6ae08151fa637878a_RUN_39915436774_631_TESTS_70_FILES; M05_5_LOCAL_645_TESTS_71_FILES_CI_PENDING",
+  "latestVerifiedSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2",
+  "ciStatus": "GREEN_M05_5_HEAD_1c0762c91113f0c23d27ee03d4631b5988f1cdc2_RUN_39918895858_645_TESTS_71_FILES; M05_6_LOCAL_647_TESTS_71_FILES_FINAL_HEAD_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.5 strict MCP tool passes 645/645 local tests in 71 files with real stdio and HTTP, typecheck, lint, format and build, but the new remote exact-head CI is not yet verified.",
+    "M05.5 CI 39918895858 passed at 1c0762c (645/645 tests in 71 files). M05.6 independent audit found two Important issues (pre-filter dedupe, non-post canonical URLs); both reproduced RED and fixed GREEN. Full local 647/647 tests in 71 files, all gates green. Exact-final-head remote CI pending.",
     "No lawful external/partner global post discovery provider or credential-bound official Posts author/organization resolver is configured. Author finder is default OFF; no live author read or broad official search availability is claimed."
   ],
-  "exactNextWork": "Persist M05.5 strict MCP transport integration to draft PR #8, verify new exact-head CI, then begin M05.6 whole-branch review.",
-  "activeHeadSha": "e517d5747622cf9d3289bda6ae08151fa637878a"
+  "exactNextWork": "Persist M05.6 final regressions and review evidence on PR #8, verify exact-final-head CI, and squash-merge if all gates remain satisfied.",
+  "activeHeadSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2"
 }

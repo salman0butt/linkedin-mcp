@@ -1,8 +1,8 @@
 # Current Milestone
 
 Milestone: M05 — Post Search
-Status: ACTIVE — M05.5 strict MCP integration local GREEN, remote CI pending
-Iteration: M05.5
+Status: ACTIVE — M05.6 independent whole-branch review and merge gates
+Iteration: M05.6
 Branch: `feat/m05-post-search`
 PR: #8 — draft
 Base/main: `800bf943cf047215bc434206dab1e5b6e2175c10`
@@ -17,7 +17,7 @@ M04 is COMPLETE: PR #6 merged (squash) at `800bf943cf047215bc434206dab1e5b6e2175
 
 M05 global keyword/hashtag search is **not** a normal documented official LinkedIn API feature. External discovery requires legitimate configured third-party/partner access. The documented official Posts API finder is narrowly author-scoped with restricted permissions. The default no-provider state must be explicitly `unavailable`, not fake empty success.
 
-Exact next work: **Persist M05.5 strict MCP integration to draft PR #8, verify exact-head CI, then begin M05.6 whole-branch skeptical review.** M05.4 exact-head commit `e517d57` CI `39915436774` GREEN (631/631). M05.5 local 645/645 tests in 71 files, real stdio/HTTP MCP and injected-provider HTTP, lint, typecheck, format and build GREEN on 2026-10-23 (`TMPDIR=/private/tmp` on macOS). No live discovery entitlement or credential-bound official author resolver is claimed.
+Exact next work: **Persist M05.6 review fixes and durable evidence to PR #8, verify exact-final-head CI, then squash-merge if gates pass.** M05.4 commit `e517d57` CI `39915436774` GREEN (631/631). M05.5 commit `1c0762c` CI `39918895858` GREEN (645/645). Independent full-branch review found pre-filter dedupe and non-post canonical-link defects, both regression-fixed RED→GREEN; 647/647 local tests in 71 files and real stdio/HTTP, lint/typecheck/format/build pass. No other confirmed Critical/Important findings in the independent report. Final remote CI pending. No live discovery entitlement or credential-bound official resolver is claimed.
 
 M05.1 exact-head GitHub CI: `1bbc366dda57cc44d10825c6126a6fefd195dd7d`, run `39743915175`, **589/589 tests** across 67 files plus quality gates. M05.2 local GREEN: **596/596 tests** across 68 files after a genuine missing-module RED, lint, formatting, typecheck, build and transport smokes. Remote CI for M05.2 pending.
 

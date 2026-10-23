@@ -75,12 +75,12 @@
 
 - [x] RED: `linkedin.posts.search` strict input, zero configured provider => explicit unavailable; partial mixed-provider response maps to a distinct non-success MCP representation; source provenance and bounded output, no access token/endpoint field, real transport contracts. Four missing-tool contract tests genuinely failed before implementation.
 - [x] GREEN: shared runtime injection and truthful capability state, no false availability. Eleven focused contract tests, real HTTP injected-provider verification and default-off stdio/HTTP smoke passed locally; 645 tests in 71 files.
-- [ ] Full suite, lint, typecheck, formatting, build and real transports; exact-head CI.
+- [x] Full suite, lint, typecheck, formatting, build and real transports; exact-head CI. Commit `1c0762c`, run `39918895858`, 645/645 tests across 71 files and all quality gates.
 
 ### Task 6: Independent closeout and integration (M05.6)
 
 **Files:** Update `docs/progress/*`, `docs/milestones/M05-post-search.md`, `CURRENT.md`, requirements traceability, capability matrix, security evidence and PR.
 
-- [ ] Whole-branch skeptical review with provenance, privacy/security and TDD regressions for every Critical/Important finding.
+- [x] Whole-branch skeptical review with provenance, privacy/security and TDD regressions for every Critical/Important finding. Independent M05.6 reviewer reported two Important issues, both reproduced RED and fixed GREEN; no additional confirmed Critical/Important findings after re-review.
 - [ ] Zero unresolved Critical/Important, clean PR threads, durable state accurate, exact-final-head CI green, mergeable with no concurrent conflicts.
 - [ ] Squash-merge under repository policy; verify post-merge main exact SHA CI before activating M06.

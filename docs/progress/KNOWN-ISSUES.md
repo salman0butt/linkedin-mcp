@@ -2,9 +2,13 @@
 
 ## Current unresolved issues
 
+### Resolved locally — M05.6 eligibility dedupe and canonical post permalink provenance
+
+Independent M05.6 whole-branch audit found two Important defects: ineligible same-source duplicates could suppress later eligible records; LinkedIn-owned login/help/redirect links could masquerade as canonical post permalinks or conflict with a post URN. Both were reproduced RED and repaired GREEN, with post-fix **647/647 local tests across 71 files**, real stdio/HTTP, lint, typecheck, format and build passing. The reviewer found no additional confirmed Critical/Important issues. Exact-final-head CI and post-merge main gates still require verification. Strict permalink validation excludes tracking query parameters; trusted providers should supply the clean permalink.
+
 ### M05.4 restricted official author finder — CI GREEN / live access unavailable
 
-The optional single-author Posts API adapter has 23 focused GREEN tests and exact-head CI `39915436774` on `e517d57` passing 631 tests across 70 files, including independently reviewed fail-closed default access and pagination-integrity regressions. No credential-bound member ID or APPROVED organization-role access resolver or live restricted Community Management entitlement is configured. The finder is disabled by default and must not be advertised as available without that verified host integration. M05.5 MCP surface is locally GREEN but remote CI remains pending.
+The optional single-author Posts API adapter has 23 focused GREEN tests and exact-head CI `39915436774` on `e517d57` passing 631 tests across 70 files, including independently reviewed fail-closed default access and pagination-integrity regressions. No credential-bound member ID or APPROVED organization-role access resolver or live restricted Community Management entitlement is configured. The finder is disabled by default and must not be advertised as available without that verified host integration. M05.5 MCP exact-head CI `39918895858` is GREEN (645 tests in 71 files); M05.6 whole-branch review is pending.
 
 ### Resolved — M05.3 official provider mode provenance
 

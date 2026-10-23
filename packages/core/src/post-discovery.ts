@@ -130,6 +130,31 @@ function link(input: unknown): string {
   return url.href;
 }
 
+function postPermalink(input: unknown, knownPostUrn?: string): string {
+  const canonicalUrl = link(input);
+  const url = new URL(canonicalUrl);
+  // A LinkedIn-owned login, help or redirect page is not evidence of a post.
+  // Reject encoded path separators, URL queries, and fragments so the returned
+  // link is a stable post permalink rather than a navigation/redirect payload.
+  if (/%(?:2f|5c|00)/i.test(url.pathname) || url.search || url.hash) {
+    throw new Error('Invalid post permalink');
+  }
+  let path: string;
+  try {
+    path = decodeURIComponent(url.pathname);
+  } catch {
+    throw new Error('Invalid post permalink');
+  }
+  const feed = /^\/feed\/update\/urn:li:(?:share|ugcPost|activity):(\d+)\/?$/.exec(path);
+  const posts = /^\/posts\/[A-Za-z0-9_-]+_[A-Za-z0-9_.%-]+-activity-(\d+)-[A-Za-z0-9_-]+\/?$/.exec(path);
+  const permalinkId = feed?.[1] ?? posts?.[1];
+  if (permalinkId === undefined) throw new Error('Not a LinkedIn post permalink');
+  if (knownPostUrn !== undefined && knownPostUrn.split(':').at(-1) !== permalinkId) {
+    throw new Error('Post permalink does not match post URN');
+  }
+  return canonicalUrl;
+}
+
 export function createPostSearchQuery(input: unknown): PostSearchQuery {
   const value = object(input);
   const kind = value.kind;
@@ -197,7 +222,7 @@ export function normalizeDiscoveredPost(input: unknown, context: TrustedDiscover
     if (!postUrn.test(urn)) throw new Error('Invalid postUrn');
     post.postUrn = urn;
   }
-  if (value.canonicalUrl !== undefined) post.canonicalUrl = link(value.canonicalUrl);
+  if (value.canonicalUrl !== undefined) post.canonicalUrl = postPermalink(value.canonicalUrl, post.postUrn);
   if (value.authorUrn !== undefined) {
     const authorUrn = nonempty(value.authorUrn, 'authorUrn', 160);
     if (!personUrn.test(authorUrn) && !organizationUrn.test(authorUrn)) {

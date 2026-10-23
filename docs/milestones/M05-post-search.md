@@ -1,6 +1,6 @@
 # M05 — Post Search
 
-Status: **ACTIVE — M05.5 local GREEN, exact-head remote CI pending**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
+Status: **ACTIVE — M05.6 full-branch review and merge gates**, branch `feat/m05-post-search`, based on verified main `800bf943cf047215bc434206dab1e5b6e2175c10`.
 
 ## Goal
 
@@ -42,7 +42,11 @@ M05.4 exact-head GREEN: commit `e517d5747622cf9d3289bda6ae08151fa637878a` and Gi
 
 M05.5: Genuine behavioral RED before implementation: new MCP contract tests had four failures (`linkedin.posts.search` not registered) and one unrelated validation test passed. Implemented strict five-mode input, read-only aggregate source behavior, `unavailable` => `unsupported` without posts, partial provider outcomes preserved with `isError=true`, sane error taxonomy and sanitized metadata, immutable provider identity from trusted adapters, no caller-supplied token/endpoint/provider choice. Shared `LinkedInRuntime` injects configured providers, default empty, into both real stdio and HTTP MCP paths; existing 28 tools become 29. Independent read-only reviewer identified two Important issues: invalid canonical query inputs misclassified as provider failures, and prototype-defined provider search methods silently lost on copying. Both reproduced RED, then fixed GREEN; also verified advertised strict five-mode JSON Schema, real nonempty provider-scoped provenance, malicious source spoofing ignored, no invented post metadata, sanitized failure-only results and two-client partial loopback HTTP. **Eleven focused MCP tests, 645/645 tests across 71 files** locally GREEN, plus real transports, lint, typecheck, formatting and build (Node 24, macOS `TMPDIR=/private/tmp`). No unresolved Critical/Important issue from M05.5 review; new remote exact-head CI pending. No external source or live official finder access wired by default.
 
-Next: persist M05.5 to draft PR #8, verify exact-head CI, then proceed to M05.6 whole-milestone review and merge gates.
+M05.5 exact-head GitHub verification: commit `1c0762c91113f0c23d27ee03d4631b5988f1cdc2` and CI run `39918895858` succeeded (645/645 tests in 71 files, frozen install, formatting, lint, typecheck and build). M05.6 closeout is active; PR #8 has no unresolved review threads and was mergeable when checked. The independent full-branch security/provenance review is pending; no merge has occurred.
+
+M05.6 independent whole-branch review found two Important defects. First, the local filter deduplicated source IDs before eligibility checks, suppressing later matching records. Second, core normalization allowed LinkedIn login/help/redirect URLs as canonical post permalinks and failed to bind URL identity to an explicit post URN. Both reproduced RED, fixed GREEN (filter first, then dedupe; validate canonical post paths and URL/post-URN numeric identity). Post-fix local suite **647/647 tests across 71 files**, real stdio/HTTP smokes, lint, typecheck, format and build GREEN (Node 24, `TMPDIR=/private/tmp`). Reviewer rechecked the whole branch and reported **zero additional confirmed Critical/Important findings**; strict permalink paths may reject URLs with tracking query parameters, so providers should supply clean canonical URLs. Final remote exact-head CI and merge gates remain pending. Live entitlements remain unverified.
+
+Next: persist M05.6 review fixes and final docs, verify exact-final-head CI and squash-merge under milestone policy.
 
 ## Integration Test Evidence
 
@@ -50,15 +54,15 @@ M05.5 real stdio/HTTP smoke and loopback provider-injection tests pass; 29 MCP t
 
 ## Security Review
 
-Provider terms/bounds, browser isolation if introduced, no stealth/rate evasion.
+Independent reviews verified default-off restricted official author access, verified person/org role and scope gates, bounded provider fan-out and pagination, strict public-only post retrieval, sanitization of source provenance, no caller-supplied tokens/URLs and no implicit browser/stealth provider. M05.6 re-review confirmed both Important defects fixed, with no additional confirmed Critical/Important issue. Live restricted access and real third-party discovery require separately verified credentials/terms; no claim of production entitlement is made.
 
 ## Code Review Findings
 
-Pending.
+M05.5 reviewer verified no Critical issue in new MCP routing; its two Important findings (invalid-input classification and prototype method loss) were regression-fixed. M05.6 independent reviewer found two Important findings (pre-filter dedupe, canonical permalink binding), both RED→GREEN fixed, and reported no additional confirmed Critical/Important findings after re-review.
 
 ## Fresh Verification Results
 
-Pending.
+M05.5 exact remote commit `1c0762c` CI `39918895858` passed 645/645 tests in 71 files. Post-merge main verification is pending.
 
 ## Durable Recovery Sources
 
@@ -66,6 +70,6 @@ PRD, capability matrix, M05 spec/plan, Git/PR/CI.
 
 ## Completion Checklist
 
-- [ ] Acceptance verified.
-- [ ] Critical/Important resolved.
+- [x] Acceptance verified (scoped deterministic contracts and configured-provider real MCP transports; default unavailable remains explicit).
+- [x] Critical/Important resolved (independent M05.6 re-review; final CI gate pending).
 - [ ] Exact-final-head/post-merge CI green.

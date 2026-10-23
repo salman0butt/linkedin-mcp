@@ -1,10 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-23 (M05.5 local GREEN; remote CI pending)
+## Current checkpoint — 2026-10-23 (M05.6 full-branch review)
 
-M05.4 default-OFF author finder committed at `e517d5747622cf9d3289bda6ae08151fa637878a`; exact-head CI `39915436774` passed **631/631 tests in 70 files** and frozen install, Prettier, lint, types and build. Local checkout matched all nine remote blobs and was clean. M05.5 now implements a strict read-only `linkedin.posts.search` MCP tool using an explicitly injected `PostSearchService` shared by stdio and HTTP. The default provider list is empty, so `unavailable` maps to non-success `unsupported` with auditable query/outcomes but no fabricated empty result; mixed provider failures preserve `partial`, and real posts retain per-source provenance. Genuine local RED (four missing-tool contract tests failed) became GREEN, with real transport smokes and injected-provider HTTP verification: **645/645 tests across 71 files**; lint, typecheck, formatting and build passed. The remote M05.5 exact-head CI is pending. No external discovery or credential-bound official author access is bundled.
+M05.5 committed to the existing PR #8 branch at `1c0762c91113f0c23d27ee03d4631b5988f1cdc2`. Exact-head GitHub Actions CI `39918895858` passed **645/645 tests in 71 files**, frozen install, formatting, lint, typecheck and build. Real stdio and HTTP MCP transport tests verify 29 tools, explicit default unavailable, configured provider provenance, and mixed-source partial failure reporting. The independent M05.6 reviewer found two Important defects, both now regression-fixed: dedupe before filtering hid eligible records, and non-post LinkedIn URLs could masquerade as canonical permalinks. Focused tests failed RED before the fixes and passed GREEN afterward. Full local **647/647 tests in 71 files**, lint, typecheck, formatting and build passed. Reviewer concluded zero further confirmed Critical/Important findings; final remote SHA/CI and squash merge remain pending. No live external discovery or restricted official Posts entitlement has been verified.
 
-Exact next work: **Commit M05.5 to existing draft PR #8 and verify new-head CI before starting M05.6 whole-branch security and provenance review.**
+Exact next work: **Persist M05.6 fixes and review evidence on PR #8, verify exact-final-head CI, and squash-merge when all gates pass.**
+
+M05.4 default-OFF author finder committed at `e517d5747622cf9d3289bda6ae08151fa637878a`; exact-head CI `39915436774` passed **631/631 tests in 70 files** and frozen install, Prettier, lint, types and build. M05.5 implements strict read-only `linkedin.posts.search` using an injected `PostSearchService` shared by stdio and HTTP. The default provider list is empty; `unavailable` maps to non-success `unsupported` without fabricated posts. Mixed failures preserve `partial` and source provenance. Genuine local RED (four missing-tool tests failed) became GREEN, followed by M05.5 exact-head CI `39918895858` (645/645 tests). No external discovery or credential-bound official author access is bundled.
+
+Historical M05.5 handoff (completed): commit existing draft PR #8, obtain exact-head CI green and begin M05.6 review.
 
 M05.5 independent review's two Important findings (malformed input misclassified as upstream failure, and trusted class-based providers losing prototype-defined methods) were regression-fixed RED→GREEN. Additional direct MCP checks confirm the five strict mode alternatives in published tool-list JSON Schema, scoped same-ID posts from different providers, no spoofed source authority, no invented engagement or permalink, and all failure-only statuses. Two real HTTP clients received the same auditable partial outcomes. No unresolved Critical/Important finding is known in this M05.5 review; whole-branch closeout is still pending.
 
@@ -12,7 +16,7 @@ Historical M05.4 RED-to-GREEN checkpoint: PR #8 test-only head `4b6673fe4c423def
 
 Historical M05.4 next action (completed): persist M05.4, obtain exact-head green CI and start M05.5.
 
-M05 Post Search is ACTIVE in M05.5, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
+M05 Post Search is ACTIVE in M05.6, draft PR #8, on `feat/m05-post-search` (base `800bf943cf047215bc434206dab1e5b6e2175c10`). Design and TDD plan: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md` and `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`.
 
 M04 **COMPLETE**: [PR #6](https://github.com/salman0butt/linkedin-mcp/pull/6) squash merged at `800bf943cf047215bc434206dab1e5b6e2175c10`. Post-merge main CI `39740297020` passed **583/583 tests across 66 files**, frozen install, format, lint, typecheck and build. Independent M04 approval-security and reply-root reviews found no verified Critical/Important defects. No live Community Management entitlement or shipped authenticated host approval UI is claimed.
 

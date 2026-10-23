@@ -120,6 +120,29 @@ describe('M05 deterministic bounded post discovery filtering', () => {
     expect(result[0]?.text).toBe('hello');
   });
 
+  it('does not let an ineligible duplicate hide a later matching source record', () => {
+    const records = [
+      post('same', 'unrelated', { publishedAt: '2026-09-01T00:00:00Z' }),
+      post('same', 'AI launch', { publishedAt: '2026-10-20T00:00:00Z' }),
+    ];
+    const result = filterDiscoveredPosts(
+      records,
+      createPostSearchQuery({ kind: 'topic', term: 'AI', since: '2026-10-01T00:00:00Z' }),
+    );
+    expect(result.map((item) => item.text)).toEqual(['AI launch']);
+
+    const engagementRecords = [
+      post('metrics', 'AI example', { likes: 100 }),
+      post('metrics', 'AI example', { likes: 14, comments: 6 }),
+    ];
+    expect(
+      filterDiscoveredPosts(
+        engagementRecords,
+        createPostSearchQuery({ kind: 'topic', term: 'AI', minimumEngagement: 20 }),
+      ).map((item) => item.id),
+    ).toEqual(['metrics']);
+  });
+
   it('returns at most requested limit and rejects excessive provider input batches', () => {
     const items = Array.from({ length: 55 }, (_, i) =>
       post(String(i), 'hello', { publishedAt: '2026-10-21T00:00:00Z' }),

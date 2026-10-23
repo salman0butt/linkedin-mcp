@@ -151,6 +151,34 @@ describe('M05 canonical post-discovery contracts', () => {
       expect(() => normalizeDiscoveredPost(value, source)).toThrow();
   });
 
+  it('accepts a verifiable LinkedIn post permalink only when its post identity agrees', () => {
+    expect(
+      normalizeDiscoveredPost(
+        {
+          id: 'post-123',
+          text: 'Source evidence',
+          postUrn: 'urn:li:activity:123',
+          canonicalUrl: 'https://www.linkedin.com/posts/member_ai-update-activity-123-AbC1/',
+        },
+        source,
+      ).canonicalUrl,
+    ).toBe('https://www.linkedin.com/posts/member_ai-update-activity-123-AbC1/');
+    for (const canonicalUrl of [
+      'https://www.linkedin.com/login',
+      'https://www.linkedin.com/help',
+      'https://www.linkedin.com/redirect?url=https%3A%2F%2Fevil.example',
+      'https://www.linkedin.com/feed/update/urn:li:activity:999/',
+      'https://www.linkedin.com/posts/member_ai-update-activity-999-AbC1/',
+    ]) {
+      expect(() =>
+        normalizeDiscoveredPost(
+          { id: 'post-123', text: 'Source evidence', postUrn: 'urn:li:activity:123', canonicalUrl },
+          source,
+        ),
+      ).toThrow();
+    }
+  });
+
   it('rejects invalid or untrusted adapter identities and refuses spoofed provider metadata', () => {
     for (const context of [
       { ...source, providerId: '' },
