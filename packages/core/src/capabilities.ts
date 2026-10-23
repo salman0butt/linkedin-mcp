@@ -214,8 +214,20 @@ const descriptors: CapabilityDescriptor[] = [
     provider: 'EXTERNAL_DISCOVERY',
     availability: 'UNAVAILABLE',
     milestone: 'M06',
-    status: 'PLANNED',
-    accessNote: 'Partner-only Talent access remains separate and access-dependent.',
+    status: 'ACTIVE',
+    accessNote:
+      'Read-only MCP discovery contract exists; live search requires a legitimately configured external/partner provider. Standard OAuth does not grant Talent API access.',
+    approvalRequired: false,
+  },
+  {
+    id: 'jobs.saved',
+    desiredBehavior: 'Keep private local job snapshots and job-search criteria across STDIO sessions.',
+    provider: 'LOCAL_ONLY',
+    availability: 'UNAVAILABLE',
+    milestone: 'M06',
+    status: 'ACTIVE',
+    accessNote:
+      'Disabled by default; explicitly opt in with a host-owned private STDIO path. HTTP callers never have access. Local saves are not LinkedIn bookmarks or applications.',
     approvalRequired: false,
   },
   {

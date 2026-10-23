@@ -36,6 +36,8 @@ try {
   });
   const capabilities = await client.callTool({ name: 'linkedin.capabilities', arguments: {} });
   const postSearch = await client.callTool({ name: 'linkedin.posts.search', arguments: { kind: 'topic', term: 'AI' } });
+  const jobSearch = await client.callTool({ name: 'linkedin.jobs.search', arguments: { keywords: 'TypeScript' } });
+  const jobGet = await client.callTool({ name: 'linkedin.jobs.get', arguments: { sourceId: 'missing', jobId: '123' } });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
     authStatus: authStatus.structuredContent,
@@ -48,6 +50,10 @@ try {
     capabilities: capabilities.structuredContent,
     postSearch: postSearch.structuredContent,
     postSearchIsError: postSearch.isError,
+    jobSearch: jobSearch.structuredContent,
+    jobSearchIsError: jobSearch.isError,
+    jobGet: jobGet.structuredContent,
+    jobGetIsError: jobGet.isError,
   }));
 } finally {
   await client.close();
@@ -86,6 +92,10 @@ describe('built HTTP server', () => {
       mediaPreview: unknown;
       postSearch: unknown;
       postSearchIsError: boolean;
+      jobSearch: unknown;
+      jobSearchIsError: boolean;
+      jobGet: unknown;
+      jobGetIsError: boolean;
     };
     expect(result).toMatchObject({
       health: {
@@ -107,12 +117,16 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 29,
+      toolCount: 39,
       postSearch: {
         status: 'unsupported',
         data: { status: 'unavailable', providerOutcomes: [] },
       },
       postSearchIsError: true,
+      jobSearch: { status: 'unsupported', data: { status: 'unavailable', providerOutcomes: [] } },
+      jobGet: { status: 'unsupported', data: { status: 'unavailable' } },
+      jobSearchIsError: true,
+      jobGetIsError: true,
       preview: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
@@ -157,6 +171,16 @@ describe('built HTTP server', () => {
         'linkedin.reactions.remove.approve',
         'linkedin.reactions.remove',
         'linkedin.posts.search',
+        'linkedin.jobs.search',
+        'linkedin.jobs.get',
+        'linkedin.jobs.saved.list',
+        'linkedin.jobs.saved.get',
+        'linkedin.jobs.saved.save',
+        'linkedin.jobs.saved.remove',
+        'linkedin.jobs.saved_searches.list',
+        'linkedin.jobs.saved_searches.get',
+        'linkedin.jobs.saved_searches.save',
+        'linkedin.jobs.saved_searches.remove',
       ]),
     );
     expect(
@@ -169,6 +193,10 @@ describe('built HTTP server', () => {
     ).toBe('UNAVAILABLE');
     expect(
       result.capabilities.data.capabilities.find((capability) => capability.id === 'posts.search')
+        ?.availability,
+    ).toBe('UNAVAILABLE');
+    expect(
+      result.capabilities.data.capabilities.find((capability) => capability.id === 'jobs.search')
         ?.availability,
     ).toBe('UNAVAILABLE');
   });

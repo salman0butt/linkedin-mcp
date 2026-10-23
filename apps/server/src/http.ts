@@ -143,8 +143,9 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
   const port = options.port ?? 3000;
   const requestBodyLimitBytes = options.requestBodyLimitBytes ?? DEFAULT_REQUEST_BODY_LIMIT_BYTES;
   const config = parseConfig();
-  const runtime = options.runtime ?? createLinkedInRuntime(config);
-  const handler = createMcpHandler(() => createLinkedInMcpServer(runtime));
+  const runtime = options.runtime ?? createLinkedInRuntime({ ...config, transport: 'http' });
+  // Force HTTP isolation even with an injected STDIO runtime/store.
+  const handler = createMcpHandler(() => createLinkedInMcpServer({ ...runtime, transport: 'http' }));
 
   const server = createServer((request, response) => {
     if (

@@ -32,6 +32,15 @@ describe('parseConfig', () => {
       mediaMaxBytes: 20 * 1_048_576,
     });
   });
+  it('enables saved jobs only with an explicit absolute host-owned path', () => {
+    expect(
+      parseConfig({ LINKEDIN_MCP_JOB_SAVED_PATH: '/private/tmp/my-workspace/saved.json' }),
+    ).toMatchObject({ jobSavedPath: '/private/tmp/my-workspace/saved.json' });
+    for (const value of ['', 'saved.json', '/tmp/../sensitive.json', '/tmp/folder/./saved.json']) {
+      expect(() => parseConfig({ LINKEDIN_MCP_JOB_SAVED_PATH: value })).toThrow(/saved.*path/i);
+    }
+    expect(parseConfig({})).not.toHaveProperty('jobSavedPath');
+  });
 
   it('accepts an explicit LinkedIn API version only in YYYYMM form', () => {
     expect(parseConfig({ LINKEDIN_MCP_API_VERSION: '202510' })).toMatchObject({

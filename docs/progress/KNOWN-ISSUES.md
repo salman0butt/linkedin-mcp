@@ -2,9 +2,13 @@
 
 ## Current unresolved issues
 
+### M06.5 private saved-state pathname race hardening limitation
+
+The opt-in local saved-job store is available only to the host's **single trusted OS user over STDIO**; its final private directory must be `0700`, file `0600`, correct user ownership, one hardlink and no symlink. HTTP access is always unavailable. Independent audit reproduced a deterministic parent-directory symlink swap immediately after validation that formerly redirected a read to a different same-user private store. The regression was repaired RED→GREEN by pinning every ancestor's device/inode and checking ownership, permissions and identity around locks, reads, writes, rename and persisted readback. The audited swap now fails closed. Node's pathname-based filesystem calls are **not an atomic openat guarantee**: a process that already has this same OS UID or root privileges could repeatedly swap directories between checks. That process already has equivalent local read/write access to this OS user's private files. Scoped independent reviewer classified this as a non-blocking hardening limitation under the documented single-trusted-OS-user threat model; never advertise immunity to concurrent same-UID filesystem modification. If ownership requirements change to multi-user/hostile same-UID, require dirfd/openat or an equivalent OS-level authenticated workspace primitive before enabling saved-state access.
+
 ### M06.1 URL and verified posting-date source integrity — regression-fixed locally
 
-Independent source review found three Important issues in the new canonical job contract. Common credential parameter aliases (`apiKey`, `auth_token`) were accepted in returned URLs; verified posting dates could omit canonical-link binding for jobs with a canonical URL; and known dynamic IP wildcard domains could encode private destinations. Targeted regression tests failed before code changes and pass after correction. The core validator performs no network/DNS lookups; every future HTTP-capable adapter must separately validate resolved public A/AAAA addresses at each hop, including redirects and DNS rebinding. Final exact-head CI/reviewer sign-off pending.
+Independent source review found three Important issues in the new canonical job contract. Common credential parameter aliases (`apiKey`, `auth_token`) were accepted in returned URLs; verified posting dates could omit canonical-link binding for jobs with a canonical URL; and known dynamic IP wildcard domains could encode private destinations. Targeted regression tests failed before code changes and pass after correction. M06.1 exact-head CI `39923182814` passed. The core validator performs no network/DNS lookups; every future HTTP-capable adapter must separately validate resolved public A/AAAA addresses at each hop, including redirects and DNS rebinding.
 
 ### M06 job discovery and Talent access boundary
 

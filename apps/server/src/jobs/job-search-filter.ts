@@ -44,6 +44,7 @@ export function filterDiscoveredJobs(
   }
   const candidates = new Map<string, Array<{ job: Readonly<NormalizedJob>; index: number }>>();
   const keywords = query.keywords.toLocaleLowerCase('en');
+  const keywordTerms = keywords.split(/\s+/u).filter(Boolean);
   const wantedLocation = query.location?.toLocaleLowerCase('en');
   const postedSince = query.postedSince === undefined ? undefined : Date.parse(query.postedSince);
   let unknownDateCount = 0;
@@ -55,10 +56,9 @@ export function filterDiscoveredJobs(
     const identity = JSON.stringify([job.source.id, job.id]);
     // Content is untrusted text; it is only compared as text, never executed.
     if (
-      ![job.title, job.companyName, job.description ?? '']
-        .join(' ')
-        .toLocaleLowerCase('en')
-        .includes(keywords)
+      !keywordTerms.every((term) =>
+        [job.title, job.companyName, job.description ?? ''].join(' ').toLocaleLowerCase('en').includes(term),
+      )
     ) {
       continue;
     }

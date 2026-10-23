@@ -1,10 +1,38 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { mkdtemp, readFile, realpath, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 const serverPackage = '@linkedin-mcp/server';
 const builtEntry = resolve(process.cwd(), 'apps/server/dist/stdio.js');
+
+const savedClientScript = `
+import { Client } from '@modelcontextprotocol/client';
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+import { resolve } from 'node:path';
+const client = new Client({ name: 'linkedin-saved-stdio-smoke', version: '1.0.0' });
+const transport = new StdioClientTransport({ command: process.execPath, args: [resolve(process.cwd(), 'dist/stdio.js')], env: process.env });
+try {
+  await client.connect(transport);
+  const job = {
+    id: 'job-1', title: 'TypeScript engineer', companyName: 'Example Company',
+    source: { id: 'sample', provider: 'EXTERNAL_DISCOVERY', name: 'Sample', retrievedAt: '2026-10-23T10:00:00.000Z' },
+    postingDate: { state: 'unknown' },
+  };
+  const save = await client.callTool({ name: 'linkedin.jobs.saved.save', arguments: { job } });
+  const jobs = await client.callTool({ name: 'linkedin.jobs.saved.list', arguments: {} });
+  const searchSave = await client.callTool({ name: 'linkedin.jobs.saved_searches.save', arguments: { query: { keywords: 'TypeScript' } } });
+  const searches = await client.callTool({ name: 'linkedin.jobs.saved_searches.list', arguments: {} });
+  process.stdout.write(JSON.stringify({
+    save: save.structuredContent, saveError: save.isError,
+    jobs: jobs.structuredContent, jobsError: jobs.isError,
+    searchSave: searchSave.structuredContent, searchError: searchSave.isError,
+    searches: searches.structuredContent, searchesError: searches.isError,
+  }));
+} finally { await client.close(); }
+`;
 
 const clientScript = `
 import { Client } from '@modelcontextprotocol/client';
@@ -39,6 +67,8 @@ try {
   });
   const capabilities = await client.callTool({ name: 'linkedin.capabilities', arguments: {} });
   const postSearch = await client.callTool({ name: 'linkedin.posts.search', arguments: { kind: 'topic', term: 'AI' } });
+  const jobSearch = await client.callTool({ name: 'linkedin.jobs.search', arguments: { keywords: 'TypeScript' } });
+  const jobGet = await client.callTool({ name: 'linkedin.jobs.get', arguments: { sourceId: 'missing', jobId: '123' } });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
     authStatus: authStatus.structuredContent,
@@ -51,6 +81,10 @@ try {
     capabilities: capabilities.structuredContent,
     postSearch: postSearch.structuredContent,
     postSearchIsError: postSearch.isError,
+    jobSearch: jobSearch.structuredContent,
+    jobSearchIsError: jobSearch.isError,
+    jobGet: jobGet.structuredContent,
+    jobGetIsError: jobGet.isError,
   }));
 } finally {
   await client.close();
@@ -75,6 +109,53 @@ function callBuiltServer(): unknown {
 }
 
 describe('built stdio server', () => {
+  it('persists opt-in local saved jobs and searches across real STDIO process restarts', async () => {
+    const directory = await realpath(await mkdtemp(join(tmpdir(), 'linkedin-mcp-stdio-saved-')));
+    const filePath = join(directory, 'saved.json');
+    try {
+      const env = {
+        ...Object.fromEntries(
+          Object.entries(process.env).filter(([key]) => !key.startsWith('LINKEDIN_MCP_')),
+        ),
+        LINKEDIN_MCP_JOB_SAVED_PATH: filePath,
+      };
+      const run = () =>
+        JSON.parse(
+          execFileSync(
+            'pnpm',
+            ['--filter', serverPackage, 'exec', 'node', '--input-type=module', '--eval', savedClientScript],
+            { cwd: process.cwd(), encoding: 'utf8', env },
+          ),
+        ) as {
+          save: { status: string; data: { key: string; savedAt: string } };
+          saveError?: boolean;
+          jobs: { status: string; data: Array<{ key: string }> };
+          jobsError?: boolean;
+          searchSave: { status: string; data: { id: string } };
+          searchError?: boolean;
+          searches: { status: string; data: Array<{ id: string }> };
+          searchesError?: boolean;
+        };
+      const first = run();
+      const reopened = run();
+      expect(first.save.status).toBe('succeeded');
+      expect(first.jobs.status).toBe('succeeded');
+      expect(first.searchSave.status).toBe('succeeded');
+      expect(first.searches.status).toBe('succeeded');
+      expect(first.jobs.data).toHaveLength(1);
+      expect(first.searches.data).toHaveLength(1);
+      expect(reopened.jobs.data).toEqual(first.jobs.data);
+      expect(reopened.searches.data).toEqual(first.searches.data);
+      expect(reopened.save.data.savedAt).toBe(first.save.data.savedAt);
+      expect(reopened.saveError).not.toBe(true);
+      expect(reopened.jobsError).not.toBe(true);
+      expect(reopened.searchError).not.toBe(true);
+      expect(reopened.searchesError).not.toBe(true);
+      expect((await readFile(filePath, 'utf8')).includes('job-1')).toBe(true);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }, 30_000);
   it('exposes foundation, publishing, engagement and unavailable post search through real stdio', () => {
     const result = callBuiltServer() as {
       toolNames: string[];
@@ -88,6 +169,10 @@ describe('built stdio server', () => {
       mediaPreview: unknown;
       postSearch: unknown;
       postSearchIsError: boolean;
+      jobSearch: unknown;
+      jobSearchIsError: boolean;
+      jobGet: unknown;
+      jobGetIsError: boolean;
     };
     expect(result).toMatchObject({
       health: {
@@ -109,12 +194,16 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 29,
+      toolCount: 39,
       postSearch: {
         status: 'unsupported',
         data: { status: 'unavailable', providerOutcomes: [] },
       },
       postSearchIsError: true,
+      jobSearch: { status: 'unsupported', data: { status: 'unavailable', providerOutcomes: [] } },
+      jobGet: { status: 'unsupported', data: { status: 'unavailable' } },
+      jobSearchIsError: true,
+      jobGetIsError: true,
       preview: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
@@ -159,6 +248,16 @@ describe('built stdio server', () => {
         'linkedin.reactions.remove.approve',
         'linkedin.reactions.remove',
         'linkedin.posts.search',
+        'linkedin.jobs.search',
+        'linkedin.jobs.get',
+        'linkedin.jobs.saved.list',
+        'linkedin.jobs.saved.get',
+        'linkedin.jobs.saved.save',
+        'linkedin.jobs.saved.remove',
+        'linkedin.jobs.saved_searches.list',
+        'linkedin.jobs.saved_searches.get',
+        'linkedin.jobs.saved_searches.save',
+        'linkedin.jobs.saved_searches.remove',
       ]),
     );
     expect(
@@ -171,6 +270,10 @@ describe('built stdio server', () => {
     ).toBe('UNAVAILABLE');
     expect(
       result.capabilities.data.capabilities.find((capability) => capability.id === 'posts.search')
+        ?.availability,
+    ).toBe('UNAVAILABLE');
+    expect(
+      result.capabilities.data.capabilities.find((capability) => capability.id === 'jobs.search')
         ?.availability,
     ).toBe('UNAVAILABLE');
   });
