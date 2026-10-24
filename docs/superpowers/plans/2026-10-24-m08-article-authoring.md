@@ -20,8 +20,8 @@
 
 **Contract:** `normalizeArticleDraft(input:unknown): ArticleDraft` strictly accepts a user-supplied article body, normalizes source provenance to `user_supplied_unverified`, preserves inert prose, checks cross-references, disallows extra/trust fields, duplicate IDs, prototypes/accessors, unsupported URLs and excessive canonical bytes. Do not accept published/verified flags. Per-source notes are not independently verified.
 
-- [ ] RED on missing module/valid sample and adversarial extra fields, duplicated/missing source IDs, credentialed HTTPS/userinfo/query secrets, unsupported schemes and hostile HTML.
-- [ ] Observe intended Vitest failure before production code; implement minimum strict model.
+- [x] Implement and exercise strict model contract for invalid/extra fields, source-ID references, URL secrets, unsupported schemes and hostile content; final M08 test suite and independent audit verified coverage. The initial RED history of every individual M08.1 case was not independently archived.
+- [x] Implement the normalized model using test-first work and review-driven genuine RED→GREEN cases; do not infer an individually observed RED for every model assertion from later passing tests.
 - [x] Verify integrated normalization and source-provenance behavior in the locally GREEN 97/97 M08 focused set, including post-audit URL-alias regression fixes.
 
 ## M08.2 — Validation, deterministic preview and companion post
@@ -30,7 +30,7 @@
 
 **Contract:** `validateArticleDraft(draft): {readyForReview:boolean;warnings:[]}`; `previewArticleDraft(draft)` escapes raw HTML and preserves source-note attribution as _unverified_; `createCompanionPostDraft(draft)` makes a bounded local suggestion (not publication). Preserve content order, no source fetch or user-profile inference. Mark incomplete drafts plainly.
 
-- [ ] RED for incomplete evidence/outline, HTML plus Markdown-active images/links/autolinks/fences including source URLs, misleading citations, non-truncated companion output, and accidental publish claims.
+- [x] Verify negative rendering/validation cases for incomplete evidence and outline, active HTML/Markdown, source attribution and draft-only companion output in the integrated passing suite; no independent claim that each test began RED.
 - [x] GREEN model/renderer tests included in the locally GREEN 97/97 focused set; deterministic draft-only preview, review and companion are integrated.
 
 ## M08.3 — Local opt-in revisioned private store
@@ -48,7 +48,7 @@
 
 **Contract:** Three `linkedin.article.*` prompts: research brief, outline, editorial review. No network or fake research; input text always labeled user-provided and instructions embedded in it remain inert. Test registration via actual MCP client, bounded inputs/prompts, prompt injection controls.
 
-- [ ] RED prompt list/get and injection labeling; GREEN with reviewed tool-facing prose.
+- [x] Reusable research-brief, outline and editorial review MCP prompts and untrusted-content labeling covered by the verified passing test suite; individual first-RED history not asserted.
 - [x] Three local reusable prompts implemented and covered by focused M08 GREEN tests; specific initial RED history for M08.4 is not claimed here.
 
 ## M08.5 — MCP tools and transport integration
@@ -57,7 +57,7 @@
 
 **Contract:** Strict typed `linkedin.article.draft.validate|preview|companion`, `linkedin.article.projects.create|update|list|get|remove`, `LOCAL_ONLY` capability. Stateful ops STDIO+host-store only; HTTP never accesses even injected store. Config rejects article-store collisions with OAuth credentials, M06 saved jobs, publishing ledger, media root, lock/tmp companions. Enforce response cap and no caller file paths/source claims or native publication. Test real STDIO and HTTP transport, invalid inputs, no provider/network dependency and correct capability status.
 
-- [ ] RED for missing tools, unavailable storage, HTTP injected store and output bounds; GREEN with full integration.
+- [x] Test all eight tool registrations, unavailable/private storage behavior, HTTP isolation even with injected store and bounded responses using real built transport integration; integrated GREEN verified, without claiming unrecorded initial REDs.
 - [x] All eight article tools integrated and tested locally; real STDIO/HTTP **6/6 GREEN**, combined focused M08 **97/97 GREEN**. Initial absent-tool RED history is not inferred from passing tests.
 
 ## M08.6 — Independent review, durable integration, closeout
@@ -66,16 +66,18 @@
 
 - [x] Review privacy, prompt-injection handling, corrupted/linked files, consistency, live HTTP saved-state isolation, typed schemas and output budgets with an independent read-only reviewer; three Important RED→GREEN fixes independently re-reviewed and final whole-branch **Critical=0 Important=0 signoff**.
 - [x] Full Node24 `pnpm test`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `git diff --check`; **988/988 PASS across 88 suites** with real built STDIO/HTTP included; all checks GREEN in final command (exit 0).
-- [ ] Create/update one M08 PR; exact-final-feature-head GitHub CI GREEN, zero outstanding blocking reviews, mergeable stable base; squash merge under repository policy.
-- [ ] Verify exact post-merge `main` CI and then mark M08 complete; activate M09 only after verified main.
+- [x] Created M08 PR #12; exact-final-feature-head `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` GitHub CI `40120392598` SUCCESS, independent review Critical=0/Important=0; squash-merged at `4b56a8411eed258ad2e2832b1796031288498a0e`.
+- [x] Verified exact post-merge `main` GitHub CI `40120555718` SUCCESS on `4b56a8411eed258ad2e2832b1796031288498a0e` (frozen install, 988/988 tests in 88 suites, format, lint, typecheck, build). M08 is COMPLETE; M09 is PLANNED, not implemented.
 
-### M08 PRE-MERGE checkpoint — evidence only (2026-10-24)
+### M08 historical PRE-MERGE checkpoint — superseded by verified merge (2026-10-24)
 
 - [x] Article model, renderer, prompts, STDIO-private store and eight MCP tools locally integrated on `feat/m08-article-authoring` based on `e8b603c`.
 - [x] Real STDIO/HTTP integration **6/6 GREEN**, focused M08 post-review fixes **97/97 GREEN**; Node24 lint/typecheck/format/build GREEN.
 - [x] First full repository run observed **969 passed and 4 stale capability expectation failures** (973 total); the four obsolete expectations were updated after genuine RED and retested **12/12 GREEN**.
 - [x] Three verified Important independent review findings (credential-bearing source URL query aliases/fragments, config parent/child collisions, and revision-2 persisted invalid UTF-8) reproduced RED, corrected GREEN, and independently re-reviewed.
 - [x] Independent M08.6 whole-branch signoff unresolved **Critical=0 Important=0**, with **fresh full local Node24 988/988 GREEN across 88 suites**, real built STDIO/HTTP and all required quality gates GREEN.
-- [ ] Create M08 PR, verify exact-final-head CI, merge only after all gates pass and verify post-merge main CI.
+- [x] Created PR #12, exact feature-head CI `40120392598` SUCCESS, squash merged to `4b56a8411eed258ad2e2832b1796031288498a0e`, exact main-push CI `40120555718` SUCCESS.
 
-**Exact next action:** Create the M08 feature PR and verify its exact-final-head SHA CI.
+**M08 closeout:** Code and security/quality gates merged and verified. The separate `docs/m08-closeout-m09-handoff` documentation checkpoint has **not** yet passed its own PR/CI; do not present it as remotely verified.
+
+**Exact next action:** Begin M09.0 requirements/design and feasibility investigation for legitimately authorized optional native LinkedIn article publishing; no bypass, no entitlement assumption.

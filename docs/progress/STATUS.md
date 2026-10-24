@@ -1,6 +1,16 @@
 # Project Status
 
-## Current checkpoint — 2026-10-24 (M08 VERIFYING / IN_PROGRESS; PRE-MERGE)
+## Current checkpoint — 2026-10-24 (M08 COMPLETE; M09 PLANNED)
+
+M08 Article Authoring Engine [PR #12](https://github.com/salman0butt/linkedin-mcp/pull/12) was squash-merged to `main` at exact commit `4b56a8411eed258ad2e2832b1796031288498a0e`. Final feature head `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` CI `40120392598` and exact post-merge main-push CI `40120555718` both **SUCCESS**. Main CI verified frozen installation, **988/988 tests across 88 suites**, formatting, lint, typecheck and build. Independent M08.6 whole-branch reviewer signed off unresolved **Critical=0 Important=0** after three Important findings (credential-bearing URL query aliases/fragments, private configuration parent/child path overlap, revision-2 persisted invalid UTF-8) were reproduced RED and fixed GREEN.
+
+Shipped M08 functionality: strict unverified-user-source article model, deterministic preview/checklist and companion, private host-configured revisioned STDIO-only project store, three MCP writing/review prompts and eight article MCP tools. Stateless article draft tools work via STDIO/HTTP; **HTTP cannot access the private project store** even if it is mistakenly injected. These local tools do not perform research or source verification and **do not publish native LinkedIn articles**.
+
+Current milestone is **M09 — Native Article Publishing, PLANNED (M09.0)** on verified `main` `4b56a8411eed258ad2e2832b1796031288498a0e`. No M09 implementation or legitimate provider entitlement is established, and no browser security/CAPTCHA bypass is allowed. This M08 closeout documentation branch has no separately verified PR/main CI yet; M08 code merge CI evidence above is complete.
+
+Exact next work: **Begin M09.0 requirements/design and feasibility investigation for legitimately authorized optional native LinkedIn article publishing; no bypass, no entitlement assumption.**
+
+## Previous checkpoint — 2026-10-24 (M08 VERIFYING / IN_PROGRESS; PRE-MERGE)
 
 Working branch `feat/m08-article-authoring` starts from `e8b603c2f340a0121c473d10ed6fc1e41b5257d7`. M08.0 design and implementation plan, M08.1 source-aware canonical article model, M08.2 deterministic escaped preview/checklist/companion post, M08.3 private revisioned article store, M08.4 reusable MCP prompts and M08.5 **eight** article MCP tools are locally integrated. Stateless tools are available over STDIO and HTTP; private project persistence is opt-in and STDIO-only, inaccessible to HTTP even with an injected private store. User sources are unverified author-supplied associations, not researched facts; native article publication remains M09 and is unavailable.
 
