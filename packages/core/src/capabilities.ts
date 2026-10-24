@@ -231,6 +231,32 @@ const descriptors: CapabilityDescriptor[] = [
     approvalRequired: false,
   },
   {
+    id: 'jobs.analyze',
+    desiredBehavior:
+      'Analyze explicit caller job requirements and advisory skill evidence with no provider lookup.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M07',
+    status: 'VERIFIED',
+    accessNote:
+      'Local only, unverified caller snapshots; no job search account, employer verification or application submission.',
+    approvalRequired: false,
+    evidence: 'M07.6 exact-source job-intelligence contract and real STDIO/HTTP analysis smoke tests.',
+  },
+  {
+    id: 'jobs.compare',
+    desiredBehavior:
+      'Compare 2–10 source-scoped unverified job snapshots with explicit missing-evidence flags.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M07',
+    status: 'VERIFIED',
+    accessNote:
+      'Local only; qualitative evidence and advisory skill-only scores, never a hiring or visa eligibility decision.',
+    approvalRequired: false,
+    evidence: 'M07.6 exact-source job-intelligence contract and real STDIO/HTTP comparison smoke tests.',
+  },
+  {
     id: 'article.draft',
     desiredBehavior: 'Create and manage a local long-form article draft package.',
     provider: 'LOCAL_ONLY',

@@ -38,7 +38,7 @@
 - [x] **RED:** first tests importing missing new module; reject forged verified posting dates, PARTNER_API/source evidence/confidence claims, prototypes/getters, unsupported keys and oversized candidate skills. Accept minimal safe unknown/reported snapshot; fake source name canonicalized. Independent review generated further RED for proxies, empty candidate skills, raw-padding bounds and expanding Unicode casefolds.
 - [x] **VERIFY RED:** `TMPDIR=/private/tmp pnpm exec vitest run packages/core/test/job-intelligence.test.ts` failed on missing module and later failed precisely on reviewer regressions.
 - [x] **GREEN:** strict immutable untrusted snapshot contract implemented; no caller trust elevation; all 11 focused tests and 724-test integrated local suite GREEN. Two independent scoped reviewer signoffs reported no remaining Critical/Important findings.
-- [ ] **VERIFY GREEN:** scoped tests and core TypeScript build pass; commit M07.1 checkpoint and inspect exact SHA CI.
+- [x] **VERIFY GREEN:** scoped tests, core TypeScript and whole suite passed; M07.1 checkpoint `1d0ac1d` exact-head CI `40080270039` GREEN.
 
 ### Task 2: Deterministic requirement extraction (M07.2)
 
@@ -46,10 +46,10 @@
 
 **Interfaces:** `extractJobRequirements(job: Readonly<NormalizedJob>): Readonly<JobRequirementExtraction>` where `JobRequirementExtraction` is `{requirements:readonly JobRequirement[]; truncated:boolean; evidenceStatus:'explicit'|'incomplete'}`; requirement quote spans reference exact original `title` or `description` using UTF-16 code-unit start-inclusive/end-exclusive offsets and `offsetUnit:'utf16'`.
 
-- [ ] **RED:** source quote offsets, required/preferred/unknown language, 3+ years, negation and quoted/other-employer example “Must have Python” correctly not required, conflicting clauses, empty descriptions, emoji/combining marks/CRLF source offsets using JS `slice(start,end)` across real MCP output, injected instructions as inert text, 50-item bound/truncation; future source-span-only host annotations cannot override polarity.
-- [ ] **VERIFY RED:** targeted Vitest failures demonstrate missing extractor.
-- [ ] **GREEN:** conservative ordered clause patterns with polarity, quote and attribution gates; no freeform keyword mention or model quote alone elevates to requirements or prompt execution; unchanged source quotes.
-- [ ] **VERIFY GREEN:** scoped tests, relevant runtime types and lint pass; commit checkpoint.
+- [x] **RED:** missing-module RED and focused RED for neglected mandatory experience, work-authorization, language, and bare preferred AWS/Python clauses; quoted and negated text controls.
+- [x] **VERIFY RED:** targeted Vitest failures observed before implementation/fixes.
+- [x] **GREEN:** original UTF-16 offsets, bounded quotes and 50-item cap; conservative polarity and attribution; unknown mandatory clauses incomplete; no unsupported skill-score inflation.
+- [x] **VERIFY GREEN:** focused tests, integrated typecheck/lint and real MCP analysis passed locally; remote final-head CI pending.
 
 ### Task 3: Explicit location/sponsorship and company signals (M07.3)
 
@@ -57,10 +57,10 @@
 
 **Interfaces:** `extractJobSignals(job: Readonly<NormalizedJob>): Readonly<JobSignals>` with separate sponsorship, relocation assistance, worldwide remote eligibility, work authorization and bounded exact source quotes across title, description **and location**, each tagged `field`, `start`, `end`, `offsetUnit:'utf16'`; preserve explicit negation and cross-field conflicts.
 
-- [ ] **RED:** explicit yes/no sponsorship, “no visa support”, contradictory claims in same and distinct fields; `location:'Remote within US only'` with worldwide description, `location:'US work authorization required'` with sponsored-visa description, “remote” without cross-border permission, relocation mention without promise, unsupported immigration assumptions, company title without enrichment.
-- [ ] **VERIFY RED:** tests fail because signal extractor absent.
-- [ ] **GREEN:** deterministic negative/affirmative clause recognizers with conflict/unknown states; never consult external sites.
-- [ ] **VERIFY GREEN:** scoped tests/types/lint green; commit checkpoint.
+- [x] **RED:** initial missing module, further cross-field authorization, residency and role-specific sponsorship restrictions, unrelated customer/training/citizenship counterexamples, region variants all observed failing before corrections.
+- [x] **VERIFY RED:** focused missing-module and concrete false-positive signal test failures confirmed.
+- [x] **GREEN:** deterministic source-quoted worldwide remote/visa/relocation/authorization signals with explicit yes/no/unknown/conflicting states and bounded UTF-16 evidence; no external calls.
+- [x] **VERIFY GREEN:** focused tests/types/lint and integration green locally; final combined PR CI pending.
 
 ### Task 4: Source-grounded candidate fit (M07.4)
 
@@ -68,10 +68,10 @@
 
 **Interfaces:** `analyzeJobFit(extraction: Readonly<JobRequirementExtraction>, profile?: Readonly<CandidateProfile>): Readonly<JobFit>` where `JobRequirementExtraction` is Task 2's `{requirements,truncated,evidenceStatus}`; includes explicit matched/missing/unknown categories and reproducible advisory score only when extraction is complete with meaningful sourced required/preferred _skill-only_ evidence. For M07 v1, denominator `3 × count(required skill requirements) + 1 × count(preferred skill requirements)`, numerator `3 × matched required + 1 × matched preferred`, score `Math.round(100 × numerator / denominator)` in 0–100; `unspecified` priorities excluded. Count each distinct normalized skill once per priority to avoid duplicate inflation. Match lowercased trimmed exact skills, plus **only** these fixed aliases: `ts ↔ typescript`, `js ↔ javascript`, `nodejs ↔ node.js`, `react.js ↔ react`, `postgres ↔ postgresql`; no substring/fuzzy matching. Any explicitly required/preferred non-skill category, missing profile, no weighted skill clauses, `truncated:true`, or incomplete evidence yields `insufficient_evidence` with **no score**. Do not compare candidate geography, immigration or years in the numeric formula.
 
-- [ ] **RED:** no profile, no clear requirements, aliases above and near misses, false required keywords, matched skill normalization, a required experience clause suppresses numerical fit, no candidate field disclosure. Golden score: required TypeScript plus preferred AWS with a TypeScript-only candidate => `Math.round(100*3/4)=75`; adding AWS => 100; no required skill match with only AWS => 25. 51 explicit required skills where requirement 51 is not possessed must produce `insufficient_evidence` with no score after 50-item truncation.
-- [ ] **VERIFY RED:** targeted tests fail for absent implementation.
-- [ ] **GREEN:** frozen exact/allowlisted alias mapping and documented priority weights; unknown constraints excluded from score; incomplete/truncated extraction produces `insufficient_evidence` with no numeric score.
-- [ ] **VERIFY GREEN:** scoped tests, full server typecheck and lint pass; commit checkpoint.
+- [x] **RED:** absent implementation plus 3:1 75/100/25 golden fixtures, aliases and near misses, missing profile, incomplete/truncated/non-skill mandatory safeguards, no candidate metadata disclosure.
+- [x] **VERIFY RED:** missing module targeted Vitest failed before implementation.
+- [x] **GREEN:** stable 3:1 weighting and explicit skill-only scope; ambiguous/mandatory legal criteria never scored; transient candidate fields never echoed.
+- [x] **VERIFY GREEN:** focused and integrated tests, types and lint green locally; remote final CI pending.
 
 ### Task 5: Reproducible multi-job comparison (M07.5)
 
@@ -79,10 +79,10 @@
 
 **Interfaces:** `createJobIntelligenceService(): { analyze(input:unknown): Promise<JobAnalysisResult>; compare(input:unknown): Promise<JobCompareResult> }`; compare 2–10 source-scoped distinct jobs, stable input order and identical evidence rules per job.
 
-- [ ] **RED:** exact same-source duplicate ID with conflicting data, same IDs across different providers, incomplete or truncated extraction without score/rank, null profile, conflicting sponsorship, overlarge/invalid arrays and sanitized error surfaces.
-- [ ] **VERIFY RED:** service missing or required behavior fails.
-- [ ] **GREEN:** compose Tasks 1–4; never infer cross-provider identity, fetch source URLs or rank unsupported evidence.
-- [ ] **VERIFY GREEN:** scoped tests, stable output limits and build pass; commit checkpoint.
+- [x] **RED:** missing service, duplicate scoped identities, malformed/overlarge inputs and false 100% work-authorization score reproduced before correction.
+- [x] **VERIFY RED:** focused Vitest confirmed missing-module and work-authorization false score.
+- [x] **GREEN:** source-scoped stable comparison, no private profile output, bounded serialized results and independent legal-authorization fit suppression.
+- [x] **VERIFY GREEN:** focused tests, build and real MCP integration green locally; final PR CI pending.
 
 ### Task 6: Strict MCP tools and real transports (M07.6)
 
@@ -90,10 +90,10 @@
 
 **Interfaces:** read-only `linkedin.jobs.analyze` and `linkedin.jobs.compare` with Zod strict inputs/outputs; exact `linkedin.capabilities` IDs `jobs.analyze`, `jobs.compare` (both LOCAL_ONLY and verified local availability, independent of M06 provider configuration), replacing stale planned `jobs.score` without an implicit alias; explicit caller-supplied source trust and sanitized error taxonomy; no local saved-store access through HTTP.
 
-- [ ] **RED:** MCP tools missing, `linkedin.capabilities` omits/misnames two IDs or falsely marks local analysis unavailable without M06 provider, malformed provenance/input, fabricated quotes or polarity misclassification, private saved-state isolation, no configured provider yet accepted caller snapshot, bounding and real transport smoke.
-- [ ] **VERIFY RED:** real MCP contract tests fail for intended missing tools.
-- [ ] **GREEN:** register shared local service with strict schema, inspect verified source spans and serialize bounded results.
-- [ ] **VERIFY GREEN:** full `pnpm test`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and real STDIO/HTTP smoke pass; commit checkpoint and verify new-head CI.
+- [x] **RED:** missing MCP tools/capabilities, incorrect output schema and oversized complete MCP reply all observed failing targeted tests.
+- [x] **VERIFY RED:** real MCP client test failures observed before registration and output fixes.
+- [x] **GREEN:** registered strict read-only analyze/compare tools with truthful LOCAL_ONLY capabilities, typed source/evidence schemas, complete envelope size cap, built STDIO/HTTP transports and HTTP saved-state isolation.
+- [x] **VERIFY GREEN (local):** full 902/902 `pnpm test` (83 files, real STDIO/HTTP), `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `git diff --check` passed. Exact-new-head CI remains pending.
 
 ### Task 7: Independent closeout (M07.7)
 

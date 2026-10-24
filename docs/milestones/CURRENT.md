@@ -1,8 +1,8 @@
 # Current Milestone
 
 Milestone: M07 — Job Intelligence
-Status: IMPLEMENTING — M07.1 strict contracts locally GREEN; M07.2 requirement extraction next
-Iteration: M07.2
+Status: REVIEW — M07.1–M07.6 locally GREEN; M07.7 review and exact-head CI pending
+Iteration: M07.7
 Branch: `feat/m07-job-intelligence`
 PR: #10 — draft
 Base/main: `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`
@@ -15,6 +15,6 @@ Ledger: `docs/milestones/M07-job-intelligence.md`
 
 M06 Job Search is COMPLETE: PR #9 squash-merged at `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`, post-merge main CI `40077809706` passed. Independent M06.6 whole-branch review closed all verified Critical/Important findings. Both M05 and M06 preserve the lack of a configured external/partner discovery provider; no live LinkedIn Talent entitlement is claimed.
 
-M07 builds only source-anchored job analysis from safe unverified caller snapshots. It must distinguish explicit evidence, missing information and inference for requirements, candidate fit, company data, relocation and visa sponsorship. No applicant eligibility, official API access, model-suggested employer facts or automatic submission is inferred. M07.1 strict input contracts are locally implemented; M07 extraction, fit, signals, comparison and MCP tools are not yet available.
+M07 locally implements source-anchored job requirement extraction, visa/remote/authorization signals, candidate skill fit and comparison through read-only MCP analyze/compare tools. Caller snapshots remain unverified. No applicant legal eligibility, employer verification, Talent entitlement or application submission is inferred.
 
-Exact next work: **Checkpoint the independently reviewed 724-test RED→GREEN M07.1 parser on draft PR #10, verify its exact-head CI, then implement M07.2 sourced requirement extraction beginning with failing tests.**
+Exact next work: **Close M07.7 independent whole-branch review, verify full local quality gates, push PR #10, verify exact-final-head CI, squash merge and verify post-merge main CI.**
