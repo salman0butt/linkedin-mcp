@@ -6,15 +6,15 @@
   "activeBranch": "feat/m06-job-search",
   "activePr": 9,
   "baseBranch": "main",
-  "latestVerifiedSha": "50964e8cb7fce7feaf17dbcbf3c9e792b2d2df8b",
-  "ciStatus": "GREEN_M06_2_HEAD_50964e8cb7fce7feaf17dbcbf3c9e792b2d2df8b_RUN_39926241255; M06_3_TO_M06_5_LOCAL_708_TESTS_77_FILES_FORMAT_LINT_TYPES_BUILD_AND_REAL_STDIO_HTTP_GREEN; M06_6_INDEPENDENT_REVIEW_IN_PROGRESS_REMOTE_NEW_HEAD_CI_PENDING",
+  "latestVerifiedSha": "954fc4a7e252feafe616c92d12ef1dfe03512652",
+  "ciStatus": "GREEN_M06_PR9_HEAD_954fc4a7e252feafe616c92d12ef1dfe03512652_RUN_39942712314; M06_6_LOCAL_REVIEW_FIXES_713_TESTS_77_FILES_STDIO_HTTP_FORMAT_LINT_GREEN; FINAL_NEW_HEAD_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
     "M05 COMPLETE: PR #8 squash-merged at 01fb37d, exact post-merge main CI 39920255603 succeeded (647 tests in 71 files). No unresolved Critical/Important milestone finding.",
-    "M06.1 CI 39923182814 and M06.2 CI 39926241255 succeeded. M06.3–5 implementation is local only until the next PR #9 commit and exact-head CI. No legitimate live jobs provider or LinkedIn Talent partner entitlement is configured.",
+    "M06 PR #9 head 954fc4a CI 39942712314 succeeded. Three M06.6 review fixes (provider-attested filtering, getter-based provider metadata, unverified saved snapshot provenance) are local only until final checkpoint/CI. No live authorized jobs provider or LinkedIn Talent partner entitlement is configured.",
     "Saved-job private-directory path checks are pinned and revalidated around IO, but Node pathname APIs are not an atomic openat guarantee. An attacker capable of renaming this user's private 0700 directory must already have same-UID/root file access; record as a low-impact hardening limitation."
   ],
-  "exactNextWork": "Collect final independent M06.6 whole-branch review, fix any verified Critical/Important issue, then push the 708-test GREEN M06 implementation on existing draft PR #9 and verify its exact-head CI before merge.",
-  "activeHeadSha": "50964e8cb7fce7feaf17dbcbf3c9e792b2d2df8b"
+  "exactNextWork": "Confirm final M06.6 independent re-review, then commit the 713-test GREEN changes to PR #9, verify exact-final-head GitHub CI and merge only after gates pass.",
+  "activeHeadSha": "954fc4a7e252feafe616c92d12ef1dfe03512652"
 }

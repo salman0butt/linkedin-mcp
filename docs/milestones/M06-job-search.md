@@ -1,6 +1,6 @@
 # M06 — Job Search
 
-Status: **REVIEW — M06.1–M06.5 locally GREEN, M06.6 final independent review and new-head CI pending**, branch `feat/m06-job-search`, draft PR #9, base main `01fb37d3b762f2b1775c8845daba61c98054d6ed` (post-merge CI `39920255603` GREEN).
+Status: **REVIEW — M06.1–M06.5 implemented, M06.6 fixes locally GREEN, final review and exact-new-head CI pending**, branch `feat/m06-job-search`, draft PR #9, base main `01fb37d3b762f2b1775c8845daba61c98054d6ed` (post-merge CI `39920255603` GREEN).
 
 Design: `docs/superpowers/specs/2026-10-23-m06-job-search-design.md`. Plan: `docs/superpowers/plans/2026-10-23-m06-job-search.md`.
 
@@ -41,6 +41,8 @@ M06.2 remote verification: commit `50964e8cb7fce7feaf17dbcbf3c9e792b2d2df8b`, CI
 Full integrated local verification: **708/708 tests across 77 files, all Prettier, ESLint, TypeScript, build and real STDIO/HTTP smoke tests GREEN**, run 2026-10-23 with macOS `TMPDIR=/private/tmp`. This is local only; exact-new-head GitHub CI and M06.6 whole-branch signoff remain pending. No legitimate live search provider or Talent product entitlement is bundled.
 
 Exact next work: finish M06.6 whole-branch review and fix any remaining confirmed Critical/Important finding, then persist existing PR #9 and inspect exact-final-head CI before merging.
+
+M06.6 follow-up review (2026-10-24): prior PR #9 commit `954fc4a` passed GitHub quality CI `39942712314`. Independent review found three further Important issues, each demonstrated by a focused failing regression before being corrected: provider-attested semantic/region filters and sparse workplace/employment fields lost legitimate results; accessor-backed provider metadata disappeared during cloning; and user-submitted saved snapshots could forge partner provenance, source evidence and trusted confidence. Snapshot saving now rejects elevated assertions and gives all caller snapshots the explicit `Unverified user-supplied snapshot` source label. It preserves source IDs only as local lookup keys and never accepts saved verified posting-date claims. The revised local tree passes **713/713 tests across 77 files** with real STDIO/HTTP smoke, Prettier, ESLint and TypeScript. Independent re-review and final new-head CI still gate merge.
 
 ## Integration Test Evidence
 

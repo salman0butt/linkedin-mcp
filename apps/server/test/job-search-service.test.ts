@@ -64,6 +64,54 @@ describe('M06.3 configured job providers with trustworthy coverage and details',
     expect(missing).toMatchObject({ status: 'partial', jobs: [], providerOutcomes: [{ state: 'success' }] });
     expect(missing.freshnessCoverage?.state).toBe('incomplete');
   });
+  it('keeps provider-attested semantic keyword and geographic matches that literal local filtering cannot prove', async () => {
+    const service = createJobSearchService({
+      providers: [
+        provider('semantic', () =>
+          succeed([job('semantic-job', { title: 'TS Backend Engineer', location: 'Berlin' })], {
+            honoredFilters: ['keywords', 'location'],
+          }),
+        ),
+      ],
+      now,
+    });
+    const semanticKeyword = await service.search({ keywords: 'TypeScript' });
+    expect(semanticKeyword.status).toBe('available');
+    expect(semanticKeyword.jobs?.map((item) => item.id)).toEqual(['semantic-job']);
+    const geographicLocation = await service.search({ keywords: 'TS', location: 'Germany' });
+    expect(geographicLocation.status).toBe('available');
+    expect(geographicLocation.jobs?.map((item) => item.id)).toEqual(['semantic-job']);
+  });
+
+  it('does not claim a complete empty result when an attested exact workplace filter conflicts with source data', async () => {
+    const result = await createJobSearchService({
+      providers: [
+        provider('a', () =>
+          succeed([job('conflict', { workplace: 'on_site' })], { honoredFilters: ['keywords', 'workplace'] }),
+        ),
+      ],
+      now,
+    }).search({ keywords: 'TypeScript', workplace: 'remote' });
+    expect(result.status).toBe('partial');
+    expect(result.jobs).toEqual([]);
+    expect(result.freshnessCoverage?.state).toBe('incomplete');
+  });
+
+  it('preserves source-attested workplace and employment matches when the listing omits those fields', async () => {
+    for (const requested of [
+      { workplace: 'remote' as const, honoredFilters: ['keywords', 'workplace'] },
+      { employmentType: 'contract' as const, honoredFilters: ['keywords', 'employmentType'] },
+    ]) {
+      const { honoredFilters, ...filters } = requested;
+      const service = createJobSearchService({
+        providers: [provider('a', () => succeed([job('sparse')], { honoredFilters }))],
+        now,
+      });
+      const result = await service.search({ keywords: 'TypeScript', ...filters });
+      expect(result.status).toBe('available');
+      expect(result.jobs?.map((item) => item.id)).toEqual(['sparse']);
+    }
+  });
   it('preserves per-provider provenance and never trusts spoofed fields', async () => {
     const result = await createJobSearchService({
       providers: [
@@ -237,6 +285,41 @@ describe('M06.3 configured job providers with trustworthy coverage and details',
     }
     const result = await createJobSearchService({ providers: [new Example()], now }).search(query);
     expect(result.jobs?.[0]?.id).toBe('bound');
+  });
+  it('retains trusted metadata exposed by a class provider through accessors', async () => {
+    class GetterProvider implements JobProvider {
+      get providerId() {
+        return 'getter-provider';
+      }
+      get providerType() {
+        return 'EXTERNAL_DISCOVERY' as const;
+      }
+      get name() {
+        return 'Getter Provider';
+      }
+      get supportsSearch() {
+        return true;
+      }
+      get supportsDetails() {
+        return false;
+      }
+      calls = 0;
+      search() {
+        this.calls++;
+        return succeed([job('getter-job')]);
+      }
+    }
+    const source = new GetterProvider();
+    const result = await createJobSearchService({ providers: [source], now }).search(query);
+    expect(source.calls).toBe(1);
+    expect(result.status).toBe('available');
+    expect(result.providerOutcomes[0]).toMatchObject({
+      providerId: 'getter-provider',
+      providerType: 'EXTERNAL_DISCOVERY',
+      consulted: true,
+      state: 'success',
+    });
+    expect(result.jobs?.map((item) => item.id)).toEqual(['getter-job']);
   });
   it('routes details by exact configured source and job ID, never caller URL', async () => {
     const detailsA = vi.fn((id: string) => Promise.resolve(job(id, { description: 'Source A details' })));

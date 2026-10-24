@@ -148,13 +148,24 @@ function validateJob(input: unknown): Readonly<NormalizedJob> {
   if (value.salary !== undefined) ownKeys(value.salary, ['min', 'max', 'currency', 'period']);
   if (typeof source.id !== 'string' || !ID_PATTERN.test(source.id)) fail('invalid source ID');
   if (typeof value.id !== 'string' || !value.id || value.id.trim() !== value.id) fail('invalid job ID');
+  // Saving an arbitrary caller snapshot cannot authenticate partner entitlement,
+  // source evidence or host-only confidence. Keep the source-scoped identity,
+  // but visibly label the persisted source as unverified user input.
+  if (
+    source.provider !== 'EXTERNAL_DISCOVERY' ||
+    typeof source.name !== 'string' ||
+    !source.name.trim() ||
+    source.name.length > 100 ||
+    Object.hasOwn(source, 'evidenceUrl') ||
+    Object.hasOwn(value, 'confidence')
+  ) {
+    fail('untrusted local snapshot source or confidence attestation');
+  }
   const context: TrustedJobContext = {
     providerId: source.id,
-    providerType: source.provider as TrustedJobContext['providerType'],
-    name: source.name as string,
+    providerType: 'EXTERNAL_DISCOVERY',
+    name: 'Unverified user-supplied snapshot',
     retrievedAt: source.retrievedAt as string,
-    ...(source.evidenceUrl === undefined ? {} : { evidenceUrl: source.evidenceUrl as string }),
-    ...(value.confidence === undefined ? {} : { confidence: value.confidence as number }),
   };
   const normalized = normalizeDiscoveredJob(
     {

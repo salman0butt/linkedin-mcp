@@ -116,7 +116,11 @@ function validateProviders(input: readonly JobProvider[]): readonly Readonly<Job
         throw new Error('Invalid or duplicate trusted job provider');
       ids.add(item.providerId);
       return Object.freeze({
-        ...item,
+        providerId: item.providerId,
+        providerType: item.providerType,
+        name: item.name,
+        supportsSearch: item.supportsSearch,
+        supportsDetails: item.supportsDetails,
         search: item.search.bind(item),
         ...(item.getDetails === undefined ? {} : { getDetails: item.getDetails.bind(item) }),
       });
@@ -344,6 +348,12 @@ export function createJobSearchService(options: {
       const filtered = filterDiscoveredJobs(
         successes.flatMap((entry) => entry.jobs),
         query,
+        new Map(
+          successes.map((entry) => [
+            entry.outcome.providerId,
+            new Set(entry.outcome.coverage?.honoredFilters ?? []),
+          ]),
+        ),
       );
       const complete =
         successes.length === selected.length &&

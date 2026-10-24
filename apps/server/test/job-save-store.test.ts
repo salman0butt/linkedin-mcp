@@ -66,16 +66,20 @@ describe('stdio-local saved jobs and searches', () => {
     const savedJob = await store.saveJob(sample);
     const savedSearch = await store.saveSearch(query);
     const reopened = createLocalJobSaveStore({ transport: 'stdio', filePath })!;
+    const localSnapshot = {
+      ...sample,
+      source: { ...sample.source, name: 'Unverified user-supplied snapshot' },
+    };
 
     expect(savedJob.key).toBe(JSON.stringify(['trusted-a', 'job-1']));
-    expect(savedJob.job).toEqual(sample);
+    expect(savedJob.job).toEqual(localSnapshot);
     expect(savedSearch.query).toEqual({
       keywords: 'TypeScript',
       location: 'Remote',
       limit: 10,
       sort: 'recent',
     });
-    expect((await reopened.getJob({ sourceId: 'trusted-a', jobId: 'job-1' }))?.job).toEqual(sample);
+    expect((await reopened.getJob({ sourceId: 'trusted-a', jobId: 'job-1' }))?.job).toEqual(localSnapshot);
     expect((await reopened.getSearch(savedSearch.id))?.query).toEqual(savedSearch.query);
     expect((await reopened.listJobs()).map((entry) => entry.key)).toEqual([savedJob.key]);
     expect((await reopened.listSearches()).map((entry) => entry.id)).toEqual([savedSearch.id]);
@@ -149,6 +153,30 @@ describe('stdio-local saved jobs and searches', () => {
     expect(await readFile(filePath)).toEqual(before);
     expect((await store.listJobs()).map(({ job }) => job.postingDate.state)).toEqual(['reported', 'unknown']);
     expect(await store.getJob({ sourceId: sample.source.id, jobId: 'job-forged' })).toBeNull();
+  });
+
+  it('rejects caller-asserted partner provenance, source evidence, and confidence for local snapshots', async () => {
+    const { store, filePath } = await fixture();
+    const forged = [
+      { ...sample, source: { ...sample.source, provider: 'PARTNER_API' } },
+      { ...sample, source: { ...sample.source, evidenceUrl: 'https://jobs.example.org/proof' } },
+      { ...sample, confidence: 1 },
+    ];
+    for (const job of forged) {
+      await expect(store.saveJob(job)).rejects.toThrow(/untrusted|source|confidence|attestation/i);
+    }
+    expect(await store.listJobs()).toEqual([]);
+    await expect(lstat(filePath)).rejects.toMatchObject({ code: 'ENOENT' });
+    const local = await store.saveJob({
+      ...sample,
+      source: { ...sample.source, name: 'Pretend Official Talent Partner' },
+    });
+    expect(local.job.source).toMatchObject({
+      id: sample.source.id,
+      provider: 'EXTERNAL_DISCOVERY',
+      name: 'Unverified user-supplied snapshot',
+    });
+    expect((await store.listJobs())[0]?.job.source).toEqual(local.job.source);
   });
 
   it('rejects corrupt bytes and preserves the original file intact', async () => {

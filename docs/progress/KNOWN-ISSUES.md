@@ -2,6 +2,10 @@
 
 ## Current unresolved issues
 
+### M06.6 local snapshot provenance — regression-fixed locally
+
+Independent review reproduced caller-supplied PARTNER_API metadata, source evidence URL and confidence being passed as trusted context into a saved snapshot with no source authentication. Focused RED tests confirmed the defect. The local store now rejects these elevated claims and canonicalizes saved source names to `Unverified user-supplied snapshot`, while keeping opaque source-scoped IDs, reported/unknown posting dates and safe URLs. Source IDs and retrieval timestamps in locally saved snapshots remain caller-supplied and must not be treated as verified provider facts. The full 713-test local suite passes; final GitHub CI is pending.
+
 ### M06.5 private saved-state pathname race hardening limitation
 
 The opt-in local saved-job store is available only to the host's **single trusted OS user over STDIO**; its final private directory must be `0700`, file `0600`, correct user ownership, one hardlink and no symlink. HTTP access is always unavailable. Independent audit reproduced a deterministic parent-directory symlink swap immediately after validation that formerly redirected a read to a different same-user private store. The regression was repaired RED→GREEN by pinning every ancestor's device/inode and checking ownership, permissions and identity around locks, reads, writes, rename and persisted readback. The audited swap now fails closed. Node's pathname-based filesystem calls are **not an atomic openat guarantee**: a process that already has this same OS UID or root privileges could repeatedly swap directories between checks. That process already has equivalent local read/write access to this OS user's private files. Scoped independent reviewer classified this as a non-blocking hardening limitation under the documented single-trusted-OS-user threat model; never advertise immunity to concurrent same-UID filesystem modification. If ownership requirements change to multi-user/hostile same-UID, require dirfd/openat or an equivalent OS-level authenticated workspace primitive before enabling saved-state access.

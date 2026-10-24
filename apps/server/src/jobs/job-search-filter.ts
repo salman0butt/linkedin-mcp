@@ -16,6 +16,7 @@ export interface JobFilterResult {
 }
 
 const MAX_INPUT_ITEMS = 1_000;
+type HonoredFilter = 'keywords' | 'location' | 'workplace' | 'employmentType' | 'postedSince';
 
 function strength(item: NormalizedJob): number {
   switch (item.postingDate.state) {
@@ -38,6 +39,8 @@ function postingTime(item: NormalizedJob): number {
 export function filterDiscoveredJobs(
   jobs: readonly Readonly<NormalizedJob>[],
   query: JobSearchQuery,
+  /** Host-attested provider filters may match semantic terms and geographic regions absent from listing text. */
+  honoredBySource: ReadonlyMap<string, ReadonlySet<HonoredFilter>> = new Map(),
 ): JobFilterResult {
   if (Object.prototype.toString.call(jobs) !== '[object Array]' || jobs.length > MAX_INPUT_ITEMS) {
     throw new Error('Job discovery input exceeds local bound');
@@ -54,15 +57,17 @@ export function filterDiscoveredJobs(
 
   for (const [index, job] of jobs.entries()) {
     const identity = JSON.stringify([job.source.id, job.id]);
+    const honored = honoredBySource.get(job.source.id);
     // Content is untrusted text; it is only compared as text, never executed.
     if (
+      !honored?.has('keywords') &&
       !keywordTerms.every((term) =>
         [job.title, job.companyName, job.description ?? ''].join(' ').toLocaleLowerCase('en').includes(term),
       )
     ) {
       continue;
     }
-    if (wantedLocation !== undefined) {
+    if (wantedLocation !== undefined && !honored?.has('location')) {
       if (job.location === undefined) {
         uncertainCriteria.add(identity);
         continue;
@@ -71,17 +76,25 @@ export function filterDiscoveredJobs(
     }
     if (query.workplace !== undefined) {
       if (job.workplace === undefined) {
-        uncertainCriteria.add(identity);
+        if (!honored?.has('workplace')) {
+          uncertainCriteria.add(identity);
+          continue;
+        }
+      } else if (job.workplace !== query.workplace) {
+        if (honored?.has('workplace')) uncertainCriteria.add(identity);
         continue;
       }
-      if (job.workplace !== query.workplace) continue;
     }
     if (query.employmentType !== undefined) {
       if (job.employmentType === undefined) {
-        uncertainCriteria.add(identity);
+        if (!honored?.has('employmentType')) {
+          uncertainCriteria.add(identity);
+          continue;
+        }
+      } else if (job.employmentType !== query.employmentType) {
+        if (honored?.has('employmentType')) uncertainCriteria.add(identity);
         continue;
       }
-      if (job.employmentType !== query.employmentType) continue;
     }
 
     const existing = candidates.get(identity) ?? [];

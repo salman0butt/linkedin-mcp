@@ -1,5 +1,13 @@
 # Project Status
 
+## Current checkpoint — 2026-10-24 (M06.6 review fixes, 713/713 local GREEN)
+
+Draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9) passed GitHub CI run 39942712314 at head 954fc4a7e252feafe616c92d12ef1dfe03512652. The follow-up independent review reproduced three Important gaps: host-attested semantic/geographic and sparse enum matches were excluded by literal local filtering; getter-based class adapters lost their provider metadata; and user-supplied saved-job snapshots could masquerade as trusted partner provenance, source evidence or confidence. Focused RED regressions were repaired to GREEN. Local saved snapshots now reject partner/evidence/confidence assertions and label source metadata as unverified user input while retaining opaque source-scoped identifiers.
+
+The revised local tree passes **713/713 tests across 77 files**, including real STDIO restart persistence and HTTP isolation, and Prettier, ESLint and TypeScript. The new review fixes are not yet part of the remote PR head. No authorized live jobs source or LinkedIn Talent partner entitlement is configured.
+
+Exact next work: **Obtain independent M06.6 re-review closure, commit/push the review fixes to PR #9, verify exact-final-head CI, squash merge after the gates pass and verify post-merge main CI.**
+
 ## Current checkpoint — 2026-10-23 (M06.6 review, 708/708 local GREEN)
 
 M06.1 (`8fb06bb`, CI `39923182814`) and M06.2 (`50964e8cb7fce7feaf17dbcbf3c9e792b2d2df8b`, CI `39926241255`) have exact-head GREEN remote verification on draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9). M06.3 source-scoped provider routing/details, M06.4 strict MCP `linkedin.jobs.search`/`linkedin.jobs.get` with real STDIO/HTTP and M06.5 private opt-in STDIO saved jobs/searches have now been implemented locally. All **708 tests across 77 files**, full Prettier, ESLint, TypeScript and build passed on macOS with `TMPDIR=/private/tmp`. Real STDIO test proves persisted saved jobs/searches survive a server restart; actual loopback HTTP test proves even an accidentally injected STDIO store is never accessed. No live authorized job search provider or LinkedIn Talent entitlement is configured. Five M06.3 source/provider Important findings and storage review Important fixes are recorded in the milestone; each confirmed issue was reproduced RED and repaired GREEN. The saved store's pinned parent checks are bounded hardening rather than atomic POSIX openat; see `KNOWN-ISSUES.md`. The final M06.6 independent whole-branch review and exact-new-head PR CI/merge remain pending; do not claim remote CI green for these local changes.
