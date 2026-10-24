@@ -1,5 +1,27 @@
 # Project Status
 
+## Current checkpoint — 2026-10-24 (M07.1–6 locally GREEN; M07.7 review)
+
+M07 draft PR #10 now has all six implementation iterations locally integrated: strict caller provenance, source-quoted requirements, work authorization/visa/global-remote evidence, reproducible explicit-skill scoring, source-scoped comparisons and local MCP analyze/compare. Both real STDIO and HTTP transports call the new tools successfully; local saved state is inaccessible through HTTP. There is still no configured live LinkedIn Talent job search provider.
+
+Review-driven RED-to-GREEN regressions addressed omitted mandatory/preferred and role-qualified qualifications, including generalized fail-closed description coverage and unsupported mandatory title phrasing, work authorization and mandatory location-field scoring, and worldwide-remote and visa sponsorship restrictions (including lowercase/non-US geographic scopes, applicant-only limits, and exclusions). A false `applicants` jurisdiction and missing country evidence were corrected. Further RED cases demonstrated 800+ character ignored clauses, third-party comparisons hiding first-party restrictions, short novel applicant/visa qualifiers, and multi-sentence ASCII/smart-quoted competitor claims; these now fail closed or preserve exact source-backed qualifications without inventing eligibility, employer facts or 100% fit. Typed MCP response schemas and full-envelope bounds are enforced. Full local integration **902/902 tests in 83 files GREEN** with real STDIO/HTTP, format, lint, typecheck and build. Final M07.7 independent reviewer closure and exact-final-head GitHub CI remain pending.
+
+Exact next work: **Complete reviewer signoff, push PR #10 and verify its final SHA CI, then squash merge and verify post-merge main CI.**
+
+## Current checkpoint — 2026-10-24 (M07.1 local contracts 724/724 GREEN)
+
+Draft [PR #10](https://github.com/salman0butt/linkedin-mcp/pull/10) on `feat/m07-job-intelligence` now tracks the reviewed M07 design/plan; exact design commit `3e96a8f` CI `40078888401` succeeded. M07.1 strict source-neutralizing input parser is locally implemented, and its focused suite has 11 tests: missing-module baseline RED, then GREEN for forged provider/date evidence rejection, strict nested objects and proxies, source-safe HTTPS URLs, candidate bounds, empty skill lists, padded source strings, Unicode case-fold bounds, opaque source ID preservation and raw URL limits. A parsed job source is expressly `caller_supplied`, not a verified M06 provider. Both independent reviewers signed off M07.1 with zero remaining verified Critical/Important issues. No M07 runtime analysis/MCP tool exists yet.
+
+**724/724 local tests in 78 files** and required format, lint and typecheck/build GREEN; exact-new-head feature CI still pending. Next: checkpoint PR #10, verify GitHub CI, then M07.2 exact source-span requirement extractor.
+
+## Current checkpoint — 2026-10-24 (M06 COMPLETE; M07.1 DESIGN)
+
+M06 Job Search [PR #9](https://github.com/salman0butt/linkedin-mcp/pull/9) was squash-merged at `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`. Feature head `dc7b07d` CI `40077649195` and exact post-merge `main` CI `40077809706` are both GREEN: **713/713 tests across 77 files**, real STDIO/HTTP transport, frozen install, format, lint, typecheck and build. Independent whole-branch M06.6 review signed off with **zero verified unresolved Critical/Important findings**. No live job search/Talent API entitlement is configured.
+
+M07 Job Intelligence starts on `feat/m07-job-intelligence` from the verified main SHA. Design `docs/superpowers/specs/2026-10-24-m07-job-intelligence-design.md` and plan `docs/superpowers/plans/2026-10-24-m07-job-intelligence.md` define pure source-anchored job requirement extraction, eligibility/sponsorship uncertainty, transient candidate fit, source-scoped comparison and read-only MCP tools. No M07 production capability or behavioral test has shipped yet.
+
+Exact next work: **Finish independent M07 design/plan review, checkpoint activation on a new draft PR, verify its CI and begin M07.1 strict caller-snapshot input contract with observed RED tests.**
+
 ## Current checkpoint — 2026-10-24 (M06.6 review fixes, 713/713 local GREEN)
 
 Draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9) passed GitHub CI run 39942712314 at head 954fc4a7e252feafe616c92d12ef1dfe03512652. The follow-up independent review reproduced three Important gaps: host-attested semantic/geographic and sparse enum matches were excluded by literal local filtering; getter-based class adapters lost their provider metadata; and user-supplied saved-job snapshots could masquerade as trusted partner provenance, source evidence or confidence. Focused RED regressions were repaired to GREEN. Local saved snapshots now reject partner/evidence/confidence assertions and label source metadata as unverified user input while retaining opaque source-scoped identifiers.

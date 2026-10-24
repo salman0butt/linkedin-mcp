@@ -138,9 +138,20 @@ describe('LinkedIn MCP server contract', () => {
       );
       expect(
         capabilities
-          .filter((capability) => !capability.id.startsWith('linkedin.'))
+          .filter(
+            (capability) =>
+              !capability.id.startsWith('linkedin.') &&
+              !['jobs.analyze', 'jobs.compare'].includes(capability.id),
+          )
           .every((capability) => capability.status !== 'VERIFIED'),
       ).toBe(true);
+      for (const id of ['jobs.analyze', 'jobs.compare']) {
+        expect(capabilities.find((capability) => capability.id === id)).toMatchObject({
+          provider: 'LOCAL_ONLY',
+          status: 'VERIFIED',
+          availability: 'AVAILABLE',
+        });
+      }
     } finally {
       await client.close();
       await handler.close();
@@ -167,6 +178,8 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.comments.reply.create',
         'linkedin.comments.reply.preview',
         'linkedin.health',
+        'linkedin.jobs.analyze',
+        'linkedin.jobs.compare',
         'linkedin.jobs.get',
         'linkedin.jobs.saved.get',
         'linkedin.jobs.saved.list',

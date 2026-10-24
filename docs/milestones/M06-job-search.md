@@ -1,8 +1,10 @@
 # M06 — Job Search
 
-Status: **REVIEW — M06.1–M06.5 implemented, M06.6 fixes locally GREEN, final review and exact-new-head CI pending**, branch `feat/m06-job-search`, draft PR #9, base main `01fb37d3b762f2b1775c8845daba61c98054d6ed` (post-merge CI `39920255603` GREEN).
+Status: **COMPLETE — PR #9 squash-merged**, main SHA `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`, post-merge GitHub CI `40077809706` GREEN (2026-10-24).
 
 Design: `docs/superpowers/specs/2026-10-23-m06-job-search-design.md`. Plan: `docs/superpowers/plans/2026-10-23-m06-job-search.md`.
+
+**Final authoritative closeout (supersedes historical pending checkpoints below):** Independent M06.6 whole-branch review PASS with zero verified outstanding Critical/Important findings. Exact feature PR head `dc7b07d6eb4ed5f831cd7cd23dd752d1d522d588` passed CI run `40077649195`, 713/713 tests across 77 files plus format, lint, types and build. PR #9 was squash-merged at `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`; post-merge main CI `40077809706` passed all gates. Real STDIO/HTTP tests include saved snapshot persistence and HTTP isolation. No live authorized Talent/job provider entitlement is configured; default job search remains unavailable. The M06 saved snapshot source is explicitly unverified. M07 starts on a new branch.
 
 ## Goal
 
@@ -67,5 +69,5 @@ PRD, capability matrix, M06 spec/plan, Git/PR/CI.
 ## Completion Checklist
 
 - [x] Acceptance verified locally with real transports and default provider unavailability.
-- [ ] Critical/Important resolved.
-- [ ] Exact-final-head/post-merge CI green.
+- [x] Critical/Important resolved; independent whole-branch review passed.
+- [x] Exact-final-head CI `40077649195` and post-merge main CI `40077809706` green.

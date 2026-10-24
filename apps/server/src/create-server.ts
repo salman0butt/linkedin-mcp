@@ -9,6 +9,7 @@ import {
 import { registerEngagementTools, type EngagementTools } from './engagement-mcp.js';
 import { registerPostSearchTools } from './discovery-mcp.js';
 import { registerJobSearchTools } from './jobs-mcp.js';
+import { registerJobIntelligenceTools } from './jobs-intelligence-mcp.js';
 import { registerSavedJobTools, type LocalSavedJobsStore } from './jobs/job-saved-mcp.js';
 import { registerMediaPostTools } from './media-mcp.js';
 import type { PostSearchService } from './discovery/post-search-service.js';
@@ -55,6 +56,8 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
     createRequestId,
     now,
   });
+
+  registerJobIntelligenceTools(server, { createRequestId, now });
 
   registerSavedJobTools(server, {
     ...(normalizedDeps.jobStore === undefined ? {} : { jobStore: normalizedDeps.jobStore }),

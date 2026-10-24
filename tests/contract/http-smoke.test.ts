@@ -38,6 +38,24 @@ try {
   const postSearch = await client.callTool({ name: 'linkedin.posts.search', arguments: { kind: 'topic', term: 'AI' } });
   const jobSearch = await client.callTool({ name: 'linkedin.jobs.search', arguments: { keywords: 'TypeScript' } });
   const jobGet = await client.callTool({ name: 'linkedin.jobs.get', arguments: { sourceId: 'missing', jobId: '123' } });
+  const analysis = await client.callTool({ name: 'linkedin.jobs.analyze', arguments: {
+    job: {
+      id: 'local-1', title: 'TypeScript Engineer', companyName: 'Sample',
+      source: { provider: 'EXTERNAL_DISCOVERY', id: 'local', name: 'Unverified', retrievedAt: '2026-10-24T09:00:00Z' },
+      postingDate: { state: 'unknown' }, description: 'Must have TypeScript.',
+    },
+    candidate: { skills: ['TypeScript'] },
+  } });
+  const comparison = await client.callTool({ name: 'linkedin.jobs.compare', arguments: {
+    jobs: [
+      { id: 'local-1', title: 'TypeScript Engineer', companyName: 'Sample',
+        source: { provider: 'EXTERNAL_DISCOVERY', id: 'local', name: 'Fake Talent Source', retrievedAt: '2026-10-24T09:00:00Z' },
+        postingDate: { state: 'unknown' }, description: 'Must have TypeScript.' },
+      { id: 'local-2', title: 'AWS Engineer', companyName: 'Sample',
+        source: { provider: 'EXTERNAL_DISCOVERY', id: 'local', name: 'Fake Talent Source', retrievedAt: '2026-10-24T09:00:00Z' },
+        postingDate: { state: 'unknown' }, description: 'Must have AWS.' },
+    ], candidate: { skills: ['TypeScript'] },
+  } });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
     authStatus: authStatus.structuredContent,
@@ -54,6 +72,10 @@ try {
     jobSearchIsError: jobSearch.isError,
     jobGet: jobGet.structuredContent,
     jobGetIsError: jobGet.isError,
+    analysis: analysis.structuredContent,
+    analysisIsError: analysis.isError,
+    comparison: comparison.structuredContent,
+    comparisonIsError: comparison.isError,
   }));
 } finally {
   await client.close();
@@ -96,6 +118,10 @@ describe('built HTTP server', () => {
       jobSearchIsError: boolean;
       jobGet: unknown;
       jobGetIsError: boolean;
+      analysis: unknown;
+      analysisIsError?: boolean;
+      comparison: unknown;
+      comparisonIsError?: boolean;
     };
     expect(result).toMatchObject({
       health: {
@@ -117,7 +143,7 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 39,
+      toolCount: 41,
       postSearch: {
         status: 'unsupported',
         data: { status: 'unavailable', providerOutcomes: [] },
@@ -127,6 +153,34 @@ describe('built HTTP server', () => {
       jobGet: { status: 'unsupported', data: { status: 'unavailable' } },
       jobSearchIsError: true,
       jobGetIsError: true,
+      analysis: {
+        status: 'succeeded',
+        data: {
+          status: 'available',
+          analysis: {
+            sourceTrust: 'caller_supplied',
+            fit: { status: 'evaluated', score: 100 },
+          },
+        },
+      },
+      comparison: {
+        status: 'succeeded',
+        data: {
+          status: 'available',
+          analyses: [
+            {
+              ref: { jobId: 'local-1' },
+              sourceTrust: 'caller_supplied',
+              source: { name: 'Unverified user-supplied snapshot' },
+            },
+            {
+              ref: { jobId: 'local-2' },
+              sourceTrust: 'caller_supplied',
+              source: { name: 'Unverified user-supplied snapshot' },
+            },
+          ],
+        },
+      },
       preview: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY', name: 'linkedin-mcp' },
@@ -173,6 +227,8 @@ describe('built HTTP server', () => {
         'linkedin.posts.search',
         'linkedin.jobs.search',
         'linkedin.jobs.get',
+        'linkedin.jobs.analyze',
+        'linkedin.jobs.compare',
         'linkedin.jobs.saved.list',
         'linkedin.jobs.saved.get',
         'linkedin.jobs.saved.save',
@@ -199,5 +255,13 @@ describe('built HTTP server', () => {
       result.capabilities.data.capabilities.find((capability) => capability.id === 'jobs.search')
         ?.availability,
     ).toBe('UNAVAILABLE');
+    expect(result.analysisIsError).not.toBe(true);
+    expect(result.comparisonIsError).not.toBe(true);
+    expect(result.capabilities.data.capabilities.find((c) => c.id === 'jobs.analyze')?.availability).toBe(
+      'AVAILABLE',
+    );
+    expect(result.capabilities.data.capabilities.find((c) => c.id === 'jobs.compare')?.availability).toBe(
+      'AVAILABLE',
+    );
   });
 });

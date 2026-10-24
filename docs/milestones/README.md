@@ -10,8 +10,8 @@ Valid milestone states: NOT_STARTED, DESIGN, PLANNED, IMPLEMENTING, VERIFYING, R
 | M03       | Media Publishing                      | COMPLETE |
 | M04       | Comments & Engagement                 | COMPLETE |
 | M05       | Post Search                           | COMPLETE |
-| M06       | Job Search                            | REVIEW   |
-| M07       | Job Intelligence                      | PLANNED  |
+| M06       | Job Search                            | COMPLETE |
+| M07       | Job Intelligence                      | REVIEW   |
 | M08       | Article Authoring Engine              | PLANNED  |
 | M09       | Native Article Publishing             | PLANNED  |
 | M10       | Research & Content Intelligence       | PLANNED  |

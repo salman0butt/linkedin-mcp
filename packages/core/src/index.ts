@@ -6,3 +6,4 @@ export * from './result.js';
 export * from './text-post.js';
 export * from './post-discovery.js';
 export * from './job-discovery.js';
+export * from './job-intelligence.js';

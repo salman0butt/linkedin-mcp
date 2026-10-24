@@ -1,20 +1,20 @@
 # Current Milestone
 
-Milestone: M06 — Job Search
-Status: REVIEW — M06.1–5 implemented; M06.6 follow-up fixes locally GREEN, exact-final-head CI pending
-Iteration: M06.6
-Branch: `feat/m06-job-search`
-PR: #9 — draft
-Base/main: `01fb37d3b762f2b1775c8845daba61c98054d6ed`
-Verified post-merge main CI: `39920255603` on exact SHA `01fb37d3b762f2b1775c8845daba61c98054d6ed` — 647 tests across 71 files and all required quality gates.
-Design: `docs/superpowers/specs/2026-10-23-m06-job-search-design.md`
-Plan: `docs/superpowers/plans/2026-10-23-m06-job-search.md`
-Ledger: `docs/milestones/M06-job-search.md`
+Milestone: M07 — Job Intelligence
+Status: REVIEW — M07.1–M07.6 locally GREEN; M07.7 review and exact-head CI pending
+Iteration: M07.7
+Branch: `feat/m07-job-intelligence`
+PR: #10 — draft
+Base/main: `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`
+Verified post-merge main CI: `40077809706` on exact SHA `0ff384ae5deb03b504259dc3f5519c8209c3e8f8` — 713/713 tests across 77 files and all required quality gates.
+Design: `docs/superpowers/specs/2026-10-24-m07-job-intelligence-design.md`
+Plan: `docs/superpowers/plans/2026-10-24-m07-job-intelligence.md`
+Ledger: `docs/milestones/M07-job-intelligence.md`
 
 ## Authority and restrictions
 
-M05 Post Search is COMPLETE: PR #8 squash-merged at `01fb37d3b762f2b1775c8845daba61c98054d6ed`; post-merge main CI `39920255603` passed. An independent M05.6 security/provenance review reported two Important issues, both RED→GREEN regression-fixed, then no additional confirmed Critical/Important issues. No live post-discovery provider or restricted official author resolver is configured.
+M06 Job Search is COMPLETE: PR #9 squash-merged at `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`, post-merge main CI `40077809706` passed. Independent M06.6 whole-branch review closed all verified Critical/Important findings. Both M05 and M06 preserve the lack of a configured external/partner discovery provider; no live LinkedIn Talent entitlement is claimed.
 
-M06 is scoped to structured job search, freshness evidence, truthful source identity and opt-in local saved data. Standard LinkedIn OAuth does not grant unrestricted Talent/Jobs search or an entitlement to sponsored job data. No real job provider is bundled. Missing provider access must return `unavailable`, not a fabricated zero-results claim.
+M07 locally implements source-anchored job requirement extraction, visa/remote/authorization signals, candidate skill fit and comparison through read-only MCP analyze/compare tools. Caller snapshots remain unverified. No applicant legal eligibility, employer verification, Talent entitlement or application submission is inferred.
 
-Exact next work: **Obtain independent M06.6 re-review closure, push review fixes to PR #9, verify exact-final-head CI, then merge and verify main.** Previous PR head `954fc4a` CI `39942712314` GREEN. Additional Important regressions cover semantic/sparse provider-attested matches, getter-backed adapter metadata and unverified user-supplied saved snapshot provenance. Full local **713/713 tests across 77 files** plus real STDIO/HTTP, Prettier, lint and TypeScript GREEN. Saved-state is opt-in single-OS-user STDIO; HTTP remains unavailable. No live jobs provider or Talent entitlement is configured.
+Exact next work: **Close M07.7 independent whole-branch review, verify full local quality gates, push PR #10, verify exact-final-head CI, squash merge and verify post-merge main CI.**

@@ -39,7 +39,17 @@ describe('foundation result factories', () => {
     const futureCapabilities = result.data.capabilities.filter(
       (capability) => capability.milestone !== 'M00',
     );
-    expect(futureCapabilities.every((capability) => capability.status !== 'VERIFIED')).toBe(true);
-    expect(futureCapabilities.every((capability) => capability.availability === 'UNAVAILABLE')).toBe(true);
+    for (const capability of futureCapabilities) {
+      if (['jobs.analyze', 'jobs.compare'].includes(capability.id)) {
+        expect(capability).toMatchObject({
+          provider: 'LOCAL_ONLY',
+          status: 'VERIFIED',
+          availability: 'AVAILABLE',
+        });
+      } else {
+        expect(capability.status).not.toBe('VERIFIED');
+        expect(capability.availability).toBe('UNAVAILABLE');
+      }
+    }
   });
 });
