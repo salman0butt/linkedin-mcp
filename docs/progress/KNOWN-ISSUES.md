@@ -2,6 +2,14 @@
 
 ## Current unresolved issues
 
+### Resolved locally — M08.6 independent article authoring audit (pre-merge)
+
+M08 on `feat/m08-article-authoring` is **VERIFYING / PRE-MERGE**, not merged or complete. Independent M08.6 whole-branch review has **SIGNED OFF with unresolved Critical=0 and Important=0**. All **three Important findings** were reproduced RED and repaired GREEN: (1) credential-bearing source URL query aliases/fragments, (2) sensitive article-store configuration-path parent/child overlap, and (3) revision-2 persisted article data accepting invalid UTF-8. No open Important review finding remains at this local checkpoint. This is independent _local_ source review, not proof of a remote PR review or CI.
+
+The initial whole-repository run passed 969 and failed four stale capability expectations (973 total); the failures were repaired with observed RED→GREEN focused **12/12**. **Fresh full Node24 `pnpm test` 988/988 PASS across 88 suites**, including real built STDIO/HTTP; format, lint, typecheck, build and diff check all GREEN (final command exit 0). M08 still has no feature PR, exact-final-head remote CI or merge. The local private article store retains the documented **non-atomic pathname/same-UID hardening limitation** of M06; do not imply protection against an adversarial same-UID process, and do not expose private projects through unauthenticated HTTP. Source attribution is author-controlled and unverified; no native LinkedIn article publish/research is claimed.
+
+**M08 next action:** Create the M08 feature PR and verify its exact-final-head SHA CI.
+
 ### Resolved — M07 Job Intelligence review and source-grounded claims
 
 M07.7 independent whole-branch review verified **0 unresolved Critical/Important findings** after all reproduced issues were fixed with genuine RED→GREEN regressions: unsupported mandatory title/description clauses must not produce false 100% scores; required work authorization/residence in `location` suppresses numeric fit; employer-versus-competitor quotation state spans sentence boundaries; long, non-whitelisted, conditional, applicant-specific and exclusionary remote/visa claims fail closed rather than advertise unrestricted eligibility; unrelated customer/training conditions do not become applicant restrictions. Original UTF-16 source quotes, sanitized bounded MCP response contracts, strict caller-supplied provenance and private saved-job HTTP isolation are covered. PR #10 feature CI `40089032116` on `7f874292d10e3a649fc2e7b218a9261982b0b2ff` and post-merge main CI `40089200098` on `80b563293e48afd878158bcd2ee40553997ecb42` succeeded with **902/902 tests across 83 files** and all quality gates. No authorized live LinkedIn jobs provider/Talent entitlement or application submission capability is configured.

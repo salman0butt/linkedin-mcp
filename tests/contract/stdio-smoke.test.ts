@@ -34,6 +34,41 @@ try {
 } finally { await client.close(); }
 `;
 
+const articleStoredClientScript = `
+import { Client } from '@modelcontextprotocol/client';
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+import { resolve } from 'node:path';
+const client = new Client({ name: 'linkedin-article-stored-stdio-smoke', version: '1.0.0' });
+const transport = new StdioClientTransport({
+  command: process.execPath, args: [resolve(process.cwd(), 'dist/stdio.js')], env: process.env,
+});
+try {
+  await client.connect(transport);
+  const draft = {
+    title: 'Persistent article transport smoke', topic: 'TypeScript', audience: 'Engineers',
+    goal: 'Explain local, unverified drafts',
+    research: { brief: 'User supplied notes', sources: [{ id: 's1', title: 'Author note', url: 'https://example.org/article' }] },
+    outline: [{ id: 'o1', heading: 'Overview' }],
+    blocks: [{ id: 'b1', kind: 'paragraph', text: 'Private author body', sourceIds: ['s1'] }],
+    review: { state: 'draft' },
+  };
+  const save = await client.callTool({
+    name: 'linkedin.article.projects.create',
+    arguments: { draft, idempotencyKey: 'stdio-article-persistence-smoke' },
+  });
+  const list = await client.callTool({ name: 'linkedin.article.projects.list', arguments: {} });
+  const id = save.structuredContent?.data?.id;
+  const get = typeof id === 'string'
+    ? await client.callTool({ name: 'linkedin.article.projects.get', arguments: { id } })
+    : null;
+  process.stdout.write(JSON.stringify({
+    save: save.structuredContent, saveError: save.isError,
+    list: list.structuredContent, listError: list.isError,
+    get: get?.structuredContent, getError: get?.isError,
+  }));
+} finally { await client.close(); }
+`;
+
 const clientScript = `
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
@@ -87,6 +122,29 @@ try {
         postingDate: { state: 'unknown' }, description: 'Must have AWS.' },
     ], candidate: { skills: ['TypeScript'] },
   } });
+  const draft = {
+    title: 'Safe local article smoke', topic: 'TypeScript', audience: 'Engineers',
+    goal: 'Explain local draft authoring.',
+    research: { brief: 'Author-supplied notes', sources: [{ id: 'source1', title: 'Author reference', url: 'https://example.org/article' }] },
+    outline: [{ id: 'outline1', heading: 'Overview' }],
+    blocks: [{ id: 'block1', kind: 'paragraph', text: '<script>alert(1)</script>', sourceIds: ['source1'] }],
+    seo: { description: 'Article smoke example' },
+    companionPost: 'Local article idea.',
+    review: { state: 'draft' },
+  };
+  const promptNames = (await client.listPrompts()).prompts.map((entry) => entry.name);
+  const promptContents = await Promise.all([
+    'linkedin.article.research_brief', 'linkedin.article.outline', 'linkedin.article.review',
+  ].map(async (name) => JSON.stringify((await client.getPrompt({
+    name, arguments: { topic: 'Secure TypeScript tools' },
+  })).messages)));
+  const articleValidation = await client.callTool({ name: 'linkedin.article.draft.validate', arguments: { draft } });
+  const articlePreview = await client.callTool({ name: 'linkedin.article.draft.preview', arguments: { draft } });
+  const articleCompanion = await client.callTool({ name: 'linkedin.article.draft.companion', arguments: { draft } });
+  const articleProjects = await client.callTool({ name: 'linkedin.article.projects.list', arguments: {} });
+  const articleSaveWithoutPath = await client.callTool({
+    name: 'linkedin.article.projects.create', arguments: { draft, idempotencyKey: 'stdio-article-unconfigured' },
+  });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
     authStatus: authStatus.structuredContent,
@@ -107,6 +165,17 @@ try {
     analysisIsError: analysis.isError,
     comparison: comparison.structuredContent,
     comparisonIsError: comparison.isError,
+    promptNames, promptContents,
+    articleValidation: articleValidation.structuredContent,
+    articleValidationIsError: articleValidation.isError,
+    articlePreview: articlePreview.structuredContent,
+    articlePreviewIsError: articlePreview.isError,
+    articleCompanion: articleCompanion.structuredContent,
+    articleCompanionIsError: articleCompanion.isError,
+    articleProjects: articleProjects.structuredContent,
+    articleProjectsIsError: articleProjects.isError,
+    articleSaveWithoutPath: articleSaveWithoutPath.structuredContent,
+    articleSaveWithoutPathIsError: articleSaveWithoutPath.isError,
   }));
 } finally {
   await client.close();
@@ -131,6 +200,100 @@ function callBuiltServer(): unknown {
 }
 
 describe('built stdio server', () => {
+  it('saves, lists and retrieves private articles across actual STDIO process restarts with an explicit host path', async () => {
+    const directory = await realpath(await mkdtemp(join(tmpdir(), 'linkedin-mcp-stdio-article-')));
+    const filePath = join(directory, 'private', 'article-store.json');
+    try {
+      const env = {
+        ...Object.fromEntries(
+          Object.entries(process.env).filter(([key]) => !key.startsWith('LINKEDIN_MCP_')),
+        ),
+        LINKEDIN_MCP_ARTICLE_STORE_PATH: filePath,
+      };
+      const run = () =>
+        JSON.parse(
+          execFileSync(
+            'pnpm',
+            [
+              '--filter',
+              serverPackage,
+              'exec',
+              'node',
+              '--input-type=module',
+              '--eval',
+              articleStoredClientScript,
+            ],
+            { cwd: process.cwd(), encoding: 'utf8', env },
+          ),
+        ) as {
+          save: {
+            status: string;
+            data: {
+              id: string;
+              revision: number;
+              draft: { title: string; research: { sources: Array<{ provenance: string }> } };
+            };
+          };
+          saveError?: boolean;
+          list: {
+            status: string;
+            data: Array<{
+              id: string;
+              title: string;
+              revision: number;
+              createdAt: string;
+              updatedAt: string;
+            }>;
+          };
+          listError?: boolean;
+          get: { status: string; data: { id: string; revision: number; draft: { title: string } } };
+          getError?: boolean;
+        };
+      const first = run();
+      const restarted = run();
+      expect(first.save).toMatchObject({
+        status: 'succeeded',
+        data: {
+          revision: 1,
+          draft: {
+            title: 'Persistent article transport smoke',
+            research: { sources: [{ provenance: 'user_supplied_unverified' }] },
+          },
+        },
+      });
+      expect(first.save.data.id).toMatch(/^[0-9a-f-]{36}$/i);
+      expect(first.list.status).toBe('succeeded');
+      expect(first.list.data).toHaveLength(1);
+      expect(first.list.data[0]).toMatchObject({
+        id: first.save.data.id,
+        title: 'Persistent article transport smoke',
+        revision: 1,
+      });
+      expect(Number.isNaN(Date.parse(first.list.data[0]!.createdAt))).toBe(false);
+      expect(Number.isNaN(Date.parse(first.list.data[0]!.updatedAt))).toBe(false);
+      expect(JSON.stringify(first.list)).not.toContain('Private author body');
+      expect(first.get).toMatchObject({
+        status: 'succeeded',
+        data: {
+          id: first.save.data.id,
+          revision: 1,
+          draft: { title: 'Persistent article transport smoke' },
+        },
+      });
+      expect(restarted.save.data.id).toBe(first.save.data.id);
+      expect(restarted.list.data).toEqual(first.list.data);
+      expect(restarted.get.data).toEqual(first.get.data);
+      for (const result of [first, restarted]) {
+        expect(result.saveError).not.toBe(true);
+        expect(result.listError).not.toBe(true);
+        expect(result.getError).not.toBe(true);
+      }
+      expect(await readFile(filePath, 'utf8')).toContain('Persistent article transport smoke');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }, 30_000);
+
   it('persists opt-in local saved jobs and searches across real STDIO process restarts', async () => {
     const directory = await realpath(await mkdtemp(join(tmpdir(), 'linkedin-mcp-stdio-saved-')));
     const filePath = join(directory, 'saved.json');
@@ -199,6 +362,30 @@ describe('built stdio server', () => {
       analysisIsError?: boolean;
       comparison: unknown;
       comparisonIsError?: boolean;
+      promptNames: string[];
+      promptContents: string[];
+      articleValidation: {
+        status: string;
+        provider: { type: string };
+        data: { readyForReview: boolean; warnings: Array<{ code: string }> };
+      };
+      articleValidationIsError?: boolean;
+      articlePreview: {
+        status: string;
+        provider: { type: string };
+        data: { publicationStatus: string; sourceVerification: string; markdown: string };
+      };
+      articlePreviewIsError?: boolean;
+      articleCompanion: {
+        status: string;
+        provider: { type: string };
+        data: { status: string; text: string };
+      };
+      articleCompanionIsError?: boolean;
+      articleProjects: { status: string; error: { code: string } };
+      articleProjectsIsError?: boolean;
+      articleSaveWithoutPath: { status: string; error: { code: string } };
+      articleSaveWithoutPathIsError?: boolean;
     };
     expect(result).toMatchObject({
       health: {
@@ -220,7 +407,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 41,
+      toolCount: 49,
       postSearch: {
         status: 'unsupported',
         data: { status: 'unavailable', providerOutcomes: [] },
@@ -340,6 +527,58 @@ describe('built stdio server', () => {
     expect(result.capabilities.data.capabilities.find((c) => c.id === 'jobs.compare')?.availability).toBe(
       'AVAILABLE',
     );
+    expect(result.toolNames).toEqual(
+      expect.arrayContaining([
+        'linkedin.article.draft.validate',
+        'linkedin.article.draft.preview',
+        'linkedin.article.draft.companion',
+        'linkedin.article.projects.create',
+        'linkedin.article.projects.list',
+        'linkedin.article.projects.get',
+      ]),
+    );
+    expect(result.promptNames).toEqual(
+      expect.arrayContaining([
+        'linkedin.article.research_brief',
+        'linkedin.article.outline',
+        'linkedin.article.review',
+      ]),
+    );
+    expect(result.promptContents).toHaveLength(3);
+    for (const prompt of result.promptContents) {
+      expect(prompt).toContain('Secure TypeScript tools');
+      expect(prompt).toMatch(/unverified|not verified|do not (?:assume|invent|claim)/i);
+      expect(prompt).toMatch(/do not publish|not publish/i);
+    }
+    expect(result.articleValidation).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: { readyForReview: true },
+    });
+    expect(result.articlePreview).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: { publicationStatus: 'not_published', sourceVerification: 'user_supplied_unverified' },
+    });
+    expect(result.articlePreview.data.markdown).toContain('&lt;script&gt;');
+    expect(result.articlePreview.data.markdown).not.toContain('<script>');
+    expect(result.articleCompanion).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: { status: 'draft_only' },
+    });
+    expect(result.articleCompanion.data.text).toContain('Safe local article smoke');
+    expect(result.articleValidationIsError).not.toBe(true);
+    expect(result.articlePreviewIsError).not.toBe(true);
+    expect(result.articleCompanionIsError).not.toBe(true);
+    for (const denied of [result.articleProjects, result.articleSaveWithoutPath]) {
+      expect(denied).toMatchObject({
+        status: 'unsupported',
+        error: { code: 'local_store_not_available' },
+      });
+    }
+    expect(result.articleProjectsIsError).toBe(true);
+    expect(result.articleSaveWithoutPathIsError).toBe(true);
   });
 
   it('does not write startup logs or other non-protocol text to stdout', () => {

@@ -141,17 +141,21 @@ describe('LinkedIn MCP server contract', () => {
           .filter(
             (capability) =>
               !capability.id.startsWith('linkedin.') &&
-              !['jobs.analyze', 'jobs.compare'].includes(capability.id),
+              !['jobs.analyze', 'jobs.compare', 'article.draft'].includes(capability.id),
           )
           .every((capability) => capability.status !== 'VERIFIED'),
       ).toBe(true);
-      for (const id of ['jobs.analyze', 'jobs.compare']) {
+      for (const id of ['jobs.analyze', 'jobs.compare', 'article.draft']) {
         expect(capabilities.find((capability) => capability.id === id)).toMatchObject({
           provider: 'LOCAL_ONLY',
           status: 'VERIFIED',
           availability: 'AVAILABLE',
         });
       }
+      expect(capabilities.find((capability) => capability.id === 'article.native.publish')).toMatchObject({
+        status: 'PLANNED',
+        availability: 'UNAVAILABLE',
+      });
     } finally {
       await client.close();
       await handler.close();
@@ -170,6 +174,14 @@ describe('LinkedIn MCP server contract', () => {
       const { tools } = await client.listTools();
 
       expect(tools.map((tool) => tool.name).sort()).toEqual([
+        'linkedin.article.draft.companion',
+        'linkedin.article.draft.preview',
+        'linkedin.article.draft.validate',
+        'linkedin.article.projects.create',
+        'linkedin.article.projects.get',
+        'linkedin.article.projects.list',
+        'linkedin.article.projects.remove',
+        'linkedin.article.projects.update',
         'linkedin.capabilities',
         'linkedin.comments.get',
         'linkedin.comments.inbox',

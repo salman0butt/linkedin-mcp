@@ -1,6 +1,16 @@
 # Project Status
 
-## Current checkpoint — 2026-10-24 (M07 COMPLETE; M08 PLANNED)
+## Current checkpoint — 2026-10-24 (M08 VERIFYING / IN_PROGRESS; PRE-MERGE)
+
+Working branch `feat/m08-article-authoring` starts from `e8b603c2f340a0121c473d10ed6fc1e41b5257d7`. M08.0 design and implementation plan, M08.1 source-aware canonical article model, M08.2 deterministic escaped preview/checklist/companion post, M08.3 private revisioned article store, M08.4 reusable MCP prompts and M08.5 **eight** article MCP tools are locally integrated. Stateless tools are available over STDIO and HTTP; private project persistence is opt-in and STDIO-only, inaccessible to HTTP even with an injected private store. User sources are unverified author-supplied associations, not researched facts; native article publication remains M09 and is unavailable.
+
+**Fresh final local evidence:** Prime's full Node24 `pnpm test` run **988/988 PASS in 88 suites**, including real built STDIO/HTTP. `format`, `lint`, `typecheck`, `build` and `git diff --check` all GREEN in the same final quality run (exit 0). Earlier local evidence included focused **97/97 GREEN**, built real transport **6/6 GREEN**, and initial whole-tree **969 passed / 4 stale capability expectations failed (973 total)**; those four had genuine RED→GREEN focused **12/12** before the subsequent successful fresh 988-test run.
+
+**Independent M08.6 whole-branch review SIGNED OFF: unresolved Critical=0, Important=0.** Three Important issues were reproduced RED and fixed GREEN: credential-bearing source URL query aliases/fragments; configured private-store parent/child path collisions; invalid UTF-8 in persisted revision-2 article data. The reviewer rechecked the combined branch and signed off. M08 remains **VERIFYING / PRE-MERGE**, with no M08 PR, exact-final-remote-SHA CI, merge or post-merge main CI. The M07 history below remains verified and unchanged.
+
+Exact next work: **Create the M08 feature PR and verify its exact-final-head SHA CI.**
+
+## Previous checkpoint — 2026-10-24 (M07 COMPLETE; M08 PLANNED)
 
 M07 Job Intelligence [PR #10](https://github.com/salman0butt/linkedin-mcp/pull/10) was squash-merged at `80b563293e48afd878158bcd2ee40553997ecb42`. Final feature-head `7f874292d10e3a649fc2e7b218a9261982b0b2ff` CI `40089032116` and exact post-merge `main` CI `40089200098` both succeeded: **902/902 tests across 83 files**, frozen install, full formatting/lint/typecheck/build and real STDIO/HTTP MCP transports. The final independent M07.7 audit reported **0 unresolved Critical and 0 unresolved Important findings** after RED→GREEN hardening of skills, qualification coverage, source attribution/UTF-16 spans, unqualified international remote/visa statements, and typed bounded MCP responses.
 

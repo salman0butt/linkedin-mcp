@@ -33,6 +33,7 @@ export interface ServerConfig {
   mediaRoot?: string;
   mediaMaxBytes: number;
   jobSavedPath?: string;
+  articleStorePath?: string;
   auth?: LinkedInAuthConfig;
 }
 
@@ -275,6 +276,40 @@ export function parseConfig(env: Env = process.env): ServerConfig {
     throw new Error('Saved job store path must be an absolute canonical host path');
   }
 
+  const articleStorePath = env.LINKEDIN_MCP_ARTICLE_STORE_PATH;
+  if (
+    articleStorePath !== undefined &&
+    (!isAbsolute(articleStorePath) ||
+      articleStorePath.trim() !== articleStorePath ||
+      articleStorePath.length > 2048 ||
+      articleStorePath.split(/[\\/]/u).some((segment) => segment === '.' || segment === '..') ||
+      articleStorePath.endsWith('/'))
+  ) {
+    throw new Error('Article store path must be a canonical absolute host path');
+  }
+  if (articleStorePath !== undefined) {
+    const secrets = [jobSavedPath, publishingLedgerPath, auth?.credentialStorePath].filter(
+      (value): value is string => value !== undefined,
+    );
+    const articleRelated = [
+      articleStorePath,
+      articleStorePath + '.lock',
+      articleStorePath + '.initialized',
+      articleStorePath + '.ready',
+    ].map((path) => resolve(path));
+    const pathsOverlap = (a: string, b: string): boolean => isSameOrInside(a, b) || isSameOrInside(b, a);
+    if (
+      (mediaRoot !== undefined && pathsOverlap(mediaRoot, resolve(articleStorePath))) ||
+      secrets.some((candidate) => {
+        const resolved = resolve(candidate);
+        const companionNames = [resolved, resolved + '.lock', resolved + '.initialized', resolved + '.ready'];
+        return articleRelated.some((article) => companionNames.some((other) => pathsOverlap(article, other)));
+      })
+    ) {
+      throw new Error('Article store path must not overlap private stores, secrets or companions');
+    }
+  }
+
   return {
     transport,
     httpHost,
@@ -297,5 +332,6 @@ export function parseConfig(env: Env = process.env): ServerConfig {
     ...(linkedinApiVersion === undefined ? {} : { linkedinApiVersion }),
     ...(auth === undefined ? {} : { auth }),
     ...(jobSavedPath === undefined ? {} : { jobSavedPath }),
+    ...(articleStorePath === undefined ? {} : { articleStorePath }),
   };
 }
