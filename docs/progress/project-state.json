@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M07",
-  "currentIteration": "M07.1",
+  "currentIteration": "M07.2",
   "status": "ACTIVE",
   "activeBranch": "feat/m07-job-intelligence",
-  "activePr": null,
+  "activePr": 10,
   "baseBranch": "main",
-  "latestVerifiedSha": "0ff384ae5deb03b504259dc3f5519c8209c3e8f8",
-  "ciStatus": "M06_FINAL_PR_HEAD_dc7b07d_RUN_40077649195_GREEN; M06_MERGED_PR9_MAIN_0ff384ae_RUN_40077809706_GREEN_713_TESTS_77_FILES_ALL_QUALITY_GATES; M07_DESIGN_PR_CI_PENDING",
+  "latestVerifiedSha": "3e96a8f0fb636c0236b2eff16598125d321bb647",
+  "ciStatus": "M06_MAIN_0ff384a_RUN_40077809706_GREEN; M07_DESIGN_HEAD_3e96a8f_RUN_40078888401_GREEN; M07_1_LOCAL_724_TESTS_78_FILES_FORMAT_LINT_TYPES_BUILD_GREEN; M07_1_NEW_HEAD_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
     "M06 COMPLETE: PR #9 squash-merged at 0ff384ae, exact post-merge main CI 40077809706 succeeded (713 tests in 77 files). Independent whole-branch review passed without unresolved Critical/Important findings.",
-    "M07 job intelligence is in DESIGN with no production tools available yet; source-anchored candidate analysis is planned. No live authorized job search provider or LinkedIn Talent entitlement is configured.",
+    "M07.1 strict untrusted job/candidate parsing is implemented locally with 11 focused RED-to-GREEN tests; two independent reviewers signed off with zero verified Critical/Important findings. Runtime analysis/MCP tools are planned for M07.2–M07.6. No live authorized job search provider or LinkedIn Talent entitlement is configured.",
     "Saved-job private-directory path checks are pinned and revalidated around IO, but Node pathname APIs are not an atomic openat guarantee. An attacker capable of renaming this user's private 0700 directory must already have same-UID/root file access; record as a low-impact hardening limitation."
   ],
-  "exactNextWork": "Finish independent M07 design/plan builder review, checkpoint the activation branch PR and exact-head CI, then start M07.1 strict contracts with genuine RED tests.",
-  "activeHeadSha": "0ff384ae5deb03b504259dc3f5519c8209c3e8f8"
+  "exactNextWork": "Commit/push the independently reviewed 724-test M07.1 contract on draft PR #10, verify its exact-head CI, then implement M07.2 source-span requirement extraction using genuine RED tests.",
+  "activeHeadSha": "3e96a8f0fb636c0236b2eff16598125d321bb647"
 }

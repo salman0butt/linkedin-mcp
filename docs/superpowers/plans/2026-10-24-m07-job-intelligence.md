@@ -35,9 +35,9 @@
 
 **Interfaces:** `parseJobIntelligenceInput(input:unknown): Readonly<JobIntelligenceInput>` where a provided snapshot has a validated `NormalizedJob` _shape_, then a **canonicalized unverified source name/provider** and `sourceTrust:'caller_supplied'`, not host-authenticated provenance; `parseCandidateProfile(input:unknown): Readonly<CandidateProfile>`. Explicit caller `postingDate.state:'verified'`, `PARTNER_API`, source evidence and confidence fail closed unless a future authenticated server-internal path is introduced. Retain source.id only as an opaque local key and keep its retrievedAt explicitly caller-supplied.
 
-- [ ] **RED:** first tests importing missing new module; reject forged verified posting dates, PARTNER_API/source evidence/confidence claims, prototypes/getters, unsupported keys and oversized candidate skills. Accept minimal safe unknown/reported snapshot; a fake external adapter name like “Official Talent Partner” must return the canonical `Unverified user-supplied snapshot` name, with caller-supplied trust.
-- [ ] **VERIFY RED:** `TMPDIR=/private/tmp pnpm exec vitest run packages/core/test/job-intelligence.test.ts` fails for the intended missing capability.
-- [ ] **GREEN:** implement strict immutable contract using plain-object descriptor checks and hard limits; never use `TrustedJobContext` to turn caller fields into authentication.
+- [x] **RED:** first tests importing missing new module; reject forged verified posting dates, PARTNER_API/source evidence/confidence claims, prototypes/getters, unsupported keys and oversized candidate skills. Accept minimal safe unknown/reported snapshot; fake source name canonicalized. Independent review generated further RED for proxies, empty candidate skills, raw-padding bounds and expanding Unicode casefolds.
+- [x] **VERIFY RED:** `TMPDIR=/private/tmp pnpm exec vitest run packages/core/test/job-intelligence.test.ts` failed on missing module and later failed precisely on reviewer regressions.
+- [x] **GREEN:** strict immutable untrusted snapshot contract implemented; no caller trust elevation; all 11 focused tests and 724-test integrated local suite GREEN. Two independent scoped reviewer signoffs reported no remaining Critical/Important findings.
 - [ ] **VERIFY GREEN:** scoped tests and core TypeScript build pass; commit M07.1 checkpoint and inspect exact SHA CI.
 
 ### Task 2: Deterministic requirement extraction (M07.2)

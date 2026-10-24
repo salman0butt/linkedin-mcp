@@ -1,5 +1,11 @@
 # Project Status
 
+## Current checkpoint — 2026-10-24 (M07.1 local contracts 724/724 GREEN)
+
+Draft [PR #10](https://github.com/salman0butt/linkedin-mcp/pull/10) on `feat/m07-job-intelligence` now tracks the reviewed M07 design/plan; exact design commit `3e96a8f` CI `40078888401` succeeded. M07.1 strict source-neutralizing input parser is locally implemented, and its focused suite has 11 tests: missing-module baseline RED, then GREEN for forged provider/date evidence rejection, strict nested objects and proxies, source-safe HTTPS URLs, candidate bounds, empty skill lists, padded source strings, Unicode case-fold bounds, opaque source ID preservation and raw URL limits. A parsed job source is expressly `caller_supplied`, not a verified M06 provider. Both independent reviewers signed off M07.1 with zero remaining verified Critical/Important issues. No M07 runtime analysis/MCP tool exists yet.
+
+**724/724 local tests in 78 files** and required format, lint and typecheck/build GREEN; exact-new-head feature CI still pending. Next: checkpoint PR #10, verify GitHub CI, then M07.2 exact source-span requirement extractor.
+
 ## Current checkpoint — 2026-10-24 (M06 COMPLETE; M07.1 DESIGN)
 
 M06 Job Search [PR #9](https://github.com/salman0butt/linkedin-mcp/pull/9) was squash-merged at `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`. Feature head `dc7b07d` CI `40077649195` and exact post-merge `main` CI `40077809706` are both GREEN: **713/713 tests across 77 files**, real STDIO/HTTP transport, frozen install, format, lint, typecheck and build. Independent whole-branch M06.6 review signed off with **zero verified unresolved Critical/Important findings**. No live job search/Talent API entitlement is configured.

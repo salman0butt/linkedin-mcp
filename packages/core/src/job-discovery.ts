@@ -162,6 +162,11 @@ function publicUrl(value: unknown): string {
   return url.href;
 }
 
+/** Shared syntax-only URL validation for an untrusted job link; never fetches or resolves DNS. */
+export function validatePublicJobUrl(input: unknown): string {
+  return publicUrl(input);
+}
+
 export function createJobSearchQuery(input: unknown): JobSearchQuery {
   const value = record(input);
   const allowed = ['keywords', 'location', 'workplace', 'employmentType', 'postedSince', 'limit', 'sort'];

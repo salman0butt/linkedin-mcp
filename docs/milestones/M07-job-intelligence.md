@@ -1,6 +1,6 @@
 # M07 — Job Intelligence
 
-Status: **DESIGN — M07.1 contract work next**, branch `feat/m07-job-intelligence`, based on M06 verified main `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`.
+Status: **IMPLEMENTING — M07.1 contracts locally GREEN, M07.2 requirement extraction next**, draft PR #10, branch `feat/m07-job-intelligence`, based on M06 verified main `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`.
 
 Design: `docs/superpowers/specs/2026-10-24-m07-job-intelligence-design.md`. Plan: `docs/superpowers/plans/2026-10-24-m07-job-intelligence.md`.
 
@@ -30,7 +30,7 @@ M07.1 strict caller snapshot and candidate input contract; M07.2 exact-span requ
 
 ## TDD Evidence
 
-Design/plan only; no M07 behavioral RED or GREEN tests have been executed yet. Baseline M06 post-merge main CI `40077809706` passed 713/713 tests in 77 files.
+M07 design checkpoint commit `3e96a8f` GitHub CI `40078888401` GREEN. M07.1 test module was first observed RED with missing `job-intelligence` module, then GREEN for strict source and candidate contracts. Independent reviewers identified and reproduced Important regressions involving proxy traps, empty skill profiles, overlong padded raw strings, Unicode case-fold expansion, padded opaque source IDs and padded oversized canonical URLs; focused RED→GREEN tests were added. Both independent M07.1 code reviewers signed off with zero verified unresolved Critical/Important findings. Current local **724/724 tests in 78 files**, format, lint and TypeScript GREEN; new-head GitHub CI pending.
 
 ## Integration Test Evidence
 
