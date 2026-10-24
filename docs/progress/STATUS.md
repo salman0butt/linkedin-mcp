@@ -1,6 +1,38 @@
 # Project Status
 
-## Current checkpoint — 2026-10-23 (M05.6 full-branch review)
+## Current checkpoint — 2026-10-24 (M06.6 review fixes, 713/713 local GREEN)
+
+Draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9) passed GitHub CI run 39942712314 at head 954fc4a7e252feafe616c92d12ef1dfe03512652. The follow-up independent review reproduced three Important gaps: host-attested semantic/geographic and sparse enum matches were excluded by literal local filtering; getter-based class adapters lost their provider metadata; and user-supplied saved-job snapshots could masquerade as trusted partner provenance, source evidence or confidence. Focused RED regressions were repaired to GREEN. Local saved snapshots now reject partner/evidence/confidence assertions and label source metadata as unverified user input while retaining opaque source-scoped identifiers.
+
+The revised local tree passes **713/713 tests across 77 files**, including real STDIO restart persistence and HTTP isolation, and Prettier, ESLint and TypeScript. The new review fixes are not yet part of the remote PR head. No authorized live jobs source or LinkedIn Talent partner entitlement is configured.
+
+Exact next work: **Obtain independent M06.6 re-review closure, commit/push the review fixes to PR #9, verify exact-final-head CI, squash merge after the gates pass and verify post-merge main CI.**
+
+## Current checkpoint — 2026-10-23 (M06.6 review, 708/708 local GREEN)
+
+M06.1 (`8fb06bb`, CI `39923182814`) and M06.2 (`50964e8cb7fce7feaf17dbcbf3c9e792b2d2df8b`, CI `39926241255`) have exact-head GREEN remote verification on draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9). M06.3 source-scoped provider routing/details, M06.4 strict MCP `linkedin.jobs.search`/`linkedin.jobs.get` with real STDIO/HTTP and M06.5 private opt-in STDIO saved jobs/searches have now been implemented locally. All **708 tests across 77 files**, full Prettier, ESLint, TypeScript and build passed on macOS with `TMPDIR=/private/tmp`. Real STDIO test proves persisted saved jobs/searches survive a server restart; actual loopback HTTP test proves even an accidentally injected STDIO store is never accessed. No live authorized job search provider or LinkedIn Talent entitlement is configured. Five M06.3 source/provider Important findings and storage review Important fixes are recorded in the milestone; each confirmed issue was reproduced RED and repaired GREEN. The saved store's pinned parent checks are bounded hardening rather than atomic POSIX openat; see `KNOWN-ISSUES.md`. The final M06.6 independent whole-branch review and exact-new-head PR CI/merge remain pending; do not claim remote CI green for these local changes.
+
+Exact next work: **Collect final M06.6 independent whole-branch review, address any remaining verified Critical/Important finding, then checkpoint the complete local 708-test M06 work on PR #9 and verify exact-final-head CI.**
+
+## Current checkpoint — 2026-10-23 (M06.4 MCP local GREEN; M06.5 store pending)
+
+M06.2 commit `50964e8cb7fce7feaf17dbcbf3c9e792b2d2df8b` passed exact-head GitHub CI run `39926241255` (quality SUCCESS). Draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9) is open and mergeable at that head. M06.3 provider routing and source-scoped details have twelve local passing tests; M06.4 added strict `linkedin.jobs.search`/`linkedin.jobs.get` registration, trusted runtime injection, truthful unavailable/partial outcomes and real STDIO/HTTP transport smoke checks. Four M06.4 contract tests were observed RED when tools were absent, then GREEN after implementation; combined focused service/MCP/server tests passed 21/21 and real STDIO/HTTP smoke tests passed. A separate uncommitted M06.5 saved-store test references a missing `job-save-store.ts`, so full typecheck/lint are presently blocked by that incomplete independently owned task. The M06.3/M06.4 read-only security reviews remain outstanding. No live authorized jobs provider or Talent entitlement is configured.
+
+Exact next work: **Complete M06.5 private saved-state store against existing RED tests, then resolve independent M06.3/M06.4 review findings and verify the integrated branch.**
+
+## Current checkpoint — 2026-10-23 (M06.2 local GREEN; exact-head CI pending)
+
+M06.1 branch commit `8fb06bb26055af7e3ac23f004dbf4461c269f3a8` on draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9) passed exact-head CI `39923182814` (654/654 tests in 72 files, quality gates). M06.2 now has 11 focused RED→GREEN tests for deterministic sourced criteria, date-evidence buckets, verified-only `postedSince`, stable source-scoped dedupe and sorting, local truncation and conflicting verified evidence. Full local **665/665 tests in 73 files**, real stdio/HTTP smokes and quality gates GREEN. Provider/source query exhaustiveness is not derived from the local filter; M06.3 will check trusted provider coverage before offering an `available` result. No live job source or Talent entitlement claimed.
+
+Exact next work: **Commit M06.2 on PR #9, verify new-head CI, then implement M06.3 trusted bounded provider router and source-scoped details.**
+
+M05 **COMPLETE**: PR [#8](https://github.com/salman0butt/linkedin-mcp/pull/8) squash-merged at `01fb37d3b762f2b1775c8845daba61c98054d6ed`; exact post-merge main CI `39920255603` GREEN (647/647 tests in 71 files, frozen install, formatting, lint, typecheck and build). Independent M05.6 audit identified two Important source/provenance defects, both reproduced RED and fixed GREEN; no additional confirmed Critical/Important defects. New M06 Job Search branch `feat/m06-job-search` starts from that verified main. M06.1 has a draft design/plan specifying trusted source provenance, posting-date evidence and default unavailability without authorized job discovery providers. A single M06 draft PR will be created for implementation checkpoints.
+
+Exact next work: **Implement M06.1 strict query/normalized job/evidence contract through genuine RED→GREEN tests and create the first M06 PR checkpoint.**
+
+M06.1 local checkpoint: seven focused contract tests genuinely failed before implementation because the core job-discovery module was missing; now seven GREEN. Full local **654/654 tests across 72 files**, real stdio/HTTP, Prettier, ESLint, TypeScript and build passed. Independent source review and first M06 draft PR exact-head CI remain pending.
+
+M06.1 independent review found three Important URL/date evidence issues: credential-bearing query aliases, unbound attested canonical URL and private-IP wildcard DNS aliases. All reproduced RED then fixed GREEN with focused tests. Normalization remains pure and never fetches URLs; any future fetching adapter must independently verify resolved IPs on every hop. Final new-head CI and reviewer closure pending.
 
 M05.5 committed to the existing PR #8 branch at `1c0762c91113f0c23d27ee03d4631b5988f1cdc2`. Exact-head GitHub Actions CI `39918895858` passed **645/645 tests in 71 files**, frozen install, formatting, lint, typecheck and build. Real stdio and HTTP MCP transport tests verify 29 tools, explicit default unavailable, configured provider provenance, and mixed-source partial failure reporting. The independent M05.6 reviewer found two Important defects, both now regression-fixed: dedupe before filtering hid eligible records, and non-post LinkedIn URLs could masquerade as canonical permalinks. Focused tests failed RED before the fixes and passed GREEN afterward. Full local **647/647 tests in 71 files**, lint, typecheck, formatting and build passed. Reviewer concluded zero further confirmed Critical/Important findings; final remote SHA/CI and squash merge remain pending. No live external discovery or restricted official Posts entitlement has been verified.
 

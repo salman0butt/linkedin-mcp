@@ -8,12 +8,18 @@ import {
 } from './create-server-base.js';
 import { registerEngagementTools, type EngagementTools } from './engagement-mcp.js';
 import { registerPostSearchTools } from './discovery-mcp.js';
+import { registerJobSearchTools } from './jobs-mcp.js';
+import { registerSavedJobTools, type LocalSavedJobsStore } from './jobs/job-saved-mcp.js';
 import { registerMediaPostTools } from './media-mcp.js';
 import type { PostSearchService } from './discovery/post-search-service.js';
+import type { JobSearchService } from './jobs/job-search-service.js';
 
 export interface LinkedInMcpServerDeps extends BaseLinkedInMcpServerDeps {
   engagement?: EngagementTools;
   discovery?: PostSearchService;
+  jobs?: JobSearchService;
+  jobStore?: LocalSavedJobsStore;
+  transport?: 'stdio' | 'http';
 }
 
 export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpServer {
@@ -40,6 +46,19 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
 
   registerPostSearchTools(server, {
     ...(normalizedDeps.discovery === undefined ? {} : { discovery: normalizedDeps.discovery }),
+    createRequestId,
+    now,
+  });
+
+  registerJobSearchTools(server, {
+    ...(normalizedDeps.jobs === undefined ? {} : { jobs: normalizedDeps.jobs }),
+    createRequestId,
+    now,
+  });
+
+  registerSavedJobTools(server, {
+    ...(normalizedDeps.jobStore === undefined ? {} : { jobStore: normalizedDeps.jobStore }),
+    ...(normalizedDeps.transport === undefined ? {} : { transport: normalizedDeps.transport }),
     createRequestId,
     now,
   });

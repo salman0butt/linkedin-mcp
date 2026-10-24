@@ -82,5 +82,5 @@
 **Files:** Update `docs/progress/*`, `docs/milestones/M05-post-search.md`, `CURRENT.md`, requirements traceability, capability matrix, security evidence and PR.
 
 - [x] Whole-branch skeptical review with provenance, privacy/security and TDD regressions for every Critical/Important finding. Independent M05.6 reviewer reported two Important issues, both reproduced RED and fixed GREEN; no additional confirmed Critical/Important findings after re-review.
-- [ ] Zero unresolved Critical/Important, clean PR threads, durable state accurate, exact-final-head CI green, mergeable with no concurrent conflicts.
-- [ ] Squash-merge under repository policy; verify post-merge main exact SHA CI before activating M06.
+- [x] Zero unresolved Critical/Important, clean PR threads, durable state accurate, exact-final-head CI green, mergeable with no concurrent conflicts. Final PR head `6a40bed`/CI `39920032492` GREEN, 647 tests/71 files.
+- [x] Squash-merge under repository policy; verify post-merge main exact SHA CI before activating M06. PR #8 merge `01fb37d3b762f2b1775c8845daba61c98054d6ed`, run `39920255603` GREEN, 647 tests/71 files.

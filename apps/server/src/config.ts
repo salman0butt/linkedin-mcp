@@ -32,6 +32,7 @@ export interface ServerConfig {
   engagementReadEnabled: boolean;
   mediaRoot?: string;
   mediaMaxBytes: number;
+  jobSavedPath?: string;
   auth?: LinkedInAuthConfig;
 }
 
@@ -262,6 +263,18 @@ export function parseConfig(env: Env = process.env): ServerConfig {
     throw new Error('Engagement read flag must be exactly true or false');
   }
 
+  const jobSavedPath = env.LINKEDIN_MCP_JOB_SAVED_PATH;
+  if (
+    jobSavedPath !== undefined &&
+    (!isAbsolute(jobSavedPath) ||
+      jobSavedPath.trim() !== jobSavedPath ||
+      jobSavedPath.length > 2048 ||
+      jobSavedPath.split(/[\\/]/u).some((segment) => segment === '.' || segment === '..') ||
+      jobSavedPath.endsWith('/'))
+  ) {
+    throw new Error('Saved job store path must be an absolute canonical host path');
+  }
+
   return {
     transport,
     httpHost,
@@ -283,5 +296,6 @@ export function parseConfig(env: Env = process.env): ServerConfig {
     ...(publishingLedgerPath === undefined ? {} : { publishingLedgerPath }),
     ...(linkedinApiVersion === undefined ? {} : { linkedinApiVersion }),
     ...(auth === undefined ? {} : { auth }),
+    ...(jobSavedPath === undefined ? {} : { jobSavedPath }),
   };
 }

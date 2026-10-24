@@ -1,28 +1,20 @@
 # Current Milestone
 
-Milestone: M05 — Post Search
-Status: ACTIVE — M05.6 independent whole-branch review and merge gates
-Iteration: M05.6
-Branch: `feat/m05-post-search`
-PR: #8 — draft
-Base/main: `800bf943cf047215bc434206dab1e5b6e2175c10`
-Verified post-merge main CI: `39740297020` — 583/583 tests in 66 files, frozen install, formatting, lint, typecheck and build.
-Design: `docs/superpowers/specs/2026-10-22-m05-post-discovery-design.md`
-Plan: `docs/superpowers/plans/2026-10-22-m05-post-discovery.md`
-Ledger: `docs/milestones/M05-post-search.md`
+Milestone: M06 — Job Search
+Status: REVIEW — M06.1–5 implemented; M06.6 follow-up fixes locally GREEN, exact-final-head CI pending
+Iteration: M06.6
+Branch: `feat/m06-job-search`
+PR: #9 — draft
+Base/main: `01fb37d3b762f2b1775c8845daba61c98054d6ed`
+Verified post-merge main CI: `39920255603` on exact SHA `01fb37d3b762f2b1775c8845daba61c98054d6ed` — 647 tests across 71 files and all required quality gates.
+Design: `docs/superpowers/specs/2026-10-23-m06-job-search-design.md`
+Plan: `docs/superpowers/plans/2026-10-23-m06-job-search.md`
+Ledger: `docs/milestones/M06-job-search.md`
 
 ## Authority and restrictions
 
-M04 is COMPLETE: PR #6 merged (squash) at `800bf943cf047215bc434206dab1e5b6e2175c10`; exact-post-merge main CI `39740297020` succeeded. M04 has zero verified unresolved Critical/Important findings. Live LinkedIn Community Management entitlements and a hosted approval UI remain unverified; default approval entrypoints fail closed.
+M05 Post Search is COMPLETE: PR #8 squash-merged at `01fb37d3b762f2b1775c8845daba61c98054d6ed`; post-merge main CI `39920255603` passed. An independent M05.6 security/provenance review reported two Important issues, both RED→GREEN regression-fixed, then no additional confirmed Critical/Important issues. No live post-discovery provider or restricted official author resolver is configured.
 
-M05 global keyword/hashtag search is **not** a normal documented official LinkedIn API feature. External discovery requires legitimate configured third-party/partner access. The documented official Posts API finder is narrowly author-scoped with restricted permissions. The default no-provider state must be explicitly `unavailable`, not fake empty success.
+M06 is scoped to structured job search, freshness evidence, truthful source identity and opt-in local saved data. Standard LinkedIn OAuth does not grant unrestricted Talent/Jobs search or an entitlement to sponsored job data. No real job provider is bundled. Missing provider access must return `unavailable`, not a fabricated zero-results claim.
 
-Exact next work: **Persist M05.6 review fixes and durable evidence to PR #8, verify exact-final-head CI, then squash-merge if gates pass.** M05.4 commit `e517d57` CI `39915436774` GREEN (631/631). M05.5 commit `1c0762c` CI `39918895858` GREEN (645/645). Independent full-branch review found pre-filter dedupe and non-post canonical-link defects, both regression-fixed RED→GREEN; 647/647 local tests in 71 files and real stdio/HTTP, lint/typecheck/format/build pass. No other confirmed Critical/Important findings in the independent report. Final remote CI pending. No live discovery entitlement or credential-bound official resolver is claimed.
-
-M05.1 exact-head GitHub CI: `1bbc366dda57cc44d10825c6126a6fefd195dd7d`, run `39743915175`, **589/589 tests** across 67 files plus quality gates. M05.2 local GREEN: **596/596 tests** across 68 files after a genuine missing-module RED, lint, formatting, typecheck, build and transport smokes. Remote CI for M05.2 pending.
-
-M05.2 exact-head GitHub CI: `9e6a141c36521305f536167df18ef0be75a72a28`, run `39744941663`, **596/596 tests in 68 files** plus quality gates. M05.3 local RED (missing service module) → GREEN **607/607 tests across 69 files**, format, lint, typecheck, build and real transports. No configured external/partner provider and no live search claim. New-head CI pending.
-
-M05.3 exact-head CI: `6c7e1ccd99eafdb434e382af99d0698eee748874`, run `39745975198`, **607/607 tests across 69 files** plus frozen install, format, lint, typecheck and build. Independent M05.3 provider security review currently underway; do not claim completion before report.
-
-M05.3 security review: Important provenance issue (official provider misconfigured for global search) regression-fixed in `35ff359dffecc179aa82f0e41d7c563b559825d7`. Exact-head CI `39758769454` succeeded; 608/608 tests in 69 files and required quality gates passed. No live provider access is claimed. M05.4 is now active.
+Exact next work: **Obtain independent M06.6 re-review closure, push review fixes to PR #9, verify exact-final-head CI, then merge and verify main.** Previous PR head `954fc4a` CI `39942712314` GREEN. Additional Important regressions cover semantic/sparse provider-attested matches, getter-backed adapter metadata and unverified user-supplied saved snapshot provenance. Full local **713/713 tests across 77 files** plus real STDIO/HTTP, Prettier, lint and TypeScript GREEN. Saved-state is opt-in single-OS-user STDIO; HTTP remains unavailable. No live jobs provider or Talent entitlement is configured.

@@ -6,6 +6,13 @@ import {
   type PostSearchService,
 } from './discovery/post-search-service.js';
 import {
+  createJobSearchService,
+  type JobProvider,
+  type JobSearchService,
+} from './jobs/job-search-service.js';
+import { createLocalJobSaveStore } from './jobs/job-save-store.js';
+import type { LocalSavedJobsStore } from './jobs/job-saved-mcp.js';
+import {
   createEngagementReadService,
   type EngagementReadService,
 } from './engagement/engagement-read-service.js';
@@ -41,6 +48,9 @@ export interface LinkedInRuntime {
   version: string;
   authService: AuthService;
   discovery: PostSearchService;
+  jobs: JobSearchService;
+  transport: 'stdio' | 'http';
+  jobStore?: LocalSavedJobsStore;
   publishing: {
     approvals: ApprovalService;
     textPostService?: TextPostService;
@@ -63,6 +73,8 @@ export interface LinkedInRuntimeOverrides {
   now?: () => Date;
   /** Trusted host-only adapters; never constructed from MCP arguments. Defaults to no providers. */
   discoveryProviders?: readonly DiscoveryProvider[];
+  /** Authorized host-owned job search adapters; never supplied through MCP input. */
+  jobProviders?: readonly JobProvider[];
 }
 
 function isMediaLedger(ledger: IdempotencyLedger): ledger is MediaIdempotencyLedger {
@@ -158,13 +170,23 @@ export function createLinkedInRuntime(
     engagement = { reads, ...(writes === undefined ? {} : { writes }) };
   }
 
+  const localJobStore =
+    config.transport === 'stdio' && config.jobSavedPath !== undefined
+      ? createLocalJobSaveStore({ transport: 'stdio', filePath: config.jobSavedPath })
+      : null;
   return {
     version: config.serverVersion,
+    transport: config.transport,
     authService,
     discovery: createPostSearchService({
       providers: overrides.discoveryProviders ?? [],
       ...(overrides.now === undefined ? {} : { now: overrides.now }),
     }),
+    jobs: createJobSearchService({
+      providers: overrides.jobProviders ?? [],
+      ...(overrides.now === undefined ? {} : { now: overrides.now }),
+    }),
+    ...(localJobStore === null ? {} : { jobStore: localJobStore }),
     publishing: {
       approvals: textApprovals,
       ...(textPostService === undefined ? {} : { textPostService }),

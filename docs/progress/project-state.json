@@ -1,19 +1,20 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M05",
-  "currentIteration": "M05.6",
+  "currentMilestone": "M06",
+  "currentIteration": "M06.6",
   "status": "ACTIVE",
-  "activeBranch": "feat/m05-post-search",
-  "activePr": 8,
+  "activeBranch": "feat/m06-job-search",
+  "activePr": 9,
   "baseBranch": "main",
-  "latestVerifiedSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2",
-  "ciStatus": "GREEN_M05_5_HEAD_1c0762c91113f0c23d27ee03d4631b5988f1cdc2_RUN_39918895858_645_TESTS_71_FILES; M05_6_LOCAL_647_TESTS_71_FILES_FINAL_HEAD_CI_PENDING",
+  "latestVerifiedSha": "954fc4a7e252feafe616c92d12ef1dfe03512652",
+  "ciStatus": "GREEN_M06_PR9_HEAD_954fc4a7e252feafe616c92d12ef1dfe03512652_RUN_39942712314; M06_6_LOCAL_REVIEW_FIXES_713_TESTS_77_FILES_STDIO_HTTP_FORMAT_LINT_GREEN; FINAL_NEW_HEAD_CI_PENDING",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
-    "M05.5 CI 39918895858 passed at 1c0762c (645/645 tests in 71 files). M05.6 independent audit found two Important issues (pre-filter dedupe, non-post canonical URLs); both reproduced RED and fixed GREEN. Full local 647/647 tests in 71 files, all gates green. Exact-final-head remote CI pending.",
-    "No lawful external/partner global post discovery provider or credential-bound official Posts author/organization resolver is configured. Author finder is default OFF; no live author read or broad official search availability is claimed."
+    "M05 COMPLETE: PR #8 squash-merged at 01fb37d, exact post-merge main CI 39920255603 succeeded (647 tests in 71 files). No unresolved Critical/Important milestone finding.",
+    "M06 PR #9 head 954fc4a CI 39942712314 succeeded. Three M06.6 review fixes (provider-attested filtering, getter-based provider metadata, unverified saved snapshot provenance) are local only until final checkpoint/CI. No live authorized jobs provider or LinkedIn Talent partner entitlement is configured.",
+    "Saved-job private-directory path checks are pinned and revalidated around IO, but Node pathname APIs are not an atomic openat guarantee. An attacker capable of renaming this user's private 0700 directory must already have same-UID/root file access; record as a low-impact hardening limitation."
   ],
-  "exactNextWork": "Persist M05.6 final regressions and review evidence on PR #8, verify exact-final-head CI, and squash-merge if all gates remain satisfied.",
-  "activeHeadSha": "1c0762c91113f0c23d27ee03d4631b5988f1cdc2"
+  "exactNextWork": "Confirm final M06.6 independent re-review, then commit the 713-test GREEN changes to PR #9, verify exact-final-head GitHub CI and merge only after gates pass.",
+  "activeHeadSha": "954fc4a7e252feafe616c92d12ef1dfe03512652"
 }

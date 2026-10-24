@@ -2,6 +2,22 @@
 
 ## Current unresolved issues
 
+### M06.6 local snapshot provenance — regression-fixed locally
+
+Independent review reproduced caller-supplied PARTNER_API metadata, source evidence URL and confidence being passed as trusted context into a saved snapshot with no source authentication. Focused RED tests confirmed the defect. The local store now rejects these elevated claims and canonicalizes saved source names to `Unverified user-supplied snapshot`, while keeping opaque source-scoped IDs, reported/unknown posting dates and safe URLs. Source IDs and retrieval timestamps in locally saved snapshots remain caller-supplied and must not be treated as verified provider facts. The full 713-test local suite passes; final GitHub CI is pending.
+
+### M06.5 private saved-state pathname race hardening limitation
+
+The opt-in local saved-job store is available only to the host's **single trusted OS user over STDIO**; its final private directory must be `0700`, file `0600`, correct user ownership, one hardlink and no symlink. HTTP access is always unavailable. Independent audit reproduced a deterministic parent-directory symlink swap immediately after validation that formerly redirected a read to a different same-user private store. The regression was repaired RED→GREEN by pinning every ancestor's device/inode and checking ownership, permissions and identity around locks, reads, writes, rename and persisted readback. The audited swap now fails closed. Node's pathname-based filesystem calls are **not an atomic openat guarantee**: a process that already has this same OS UID or root privileges could repeatedly swap directories between checks. That process already has equivalent local read/write access to this OS user's private files. Scoped independent reviewer classified this as a non-blocking hardening limitation under the documented single-trusted-OS-user threat model; never advertise immunity to concurrent same-UID filesystem modification. If ownership requirements change to multi-user/hostile same-UID, require dirfd/openat or an equivalent OS-level authenticated workspace primitive before enabling saved-state access.
+
+### M06.1 URL and verified posting-date source integrity — regression-fixed locally
+
+Independent source review found three Important issues in the new canonical job contract. Common credential parameter aliases (`apiKey`, `auth_token`) were accepted in returned URLs; verified posting dates could omit canonical-link binding for jobs with a canonical URL; and known dynamic IP wildcard domains could encode private destinations. Targeted regression tests failed before code changes and pass after correction. M06.1 exact-head CI `39923182814` passed. The core validator performs no network/DNS lookups; every future HTTP-capable adapter must separately validate resolved public A/AAAA addresses at each hop, including redirects and DNS rebinding.
+
+### M06 job discovery and Talent access boundary
+
+M05 was repository-verified at final PR head `6a40bed`/CI `39920032492` and post-merge main `01fb37d`/CI `39920255603`. M06 begins without a legitimate configured jobs search source or verified LinkedIn Talent partner entitlement. Never present job-search functionality as live/official on the basis of deterministic tests, standard LinkedIn OAuth, or generated postings. Missing providers must return unavailable with explicit provenance and freshness uncertainty; no automated applications are in scope.
+
 ### Resolved locally — M05.6 eligibility dedupe and canonical post permalink provenance
 
 Independent M05.6 whole-branch audit found two Important defects: ineligible same-source duplicates could suppress later eligible records; LinkedIn-owned login/help/redirect links could masquerade as canonical post permalinks or conflict with a post URN. Both were reproduced RED and repaired GREEN, with post-fix **647/647 local tests across 71 files**, real stdio/HTTP, lint, typecheck, format and build passing. The reviewer found no additional confirmed Critical/Important issues. Exact-final-head CI and post-merge main gates still require verification. Strict permalink validation excludes tracking query parameters; trusted providers should supply the clean permalink.
