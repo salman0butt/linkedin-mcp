@@ -93,12 +93,12 @@
 - [x] **RED:** missing MCP tools/capabilities, incorrect output schema and oversized complete MCP reply all observed failing targeted tests.
 - [x] **VERIFY RED:** real MCP client test failures observed before registration and output fixes.
 - [x] **GREEN:** registered strict read-only analyze/compare tools with truthful LOCAL_ONLY capabilities, typed source/evidence schemas, complete envelope size cap, built STDIO/HTTP transports and HTTP saved-state isolation.
-- [x] **VERIFY GREEN (local):** full 902/902 `pnpm test` (83 files, real STDIO/HTTP), `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `git diff --check` passed. Exact-new-head CI remains pending.
+- [x] **VERIFY GREEN:** full 902/902 `pnpm test` (83 files, real STDIO/HTTP), `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `git diff --check` passed. Final feature CI `40089032116` and post-merge main CI `40089200098` GREEN.
 
 ### Task 7: Independent closeout (M07.7)
 
 **Files:** Update `docs/milestones/{M07-job-intelligence,CURRENT,README}.md`, `docs/progress/{STATUS,KNOWN-ISSUES,project-state.json}`, `docs/requirements/TRACEABILITY.md`, `docs/product/CAPABILITY-MATRIX.md`.
 
-- [ ] Independently review security, data minimization, source evidence, prompt injection, deceptive job/sponsorship claims and accurate availability; regression-fix every verified Critical/Important issue.
-- [ ] Verify all required local checks and exact final PR head CI, no blocking review threads and stable main; docs report real capability boundaries.
-- [ ] Squash merge; verify exact post-merge main CI before M08 starts.
+- [x] Independently review security, data minimization, source evidence, prompt injection, deceptive job/sponsorship claims and accurate availability; regressions fixed RED→GREEN; final independent scoped Critical=0 Important=0.
+- [x] Verify all required local checks and exact final PR head CI `40089032116` on `7f87429`, no blocking review threads, stable main; documents preserve actual provider access boundaries.
+- [x] Squash merge PR #10; verify exact post-merge main `80b5632` CI `40089200098` before M08.

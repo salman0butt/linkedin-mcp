@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "currentMilestone": "M07",
-  "currentIteration": "M07.7",
-  "status": "ACTIVE",
-  "activeBranch": "feat/m07-job-intelligence",
-  "activePr": 10,
+  "currentMilestone": "M08",
+  "currentIteration": "M08.0",
+  "status": "PLANNED",
+  "activeBranch": "main",
+  "activePr": null,
   "baseBranch": "main",
-  "latestVerifiedSha": "1d0ac1dc5424535c43a63b60553201ab0b3c34a6",
-  "ciStatus": "M06_MAIN_0ff384a_RUN_40077809706_GREEN; M07_1_HEAD_1d0ac1d_RUN_40080270039_GREEN; M07_2_TO_6_LOCAL_902_TESTS_83_FILES_STDIO_HTTP_LINT_TYPES_FORMAT_BUILD_GREEN; M07_FINAL_NEW_HEAD_CI_PENDING",
+  "latestVerifiedSha": "80b563293e48afd878158bcd2ee40553997ecb42",
+  "ciStatus": "M07_FINAL_FEATURE_7f87429_RUN_40089032116_GREEN; M07_POST_MERGE_MAIN_80b5632_RUN_40089200098_GREEN; 902_TESTS_83_FILES_STDIO_HTTP_LINT_TYPES_FORMAT_BUILD_GREEN; M08_NOT_STARTED",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
     "M06 COMPLETE: PR #9 squash-merged at 0ff384ae, exact post-merge main CI 40077809706 succeeded (713 tests in 77 files). Independent whole-branch review passed without unresolved Critical/Important findings.",
-    "M07.1–6 local implementation 902 tests across 83 files GREEN, including real STDIO/HTTP analyze/compare and local format/lint/type/build. RED-to-GREEN fixes include mandatory/preferred/role-qualified skills, unclassified title/description mandates and quote-boundary attribution, applicant-specific remote/visa exclusions and location limits, long/third-party-qualified clauses, exact UTF-16 source quotes, work authorization and location-field score suppression, typed output and response caps. Final independent M07.7 signoff and exact-head remote CI pending. No live job source or LinkedIn Talent entitlement configured.",
+    "M07 COMPLETE: PR #10 squash-merged at 80b563293e48afd878158bcd2ee40553997ecb42. Exact feature CI 40089032116 and post-merge main CI 40089200098 both GREEN with 902 tests in 83 files and all quality gates. Independent M07.7 whole-branch Critical=0 Important=0. Locally available read-only analyze/compare; no configured live jobs source, LinkedIn Talent entitlement, employer or immigration verification, or automated application submission.",
     "Saved-job private-directory path checks are pinned and revalidated around IO, but Node pathname APIs are not an atomic openat guarantee. An attacker capable of renaming this user's private 0700 directory must already have same-UID/root file access; record as a low-impact hardening limitation."
   ],
-  "exactNextWork": "Finish M07.7 independent review and quality checks, push locally green M07 implementation on PR #10, verify exact-final-head GitHub CI, merge and verify main.",
-  "activeHeadSha": "1d0ac1dc5424535c43a63b60553201ab0b3c34a6"
+  "exactNextWork": "Start M08.0 design and test-first plan for an article project/blocks/drafts workflow; preserve local draft privacy and source attribution, without claiming native LinkedIn article publication.",
+  "activeHeadSha": "80b563293e48afd878158bcd2ee40553997ecb42"
 }
