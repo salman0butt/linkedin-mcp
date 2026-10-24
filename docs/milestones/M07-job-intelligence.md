@@ -1,6 +1,8 @@
 # M07 — Job Intelligence
 
-Status: **PLANNED**
+Status: **DESIGN — M07.1 contract work next**, branch `feat/m07-job-intelligence`, based on M06 verified main `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`.
+
+Design: `docs/superpowers/specs/2026-10-24-m07-job-intelligence-design.md`. Plan: `docs/superpowers/plans/2026-10-24-m07-job-intelligence.md`.
 
 ## Goal
 
@@ -24,11 +26,11 @@ Analysis distinguishes sourced facts from inference; gaps/uncertainty are explic
 
 ## Tasks / Iterations
 
-Design/plan; requirements schema; analysis prompts/tools; evidence validation; comparison; closeout.
+M07.1 strict caller snapshot and candidate input contract; M07.2 exact-span requirement extraction; M07.3 relocation/visa/company signals; M07.4 deterministic candidate fit; M07.5 multi-job comparison; M07.6 strict read-only MCP tools and real transports; M07.7 independent security review and closeout.
 
 ## TDD Evidence
 
-Pending.
+Design/plan only; no M07 behavioral RED or GREEN tests have been executed yet. Baseline M06 post-merge main CI `40077809706` passed 713/713 tests in 77 files.
 
 ## Integration Test Evidence
 
@@ -48,7 +50,7 @@ Pending.
 
 ## Durable Recovery Sources
 
-PRD, capability matrix, M07 spec/plan, Git/PR/CI.
+PRD, capability matrix, dated M07 design/plan above, Git/PR/CI.
 
 ## Completion Checklist
 

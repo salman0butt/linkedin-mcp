@@ -2,9 +2,9 @@
 
 ## Current unresolved issues
 
-### M06.6 local snapshot provenance — regression-fixed locally
+### Resolved — M06.6 saved snapshot provenance (merged and verified)
 
-Independent review reproduced caller-supplied PARTNER_API metadata, source evidence URL and confidence being passed as trusted context into a saved snapshot with no source authentication. Focused RED tests confirmed the defect. The local store now rejects these elevated claims and canonicalizes saved source names to `Unverified user-supplied snapshot`, while keeping opaque source-scoped IDs, reported/unknown posting dates and safe URLs. Source IDs and retrieval timestamps in locally saved snapshots remain caller-supplied and must not be treated as verified provider facts. The full 713-test local suite passes; final GitHub CI is pending.
+Independent review reproduced caller-supplied PARTNER_API metadata, source evidence URL and confidence being passed as trusted context into a saved snapshot with no source authentication. Focused RED tests confirmed the defect. The local store now rejects these elevated claims and canonicalizes saved source names to `Unverified user-supplied snapshot`, while keeping opaque source-scoped IDs, reported/unknown posting dates and safe URLs. Source IDs and retrieval timestamps in locally saved snapshots remain caller-supplied and must not be treated as verified provider facts. Independent review PASS, exact final PR head `dc7b07d` CI `40077649195` and merged `main` `0ff384a` CI `40077809706` GREEN with 713 tests across 77 files. The separate low-impact same-UID pathname hardening limitation remains documented below.
 
 ### M06.5 private saved-state pathname race hardening limitation
 

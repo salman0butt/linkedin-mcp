@@ -1,5 +1,13 @@
 # Project Status
 
+## Current checkpoint — 2026-10-24 (M06 COMPLETE; M07.1 DESIGN)
+
+M06 Job Search [PR #9](https://github.com/salman0butt/linkedin-mcp/pull/9) was squash-merged at `0ff384ae5deb03b504259dc3f5519c8209c3e8f8`. Feature head `dc7b07d` CI `40077649195` and exact post-merge `main` CI `40077809706` are both GREEN: **713/713 tests across 77 files**, real STDIO/HTTP transport, frozen install, format, lint, typecheck and build. Independent whole-branch M06.6 review signed off with **zero verified unresolved Critical/Important findings**. No live job search/Talent API entitlement is configured.
+
+M07 Job Intelligence starts on `feat/m07-job-intelligence` from the verified main SHA. Design `docs/superpowers/specs/2026-10-24-m07-job-intelligence-design.md` and plan `docs/superpowers/plans/2026-10-24-m07-job-intelligence.md` define pure source-anchored job requirement extraction, eligibility/sponsorship uncertainty, transient candidate fit, source-scoped comparison and read-only MCP tools. No M07 production capability or behavioral test has shipped yet.
+
+Exact next work: **Finish independent M07 design/plan review, checkpoint activation on a new draft PR, verify its CI and begin M07.1 strict caller-snapshot input contract with observed RED tests.**
+
 ## Current checkpoint — 2026-10-24 (M06.6 review fixes, 713/713 local GREEN)
 
 Draft PR [#9](https://github.com/salman0butt/linkedin-mcp/pull/9) passed GitHub CI run 39942712314 at head 954fc4a7e252feafe616c92d12ef1dfe03512652. The follow-up independent review reproduced three Important gaps: host-attested semantic/geographic and sparse enum matches were excluded by literal local filtering; getter-based class adapters lost their provider metadata; and user-supplied saved-job snapshots could masquerade as trusted partner provenance, source evidence or confidence. Focused RED regressions were repaired to GREEN. Local saved snapshots now reject partner/evidence/confidence assertions and label source metadata as unverified user input while retaining opaque source-scoped identifiers.
