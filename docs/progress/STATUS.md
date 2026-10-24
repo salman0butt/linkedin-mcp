@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-24 (M07.1–6 locally GREEN; M07.7 review)
+## Current checkpoint — 2026-10-24 (M07 COMPLETE; M08 PLANNED)
+
+M07 Job Intelligence [PR #10](https://github.com/salman0butt/linkedin-mcp/pull/10) was squash-merged at `80b563293e48afd878158bcd2ee40553997ecb42`. Final feature-head `7f874292d10e3a649fc2e7b218a9261982b0b2ff` CI `40089032116` and exact post-merge `main` CI `40089200098` both succeeded: **902/902 tests across 83 files**, frozen install, full formatting/lint/typecheck/build and real STDIO/HTTP MCP transports. The final independent M07.7 audit reported **0 unresolved Critical and 0 unresolved Important findings** after RED→GREEN hardening of skills, qualification coverage, source attribution/UTF-16 spans, unqualified international remote/visa statements, and typed bounded MCP responses.
+
+Both `linkedin.jobs.analyze` and `linkedin.jobs.compare` are locally verified and available on caller-provided, visibly **unverified** job snapshots; M06 saved data remains inaccessible over HTTP. Live job discovery remains **UNAVAILABLE** absent an authorized provider. No LinkedIn Talent access, immigration eligibility, employer legitimacy or automated job submissions are claimed.
+
+M08 Article Authoring Engine is **PLANNED**, not implemented. Exact next work: **start M08.0 requirements/design and test-first implementation plan for article project/draft/block storage with source provenance and local draft privacy; native publishing remains out of scope until M09.**
+
+## Previous checkpoint — 2026-10-24 (M07.1–6 locally GREEN; M07.7 review)
 
 M07 draft PR #10 now has all six implementation iterations locally integrated: strict caller provenance, source-quoted requirements, work authorization/visa/global-remote evidence, reproducible explicit-skill scoring, source-scoped comparisons and local MCP analyze/compare. Both real STDIO and HTTP transports call the new tools successfully; local saved state is inaccessible through HTTP. There is still no configured live LinkedIn Talent job search provider.
 

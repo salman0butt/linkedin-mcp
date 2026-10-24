@@ -2,6 +2,10 @@
 
 ## Current unresolved issues
 
+### Resolved — M07 Job Intelligence review and source-grounded claims
+
+M07.7 independent whole-branch review verified **0 unresolved Critical/Important findings** after all reproduced issues were fixed with genuine RED→GREEN regressions: unsupported mandatory title/description clauses must not produce false 100% scores; required work authorization/residence in `location` suppresses numeric fit; employer-versus-competitor quotation state spans sentence boundaries; long, non-whitelisted, conditional, applicant-specific and exclusionary remote/visa claims fail closed rather than advertise unrestricted eligibility; unrelated customer/training conditions do not become applicant restrictions. Original UTF-16 source quotes, sanitized bounded MCP response contracts, strict caller-supplied provenance and private saved-job HTTP isolation are covered. PR #10 feature CI `40089032116` on `7f874292d10e3a649fc2e7b218a9261982b0b2ff` and post-merge main CI `40089200098` on `80b563293e48afd878158bcd2ee40553997ecb42` succeeded with **902/902 tests across 83 files** and all quality gates. No authorized live LinkedIn jobs provider/Talent entitlement or application submission capability is configured.
+
 ### Resolved — M06.6 saved snapshot provenance (merged and verified)
 
 Independent review reproduced caller-supplied PARTNER_API metadata, source evidence URL and confidence being passed as trusted context into a saved snapshot with no source authentication. Focused RED tests confirmed the defect. The local store now rejects these elevated claims and canonicalizes saved source names to `Unverified user-supplied snapshot`, while keeping opaque source-scoped IDs, reported/unknown posting dates and safe URLs. Source IDs and retrieval timestamps in locally saved snapshots remain caller-supplied and must not be treated as verified provider facts. Independent review PASS, exact final PR head `dc7b07d` CI `40077649195` and merged `main` `0ff384a` CI `40077809706` GREEN with 713 tests across 77 files. The separate low-impact same-UID pathname hardening limitation remains documented below.
