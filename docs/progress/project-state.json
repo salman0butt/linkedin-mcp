@@ -1,20 +1,23 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M08",
-  "currentIteration": "M08.0",
-  "status": "PLANNED",
-  "activeBranch": "main",
+  "currentIteration": "M08.6",
+  "status": "VERIFYING",
+  "activeBranch": "feat/m08-article-authoring",
   "activePr": null,
   "baseBranch": "main",
-  "latestVerifiedSha": "80b563293e48afd878158bcd2ee40553997ecb42",
-  "ciStatus": "M07_FINAL_FEATURE_7f87429_RUN_40089032116_GREEN; M07_POST_MERGE_MAIN_80b5632_RUN_40089200098_GREEN; 902_TESTS_83_FILES_STDIO_HTTP_LINT_TYPES_FORMAT_BUILD_GREEN; M08_NOT_STARTED",
+  "latestVerifiedSha": "e8b603c2f340a0121c473d10ed6fc1e41b5257d7",
+  "ciStatus": "M07_FINAL_FEATURE_7f87429_RUN_40089032116_GREEN; M07_POST_MERGE_MAIN_80b5632_RUN_40089200098_GREEN_902_TESTS; M08_LOCAL_FINAL_NODE24_PNPM_TEST_988_OF_988_GREEN_88_SUITES_REAL_BUILT_STDIO_HTTP_INCLUDED_FORMAT_LINT_TYPECHECK_BUILD_DIFF_CHECK_GREEN_FINAL_COMMAND_EXIT_0; M08_INDEPENDENT_M08_6_WHOLE_BRANCH_SIGNOFF_CRITICAL_0_IMPORTANT_0; M08_PR_NONE_EXACT_REMOTE_FEATURE_SHA_CI_NOT_RUN_NO_MERGE",
   "criticalFindings": 0,
   "importantFindings": 0,
   "blockers": [
+    "M08 local verification PASSED on feat/m08-article-authoring from e8b603c: model, renderer, prompts, private store and eight MCP tools integrated. Prime fresh full Node24 pnpm test 988/988 PASS in 88 suites, real built STDIO/HTTP included. Format, lint, typecheck, build and diff check GREEN in the same final quality run (exit 0). No remote SHA is claimed for these uncommitted local changes.",
+    "M08 independent M08.6 whole-branch reviewer SIGNED OFF unresolved Critical=0 Important=0 after three Important findings were reproduced RED and repaired GREEN: credential-bearing URL query aliases/fragments, parent-child sensitive config path collisions and invalid UTF-8 in persisted revision-2 article data. Review is closed locally; no independent audit blocker remains.",
+    "M08 PRE-MERGE remote checkpoint remains: no feature PR, no exact-final-feature-SHA GitHub CI and no merge/post-merge main verification. Native LinkedIn article publishing remains M09 only; local draft tools do not browse, verify sources or publish.",
     "M06 COMPLETE: PR #9 squash-merged at 0ff384ae, exact post-merge main CI 40077809706 succeeded (713 tests in 77 files). Independent whole-branch review passed without unresolved Critical/Important findings.",
     "M07 COMPLETE: PR #10 squash-merged at 80b563293e48afd878158bcd2ee40553997ecb42. Exact feature CI 40089032116 and post-merge main CI 40089200098 both GREEN with 902 tests in 83 files and all quality gates. Independent M07.7 whole-branch Critical=0 Important=0. Locally available read-only analyze/compare; no configured live jobs source, LinkedIn Talent entitlement, employer or immigration verification, or automated application submission.",
     "Saved-job private-directory path checks are pinned and revalidated around IO, but Node pathname APIs are not an atomic openat guarantee. An attacker capable of renaming this user's private 0700 directory must already have same-UID/root file access; record as a low-impact hardening limitation."
   ],
-  "exactNextWork": "Start M08.0 design and test-first plan for an article project/blocks/drafts workflow; preserve local draft privacy and source attribution, without claiming native LinkedIn article publication.",
-  "activeHeadSha": "80b563293e48afd878158bcd2ee40553997ecb42"
+  "exactNextWork": "Create the M08 feature PR and verify its exact-final-head SHA CI.",
+  "activeHeadSha": "e8b603c2f340a0121c473d10ed6fc1e41b5257d7"
 }

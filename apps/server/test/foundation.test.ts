@@ -40,7 +40,7 @@ describe('foundation result factories', () => {
       (capability) => capability.milestone !== 'M00',
     );
     for (const capability of futureCapabilities) {
-      if (['jobs.analyze', 'jobs.compare'].includes(capability.id)) {
+      if (['jobs.analyze', 'jobs.compare', 'article.draft'].includes(capability.id)) {
         expect(capability).toMatchObject({
           provider: 'LOCAL_ONLY',
           status: 'VERIFIED',
@@ -51,5 +51,11 @@ describe('foundation result factories', () => {
         expect(capability.availability).toBe('UNAVAILABLE');
       }
     }
+    expect(
+      result.data.capabilities.find((capability) => capability.id === 'article.native.publish'),
+    ).toMatchObject({
+      status: 'PLANNED',
+      availability: 'UNAVAILABLE',
+    });
   });
 });

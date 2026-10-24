@@ -41,6 +41,60 @@ describe('parseConfig', () => {
     }
     expect(parseConfig({})).not.toHaveProperty('jobSavedPath');
   });
+  it('enables private article drafts only with a distinct canonical absolute host-owned path', () => {
+    expect(
+      parseConfig({ LINKEDIN_MCP_ARTICLE_STORE_PATH: '/private/tmp/articles/projects.json' }),
+    ).toMatchObject({ articleStorePath: '/private/tmp/articles/projects.json' });
+    for (const value of [
+      '',
+      'projects.json',
+      '/tmp/../projects.json',
+      '/tmp/./projects.json',
+      '/tmp/projects.json/',
+    ]) {
+      expect(() => parseConfig({ LINKEDIN_MCP_ARTICLE_STORE_PATH: value })).toThrow(/article.*path/i);
+    }
+    expect(parseConfig({})).not.toHaveProperty('articleStorePath');
+  });
+
+  it('rejects article path overlaps with private saved jobs, OAuth secrets, ledger and companions', () => {
+    const article = '/tmp/articles.json';
+    for (const env of [
+      { LINKEDIN_MCP_JOB_SAVED_PATH: article },
+      { LINKEDIN_MCP_JOB_SAVED_PATH: article + '.lock' },
+      { LINKEDIN_MCP_JOB_SAVED_PATH: article + '.initialized' },
+      { LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: article },
+      { LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: article + '.lock' },
+      { ...nativePkceEnv(encryptionKey), LINKEDIN_MCP_CREDENTIAL_STORE_PATH: article },
+    ]) {
+      expect(() => parseConfig({ LINKEDIN_MCP_ARTICLE_STORE_PATH: article, ...env })).toThrow(
+        /article.*(overlap|collid|differ|path)/i,
+      );
+    }
+  });
+
+  it('rejects nested article/private-store path collisions in both directions before IO', () => {
+    const article = '/private/tmp/m08-parent';
+    const nested = `${article}/private.json`;
+    for (const env of [
+      { LINKEDIN_MCP_ARTICLE_STORE_PATH: article, LINKEDIN_MCP_JOB_SAVED_PATH: nested },
+      { LINKEDIN_MCP_ARTICLE_STORE_PATH: nested, LINKEDIN_MCP_JOB_SAVED_PATH: article },
+      { LINKEDIN_MCP_ARTICLE_STORE_PATH: article, LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: nested },
+      { LINKEDIN_MCP_ARTICLE_STORE_PATH: nested, LINKEDIN_MCP_IDEMPOTENCY_LEDGER_PATH: article },
+      {
+        ...nativePkceEnv(encryptionKey),
+        LINKEDIN_MCP_CREDENTIAL_STORE_PATH: nested,
+        LINKEDIN_MCP_ARTICLE_STORE_PATH: article,
+      },
+      {
+        ...nativePkceEnv(encryptionKey),
+        LINKEDIN_MCP_CREDENTIAL_STORE_PATH: article,
+        LINKEDIN_MCP_ARTICLE_STORE_PATH: nested,
+      },
+    ]) {
+      expect(() => parseConfig(env)).toThrow(/article.*(overlap|collid|path)/i);
+    }
+  });
 
   it('accepts an explicit LinkedIn API version only in YYYYMM form', () => {
     expect(parseConfig({ LINKEDIN_MCP_API_VERSION: '202510' })).toMatchObject({

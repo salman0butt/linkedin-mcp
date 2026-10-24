@@ -51,18 +51,29 @@ describe('capability registry', () => {
     const futureCapabilities = foundationCapabilityRegistry.filter(
       (descriptor) => descriptor.milestone !== 'M00',
     );
-    const localM07 = futureCapabilities.filter((descriptor) =>
-      ['jobs.analyze', 'jobs.compare'].includes(descriptor.id),
+    const verifiedLocal = futureCapabilities.filter((descriptor) =>
+      ['jobs.analyze', 'jobs.compare', 'article.draft'].includes(descriptor.id),
     );
-    expect(localM07.map((descriptor) => descriptor.id)).toEqual(['jobs.analyze', 'jobs.compare']);
+    expect(verifiedLocal.map((descriptor) => descriptor.id)).toEqual([
+      'jobs.analyze',
+      'jobs.compare',
+      'article.draft',
+    ]);
     expect(
-      localM07.every(
-        (descriptor) => descriptor.availability === 'AVAILABLE' && descriptor.status === 'VERIFIED',
+      verifiedLocal.every(
+        (descriptor) =>
+          descriptor.provider === 'LOCAL_ONLY' &&
+          descriptor.availability === 'AVAILABLE' &&
+          descriptor.status === 'VERIFIED',
       ),
     ).toBe(true);
-    const others = futureCapabilities.filter((descriptor) => !localM07.includes(descriptor));
+    const others = futureCapabilities.filter((descriptor) => !verifiedLocal.includes(descriptor));
     expect(others.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);
     expect(others.every((descriptor) => descriptor.status !== 'VERIFIED')).toBe(true);
+    expect(others.find((descriptor) => descriptor.id === 'article.native.publish')).toMatchObject({
+      status: 'PLANNED',
+      availability: 'UNAVAILABLE',
+    });
   });
 
   it('keeps all M04 engagement capabilities official, active and live-unverified', () => {

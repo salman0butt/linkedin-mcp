@@ -11,6 +11,7 @@ import {
   type JobSearchService,
 } from './jobs/job-search-service.js';
 import { createLocalJobSaveStore } from './jobs/job-save-store.js';
+import { createLocalArticleStore, type LocalArticleStore } from './articles/article-store.js';
 import type { LocalSavedJobsStore } from './jobs/job-saved-mcp.js';
 import {
   createEngagementReadService,
@@ -51,6 +52,7 @@ export interface LinkedInRuntime {
   jobs: JobSearchService;
   transport: 'stdio' | 'http';
   jobStore?: LocalSavedJobsStore;
+  articleStore?: LocalArticleStore;
   publishing: {
     approvals: ApprovalService;
     textPostService?: TextPostService;
@@ -174,6 +176,10 @@ export function createLinkedInRuntime(
     config.transport === 'stdio' && config.jobSavedPath !== undefined
       ? createLocalJobSaveStore({ transport: 'stdio', filePath: config.jobSavedPath })
       : null;
+  const localArticleStore =
+    config.transport === 'stdio' && config.articleStorePath !== undefined
+      ? createLocalArticleStore({ transport: 'stdio', filePath: config.articleStorePath })
+      : null;
   return {
     version: config.serverVersion,
     transport: config.transport,
@@ -187,6 +193,7 @@ export function createLinkedInRuntime(
       ...(overrides.now === undefined ? {} : { now: overrides.now }),
     }),
     ...(localJobStore === null ? {} : { jobStore: localJobStore }),
+    ...(localArticleStore === null ? {} : { articleStore: localArticleStore }),
     publishing: {
       approvals: textApprovals,
       ...(textPostService === undefined ? {} : { textPostService }),

@@ -260,11 +260,13 @@ const descriptors: CapabilityDescriptor[] = [
     id: 'article.draft',
     desiredBehavior: 'Create and manage a local long-form article draft package.',
     provider: 'LOCAL_ONLY',
-    availability: 'UNAVAILABLE',
+    availability: 'AVAILABLE',
     milestone: 'M08',
-    status: 'PLANNED',
-    accessNote: 'Local authoring does not imply native LinkedIn publication.',
+    status: 'VERIFIED',
+    accessNote:
+      'Local validated drafts, review and prompts are available; private projects require opt-in host-configured STDIO store. No native LinkedIn publication.',
     approvalRequired: false,
+    evidence: 'M08 local article tools, unverified source notes, and STDIO/HTTP isolation contract tests.',
   },
   {
     id: 'article.native.publish',
