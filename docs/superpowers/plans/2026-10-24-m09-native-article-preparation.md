@@ -1,0 +1,58 @@
+# M09 Native Article Preparation — Test-first Implementation Plan
+
+Date: 2026-10-24. Milestone: `docs/milestones/M09-native-article-publishing.md`. Requirements: `R-M09-NATIVE` (local preparation sub-scope only). Source-of-truth design: `docs/superpowers/specs/2026-10-24-m09-native-article-preparation-design.md`.
+
+> **M09 LOCAL HANDOFF IMPLEMENTING; LOCAL NODE24 GATES GREEN AND COMPLEMENTARY INDEPENDENT SECURITY SIGNOFF COMPLETE (CRITICAL=0 IMPORTANT=0); PR #14 INITIAL HEAD CI SUCCESS; DOCS-UPDATED FINAL HEAD CI PENDING.** Pure manual handoff original 8/8 RED→GREEN and expanded adversarial 11/11 GREEN; stateless MCP tool 4/4 missing-tool RED→GREEN; built STDIO/HTTP and exact tool list 15/15 GREEN. M08 dual-copy full-wire size Important was repaired RED→GREEN. Two subsequent M09 audit findings (oversized HTTP caller ID and credential-query URL aliases) were each fixed RED→GREEN and independently re-reviewed in complementary scopes (worker-5 non-HTTP 101/101 and worker-4 HTTP 23/23). **Prime's full local Node24 run 1,023/1,023 tests across 90 suites and format:check/lint/typecheck/build/diff GREEN**. PR #14 is OPEN; initial feature-head CI `40216591393` SUCCESS, docs-updated final-head CI and post-merge main CI pending. **Native LinkedIn article publishing remains BLOCKED/UNAVAILABLE** without a legitimately approved and configured provider.
+
+**Environment:** `feat/m09-native-article-preparation` from verified `main` `9f10bc4488918ada401e7a25736f7945c8d80c23`; M08 closeout PR #13 post-merge main CI `40121709957` SUCCESS. PR [#14](https://github.com/salman0butt/linkedin-mcp/pull/14) OPEN at remote head `4cd38eb6f4b465dc4c7a65da49b79b635c7c41fd`, initial head CI `40216591393` SUCCESS; docs-updated final-head CI pending. Node 24, pnpm 12, TypeScript, existing Vitest/Zod v4/MCP SDK. M09 implementation/test and complementary independent security review are locally verified; initial PR #14 head CI is verified; docs-updated final-head CI and native publication permission are not verified. M08 Article Authoring Engine is verified as `LOCAL_ONLY`.
+
+## M09.0 — Feasibility, architecture and safety boundary
+
+- [x] Read repository/PRD/M09 ledger, M08 article model/renderer/MCP contracts and source-provenance constraints. Choose reuse over duplicate preview, storage or schema.
+- [x] Confirm official Microsoft Learn Posts API `content.article.source` is an **external link preview post**, not native long-form editor article content; LinkedIn Help documents the interactive **Write article** editor. Record exact provider/API distinction in spec.
+- [x] Record LinkedIn Help restrictions against unapproved third-party scraping/browser automation. No ordinary native editor API or authorized browser provider is established in this repository; real external native publishing remains **UNAVAILABLE/BLOCKED**.
+- [x] Specify a bounded local-only manual editor handoff with ordered blocks, cover/media human placeholders, SEO, unverified sources, loss warnings, no active HTML, no network/session/automated publication, and testable optional stateless MCP.
+- [ ] Independent pre-implementation review of the design's provider-truthfulness, data fidelity, injection, output/privacy boundaries and YAGNI; amend spec and plan for any verified Critical/Important finding before implementing.
+
+## M09.1 — Pure manual editor handoff (genuine RED → GREEN)
+
+**Locally implemented, tested and independently reviewed in complementary scope:** `apps/server/src/articles/native-handoff.ts`, `apps/server/test/native-handoff.test.ts`. Initial PR #14 head CI `40216591393` succeeded; docs-updated final-head CI pending.
+
+**Exact export:** `prepareNativeArticleHandoff(input: unknown): NativeArticleHandoff`. See spec for complete strongly typed `NativeArticleHandoff`/`NativeEditorBlock` and mapping. Reuse `normalizeArticleDraft` and `validateArticleDraft` from M08; no M08 Markdown preview duplication. Input is an explicit article draft, not a project/store identifier.
+
+1. [x] **Observed RED→GREEN:** Missing `native-handoff.ts` module failed first before the pure implementation; original focused 8/8 GREEN, expanded independent/adversarial pure suite 11/11 GREEN.
+2. [x] **Contract/fidelity:** Focused tests cover six block kinds, original zero-based block order, repeated kinds, canonical source IDs, exact authored text, Unicode and manual mapping warnings; included in 8/8 GREEN.
+3. [x] **Provenance/media:** Focused tests cover visibly unverified source associations, metadata/SEO omissions and manual cover/formatting behavior without publication claims; included in 8/8 GREEN.
+4. [x] **Security/negative:** Focused tests cover hostile inert prose and reject forged source/approval/publication/path fields plus malformed URL-surrogate inputs; malformed-surrogate and credential URL aliases were reproduced RED→GREEN. Independent worker-5 non-HTTP review signed off Critical=0 Important=0 (101/101 tests, 26 unsafe/11 benign URL cases).
+5. [x] **Independent bounds/no-side-effects audit:** Pure and MCP source/output bounds, provenance, secrecy and lack of unauthorized publisher behavior reviewed by worker-5 (excluding his HTTP patch), **101/101 focused GREEN and scoped Critical=0 Important=0**. Independent worker-4 HTTP review separately covered the HTTP ingress/bound, 23/23 GREEN.
+6. [x] **GREEN:** Implemented pure manual handoff with existing M08 canonical normalization/editorial review; original focused 8/8 and expanded adversarial 11/11 suite GREEN. No native publish provider or remote write path was introduced.
+7. [x] **Local full quality and regression gates:** Prime ran Node24 full `pnpm test` **1,023/1,023 tests across 90 suites** plus format:check, lint, typecheck, build and diff check GREEN. Local independent security audit signed off; initial PR #14 head CI `40216591393` SUCCESS, docs-updated final-head CI pending.
+
+## M09.2 — Optional local MCP handoff adapter (separate RED → GREEN)
+
+**Local implementation files:** `apps/server/src/article-mcp.ts`, `apps/server/src/create-server.ts`, `apps/server/test/mcp-native-article-handoff.test.ts`, `apps/server/test/mcp-article-contract.test.ts`, `tests/contract/{stdio-smoke,http-smoke}.test.ts`. Do not touch persistent store config or publishing adapters merely to add the pure tool.
+
+**Tool name:** `linkedin.article.native.handoff`. **Input:** exact strict `{draft: ArticleDraft}` (same M08 draft schema, no project IDs, paths, account, provider, approval or tokens). **Output:** strict typed `LOCAL_ONLY` MCP envelope with `data:NativeArticleHandoff` and `publicationStatus:'not_published'`/`nativePublishAvailability:'UNAVAILABLE'`; cap **full** text and structured response at existing 256 KiB. Stateless, works over STDIO/HTTP without private store/network.
+
+1. [x] **Observed RED→GREEN:** Missing `linkedin.article.native.handoff` tool was reproduced RED in real MCP contract testing; 4/4 focused MCP tests GREEN after registration, including malicious inputs and size/response checks.
+2. [x] **Isolation contract:** Focused MCP tests include an injected private STDIO article store over HTTP that is never touched, and preserve `article.native.publish: UNAVAILABLE` without a native publisher. Independently reviewed across worker-5 non-HTTP and worker-4 HTTP scopes, Critical=0 Important=0.
+3. [x] **GREEN:** Local stateless adapter registered with existing article MCP typed/sanitized `LOCAL_ONLY` envelope; no new native publishing provider or storage/config dependency. Focused MCP 4/4 GREEN.
+4. [x] **Real transports:** Built STDIO, loopback HTTP and exact tool-list checks combined 15/15 GREEN locally. Initial PR #14 feature-head CI `40216591393` SUCCESS; docs-updated final-head CI pending.
+
+## M09.3 — Independent audit, quality gates and durable local closeout
+
+- [x] **Complementary independent M09 security audit SIGNED OFF: unresolved Critical=0 Important=0.** Independently found and fixed (1) HTTP caller ID original RED **267,238 > 262,144 response bytes**, now 128-byte UTF-8 ingress and bounded 256-KiB SSE response, worker-4 HTTP-only re-review **23/23 GREEN**; (2) source URL query credential aliases `code`/`accessCode`/`ticket` preserved into handoff, fixed RED→GREEN (**69/69 strict, 99/99 broad**), worker-5 non-HTTP re-review **101/101 GREEN**, **26 unsafe URL cases rejected and 11 benign accepted**, MCP secrecy/provenance passed. Each reviewer excluded their own fix (worker-5 HTTP; worker-4 URL). Full local security signoff does not establish authorized native publication.
+- [x] **Prime's complete local Node24 quality gates GREEN:** `pnpm test` **1,023/1,023 tests across 90 suites**, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `git diff --check`. Full local gates and independent security signoff do not substitute for CI on the docs-updated final PR head.
+- [x] Document local handoff independently signed off, with `R-M09-HANDOFF` ACTIVE pending remote CI; `R-M09-NATIVE` remains BLOCKED. No full milestone completion or publishing entitlement claimed.
+- [x] Opened M09 local preparation [PR #14](https://github.com/salman0butt/linkedin-mcp/pull/14) at remote head `4cd38eb6f4b465dc4c7a65da49b79b635c7c41fd`, locally matching feature tree `95fc8f0d9fb384f022fb277a1fe5686f860e7689`.
+- [ ] Verify exact PR #14 final feature-head GitHub CI, merge through project gates and verify exact post-merge main CI. Only then record a scoped local handoff completion checkpoint, **not** total M09 native publishing.
+
+## M09.P — External native publication acceptance is BLOCKED
+
+- [ ] Obtain authoritative documentation for a real native long-form article **creation** provider (not a Posts API external-link/article preview), express integration permission, approved application access/scopes, concrete member/Page entitlement and lawful provider integration. **No such route is currently established**.
+- [ ] Only after provider authorization, design an independent host/human approval grant bound to exact article hash+identity, preview, idempotency, verification of returned **native article** URL, audit/failure uncertainty and challenge-stop behavior. Do not rely on model-generated approval or a third-party browser automation workaround.
+- [ ] Implement and review a genuinely authorized provider in a separate approved scope, never spoofing human UI interactions, scraping, CAPTCHA, browser extensions, hidden sessions, rate-limit evasion or Posts API link posts as native long-form articles. If authorization cannot be established, retain `article.native.publish: UNAVAILABLE` and **M09 native-publication acceptance BLOCKED**.
+
+## Explicit progress markers
+
+**M09.3 current checkpoint:** IMPLEMENTING — pure initial 8/8 and expanded adversarial 11/11 GREEN, MCP 4/4 focused RED→GREEN, built STDIO/HTTP/tool-list 15/15 GREEN; M08 dual-copy full-wire-size Important RED→GREEN. Both M09 audit findings independently repaired and signed off: HTTP caller-ID original RED **267,238 > 262,144** now bounded, HTTP independent 23/23 GREEN; URL-query `code`/`accessCode`/`ticket` RED→GREEN **69/69 strict, 99/99 broad**, non-HTTP independent 101/101 with 26 unsafe rejected/11 benign accepted. **Complementary local security signoff Critical=0 Important=0.** Prime's full Node24 local gates **1,023/1,023 across 90 suites**, format/lint/typecheck/build/diff GREEN. PR #14 is OPEN at `4cd38eb6f4b465dc4c7a65da49b79b635c7c41fd`, but initial PR-head **remote** CI `40216591393` SUCCESS; docs-updated final head and post-merge main CI are PENDING. **M09 overall:** NOT COMPLETE; external native publishing BLOCKED/UNAVAILABLE on legitimate provider evidence. **Exact next action:** Verify PR #14 exact feature-head SHA CI, then merge and verify post-merge main CI.

@@ -8,6 +8,7 @@ import {
   validateArticleDraft,
 } from './articles/article-render.js';
 import type { LocalArticleStore } from './articles/article-store.js';
+import { prepareNativeArticleHandoff } from './articles/native-handoff.js';
 
 interface ArticleToolsDeps {
   transport?: 'stdio' | 'http';
@@ -98,6 +99,56 @@ const preview = z
   })
   .strict();
 const companion = z.object({ status: z.literal('draft_only'), text: z.string().max(3000) }).strict();
+const nativeBlock = z
+  .object({
+    order: z.number().int().min(0).max(79),
+    id: z.string().min(1).max(80),
+    kind: block.shape.kind,
+    plainText: z.string().max(12000),
+    sourceIds: z.array(z.string().min(1).max(80)).max(30),
+    editorMapping: z.enum([
+      'heading',
+      'paragraph',
+      'unordered_list',
+      'blockquote',
+      'code_manual',
+      'image_manual_placeholder',
+    ]),
+    requiresHumanFormatting: z.boolean(),
+    lossWarnings: z.array(z.string().max(80)).max(10),
+  })
+  .strict();
+const nativeHandoff = z
+  .object({
+    schemaVersion: z.literal(1),
+    kind: z.literal('manual_editor_handoff'),
+    publicationStatus: z.literal('not_published'),
+    nativePublishAvailability: z.literal('UNAVAILABLE'),
+    provider: z.literal('LOCAL_ONLY'),
+    manualOnly: z.literal(true),
+    title: z.string().min(1).max(200),
+    seo: z
+      .object({
+        suggestedTitle: z.string().min(1).max(200),
+        slug: z.string().max(120).nullable(),
+        description: z.string().max(320).nullable(),
+        keywords: z.array(z.string().max(80)).max(12),
+      })
+      .strict(),
+    cover: z
+      .object({
+        description: z.string().max(800).nullable(),
+        altText: z.string().max(320).nullable(),
+        manualUploadRequired: z.literal(true),
+      })
+      .strict(),
+    orderedBlocks: z.array(nativeBlock).max(80),
+    sources: z.array(source.extend({ provenance: z.literal('user_supplied_unverified') })).max(30),
+    review,
+    warnings: z.array(z.string().max(100)).max(100),
+    requiresHumanReview: z.literal(true),
+  })
+  .strict();
 const project = z
   .object({
     id: projectId,
@@ -124,6 +175,9 @@ const envelope = z
 const responseFor = <T extends z.ZodTypeAny>(data: T) => envelope.safeExtend({ data: data.optional() });
 
 const MAX_REPLY_BYTES = 262_144;
+// Reserve room for the transport's JSON-RPC envelope and request id in addition
+// to the complete tool result, which contains both text and structured copies.
+const TRANSPORT_ENVELOPE_ALLOWANCE_BYTES = 2_048;
 
 function reply(
   deps: ArticleToolsDeps,
@@ -132,7 +186,11 @@ function reply(
   code?: string,
 ) {
   const provider = { type: 'LOCAL_ONLY' as const, name: 'linkedin-mcp' as const };
-  const metadata = { requestId: deps.createRequestId(), timestamp: deps.now().toISOString() };
+  const rawRequestId = deps.createRequestId();
+  const metadata = {
+    requestId: typeof rawRequestId === 'string' && rawRequestId.length <= 128 ? rawRequestId : 'unknown',
+    timestamp: deps.now().toISOString(),
+  };
   const error =
     code === undefined
       ? undefined
@@ -149,7 +207,16 @@ function reply(
     ...(error === undefined ? {} : { error }),
     metadata,
   };
-  if (Buffer.byteLength(JSON.stringify(value), 'utf8') > MAX_REPLY_BYTES) {
+  const resultFor = (payload: typeof value) => ({
+    content: [{ type: 'text' as const, text: JSON.stringify(payload) }],
+    structuredContent: payload,
+    ...(payload.status === 'succeeded' ? {} : { isError: true as const }),
+  });
+  let result = resultFor(value);
+  if (
+    Buffer.byteLength(JSON.stringify(result), 'utf8') >
+    MAX_REPLY_BYTES - TRANSPORT_ENVELOPE_ALLOWANCE_BYTES
+  ) {
     value = {
       status: 'failed' as const,
       provider,
@@ -160,12 +227,9 @@ function reply(
       },
       metadata,
     };
+    result = resultFor(value);
   }
-  return {
-    content: [{ type: 'text' as const, text: JSON.stringify(value) }],
-    structuredContent: value,
-    ...(value.status === 'succeeded' ? {} : { isError: true as const }),
-  };
+  return result;
 }
 
 function exceptionCode(error: unknown): string {
@@ -181,6 +245,7 @@ function exceptionCode(error: unknown): string {
         'capacity',
         'unsafe_store',
         'outcome_unknown',
+        'handoff_too_large',
       ].includes(kind)
     )
       return kind;
@@ -225,6 +290,23 @@ export function registerArticleTools(server: McpServer, deps: ArticleToolsDeps):
       outputSchema: responseFor(companion),
     },
     pure(createCompanionPostDraft),
+  );
+  server.registerTool(
+    'linkedin.article.native.handoff',
+    {
+      description:
+        'Prepare a bounded manual-only copy-and-format handoff for a human using LinkedIn Write article. User sources remain unverified. This tool never accesses LinkedIn, publishes, or reads private stored projects.',
+      inputSchema: draftInput,
+      outputSchema: responseFor(nativeHandoff),
+    },
+    (input) => {
+      try {
+        // The M09 handoff itself invokes the strict M08 normalizer once.
+        return reply(deps, 'succeeded', prepareNativeArticleHandoff(input.draft));
+      } catch (error) {
+        return reply(deps, 'failed', undefined, exceptionCode(error));
+      }
+    },
   );
 
   async function saved(fn: (store: LocalArticleStore) => Promise<unknown>) {

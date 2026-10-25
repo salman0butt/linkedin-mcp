@@ -106,6 +106,29 @@ describe('M08 local article MCP boundary', () => {
     });
   });
 
+  it('caps the complete MCP tool result including duplicated content and structured output', async () => {
+    const client = await clientFor();
+    const blocks = Array.from({ length: 80 }, (_, index) => ({
+      id: `size-block-${index}`,
+      kind: 'paragraph' as const,
+      text: 'A'.repeat(2_270),
+    }));
+    const result = await client.callTool({
+      name: 'linkedin.article.draft.preview',
+      arguments: { draft: { ...draft(), blocks } },
+    });
+
+    const serialized = JSON.stringify(result);
+    expect(Buffer.byteLength(serialized, 'utf8')).toBeLessThanOrEqual(262_144);
+    expect(result.isError).toBe(true);
+    expect(result.structuredContent).toMatchObject({
+      status: 'failed',
+      error: { code: 'output_too_large', retryable: false },
+      provider: { type: 'LOCAL_ONLY' },
+    });
+    expect(serialized).not.toContain('A'.repeat(100));
+  });
+
   it('rejects elevated status, arbitrary paths and secret parameters before any storage or side effects', async () => {
     const client = await clientFor();
     for (const input of [
