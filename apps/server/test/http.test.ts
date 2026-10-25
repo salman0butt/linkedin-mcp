@@ -58,6 +58,137 @@ function postStatus(port: number, body: Buffer): Promise<number> {
 }
 
 describe('createHttpServer', () => {
+  it('rejects oversized JSON-RPC IDs before dispatch and keeps the complete HTTP response bounded', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
+    const marker = 'A'.repeat(1_400);
+    const draft = {
+      title: 'Manual handoff',
+      topic: 'Engineering',
+      audience: 'Engineers',
+      goal: 'Prepare content locally',
+      research: { brief: 'Author notes', sources: [] },
+      outline: [],
+      blocks: Array.from({ length: 80 }, (_, index) => ({
+        id: `block-${index}`,
+        kind: 'paragraph',
+        text: marker,
+      })),
+      review: { state: 'draft' },
+    };
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address.port}/mcp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 'R'.repeat(14_000),
+          method: 'tools/call',
+          params: { name: 'linkedin.article.native.handoff', arguments: { draft } },
+        }),
+      });
+      const wire = await response.text();
+      expect(Buffer.byteLength(wire, 'utf8')).toBeLessThanOrEqual(262_144);
+      expect(response.status).toBe(400);
+      expect(response.headers.get('content-type')).toContain('application/json');
+      expect(JSON.parse(wire)).toEqual({
+        jsonrpc: '2.0',
+        id: null,
+        error: { code: -32600, message: 'Invalid Request' },
+      });
+      expect(wire).not.toContain(marker);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('preserves valid UTF-8 byte-bounded IDs, notifications and ordinary batches', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
+    const send = (body: unknown) =>
+      fetch(`http://127.0.0.1:${server.address.port}/mcp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+        body: JSON.stringify(body),
+      });
+    const health = (id: string) => ({
+      jsonrpc: '2.0',
+      id,
+      method: 'tools/call',
+      params: { name: 'linkedin.health', arguments: {} },
+    });
+    try {
+      const unicodeId = '🌻'.repeat(32); // exactly 128 bytes
+      const valid = await send(health(unicodeId));
+      expect(valid.status).toBe(200);
+      expect(valid.headers.get('content-type')).toContain('text/event-stream');
+      const validWire = await valid.text();
+      expect(Buffer.byteLength(validWire, 'utf8')).toBeLessThanOrEqual(262_144);
+      expect(
+        JSON.parse(
+          validWire
+            .split('\n')
+            .find((line) => line.startsWith('data: '))!
+            .slice(6),
+        ),
+      ).toMatchObject({
+        jsonrpc: '2.0',
+        id: unicodeId,
+        result: { structuredContent: { status: 'succeeded' } },
+      });
+
+      const notification = await send({ jsonrpc: '2.0', method: 'notifications/initialized' });
+      expect(notification.status).toBe(202);
+      expect(await notification.text()).toBe('');
+
+      const batch = await send([health('first'), health('second')]);
+      expect(batch.status).toBe(200);
+      const batchWire = await batch.text();
+      const ids = batchWire
+        .split('\n')
+        .filter((line) => line.startsWith('data: '))
+        .map((line) => (JSON.parse(line.slice(6)) as { id: string }).id);
+      expect(ids).toEqual(['first', 'second']);
+      expect(Buffer.byteLength(batchWire, 'utf8')).toBeLessThanOrEqual(262_144);
+
+      const oversizedUnicode = await send(health('🌻'.repeat(33)));
+      expect(oversizedUnicode.status).toBe(400);
+      expect((await oversizedUnicode.json()) as unknown).toMatchObject({
+        id: null,
+        error: { code: -32600 },
+      });
+      const mixedBatch = await send([health('first'), health('X'.repeat(129))]);
+      expect(mixedBatch.status).toBe(400);
+      expect((await mixedBatch.json()) as unknown).toMatchObject({
+        id: null,
+        error: { code: -32600 },
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('bounds an entire SSE response even when a batch would produce multiple large events', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address.port}/mcp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+        body: JSON.stringify(['first', 'second'].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/list' }))),
+      });
+      const wire = await response.text();
+      expect(response.status).toBe(502);
+      expect(Buffer.byteLength(wire, 'utf8')).toBeLessThanOrEqual(262_144);
+      expect(response.headers.get('content-type')).toContain('application/json');
+      expect(JSON.parse(wire)).toEqual({
+        jsonrpc: '2.0',
+        id: null,
+        error: { code: -32000, message: 'MCP response too large; operation outcome unknown.' },
+      });
+      expect(wire).not.toContain('linkedin.article.native.handoff');
+    } finally {
+      await server.close();
+    }
+  });
+
   it('uses only trusted runtime-injected discovery adapters across the real HTTP transport', async () => {
     class AuthorizedDiscovery implements DiscoveryProvider {
       readonly providerId = 'configured-discovery';

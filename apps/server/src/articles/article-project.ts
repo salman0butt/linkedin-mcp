@@ -178,15 +178,27 @@ function sourceUrl(value: unknown): string {
     invalid('source.url');
   }
   for (const key of parsed.searchParams.keys()) {
-    // URLSearchParams decodes encoded keys. Compare separator-insensitively
-    // to catch ordinary tokens, bearer credentials, SAS and cloud signatures.
-    const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
-    if (
-      /token|secret|credential|signature|auth|password|passwd|jwt|session|sas|(?:^|.+)key$|^sig$|^pwd$|^xamz|^xgoog|^xms/u.test(
-        normalizedKey,
-      )
-    ) {
-      invalid('source.url');
+    // URLSearchParams decodes keys once; some consumers may decode again.
+    // Inspect bounded nested encodings and compare separator-insensitively.
+    // Bare authorization codes, access codes and login tickets are also
+    // credential-bearing, unlike ordinary query keys such as languageCode.
+    let decodedKey = key;
+    for (let depth = 0; depth < 4; depth += 1) {
+      const normalizedKey = decodedKey.toLowerCase().replace(/[^a-z0-9]/gu, '');
+      if (
+        /token|secret|credential|signature|auth|password|passwd|jwt|session|sas|(?:^|.+)key$|^sig$|^pwd$|^xamz|^xgoog|^xms|^(?:code|accesscode|ticket)$/u.test(
+          normalizedKey,
+        )
+      ) {
+        invalid('source.url');
+      }
+      if (!/%[0-9a-f]{2}/iu.test(decodedKey)) break;
+      if (depth === 3) invalid('source.url');
+      try {
+        decodedKey = decodeURIComponent(decodedKey);
+      } catch {
+        invalid('source.url');
+      }
     }
   }
   return parsed.href;

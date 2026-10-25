@@ -24,6 +24,8 @@ export interface RunningHttpServer {
 const LOOPBACK_BIND_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
 const DEFAULT_REQUEST_BODY_LIMIT_BYTES = 1_048_576;
+const MAX_JSON_RPC_ID_BYTES = 128;
+const MAX_HTTP_RESPONSE_BYTES = 256 * 1024;
 
 class PayloadTooLargeError extends Error {}
 
@@ -113,11 +115,36 @@ async function readBody(
   return Buffer.concat(chunks);
 }
 
+function hasOversizedJsonRpcId(body: Buffer | undefined): boolean {
+  if (body === undefined) return false;
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(body.toString('utf8'));
+  } catch {
+    // Leave malformed JSON to the MCP protocol handler.
+    return false;
+  }
+  const requests: readonly unknown[] = Array.isArray(decoded) ? decoded : [decoded];
+  return requests.some((item) => {
+    if (item === null || typeof item !== 'object' || Array.isArray(item) || !Object.hasOwn(item, 'id')) {
+      return false;
+    }
+    const id: unknown = (item as Record<string, unknown>).id;
+    return typeof id === 'string' && Buffer.byteLength(id, 'utf8') > MAX_JSON_RPC_ID_BYTES;
+  });
+}
+
+function jsonRpcError(target: ServerResponse, status: number, code: number, message: string): void {
+  target.statusCode = status;
+  target.setHeader('Content-Type', 'application/json; charset=utf-8');
+  target.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code, message } }));
+}
+
 async function toRequest(
   request: IncomingMessage,
   host: string,
   requestBodyLimitBytes: number,
-): Promise<Request> {
+): Promise<{ webRequest: Request; oversizedJsonRpcId: boolean }> {
   const body = await readBody(request, requestBodyLimitBytes);
   const init: RequestInit = {
     method: request.method ?? 'GET',
@@ -125,13 +152,22 @@ async function toRequest(
   };
   if (body !== undefined) init.body = Uint8Array.from(body);
 
-  return new Request(`http://${request.headers.host ?? host}${request.url ?? '/'}`, init);
+  return {
+    webRequest: new Request(`http://${request.headers.host ?? host}${request.url ?? '/'}`, init),
+    oversizedJsonRpcId: request.method === 'POST' && hasOversizedJsonRpcId(body),
+  };
 }
 
 async function writeResponse(response: Response, target: ServerResponse): Promise<void> {
+  const body = Buffer.from(await response.arrayBuffer());
+  if (body.byteLength > MAX_HTTP_RESPONSE_BYTES) {
+    // A handler may have performed a write; its outcome cannot safely be represented as a retryable failure.
+    jsonRpcError(target, 502, -32000, 'MCP response too large; operation outcome unknown.');
+    return;
+  }
   target.statusCode = response.status;
   response.headers.forEach((value, name) => target.setHeader(name, value));
-  target.end(Buffer.from(await response.arrayBuffer()));
+  target.end(body);
 }
 
 export async function createHttpServer(options: HttpServerOptions = {}): Promise<RunningHttpServer> {
@@ -158,7 +194,11 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
     }
 
     void (async () => {
-      const webRequest = await toRequest(request, host, requestBodyLimitBytes);
+      const { webRequest, oversizedJsonRpcId } = await toRequest(request, host, requestBodyLimitBytes);
+      if (oversizedJsonRpcId) {
+        jsonRpcError(response, 400, -32600, 'Invalid Request');
+        return;
+      }
       const webResponse = await handler.fetch(webRequest);
       await writeResponse(webResponse, response);
     })().catch((error: unknown) => {

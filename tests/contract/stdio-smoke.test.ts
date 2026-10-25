@@ -141,6 +141,7 @@ try {
   const articleValidation = await client.callTool({ name: 'linkedin.article.draft.validate', arguments: { draft } });
   const articlePreview = await client.callTool({ name: 'linkedin.article.draft.preview', arguments: { draft } });
   const articleCompanion = await client.callTool({ name: 'linkedin.article.draft.companion', arguments: { draft } });
+  const nativeArticleHandoff = await client.callTool({ name: 'linkedin.article.native.handoff', arguments: { draft } });
   const articleProjects = await client.callTool({ name: 'linkedin.article.projects.list', arguments: {} });
   const articleSaveWithoutPath = await client.callTool({
     name: 'linkedin.article.projects.create', arguments: { draft, idempotencyKey: 'stdio-article-unconfigured' },
@@ -172,6 +173,8 @@ try {
     articlePreviewIsError: articlePreview.isError,
     articleCompanion: articleCompanion.structuredContent,
     articleCompanionIsError: articleCompanion.isError,
+    nativeArticleHandoff: nativeArticleHandoff.structuredContent,
+    nativeArticleHandoffIsError: nativeArticleHandoff.isError,
     articleProjects: articleProjects.structuredContent,
     articleProjectsIsError: articleProjects.isError,
     articleSaveWithoutPath: articleSaveWithoutPath.structuredContent,
@@ -382,6 +385,11 @@ describe('built stdio server', () => {
         data: { status: string; text: string };
       };
       articleCompanionIsError?: boolean;
+      nativeArticleHandoff: {
+        status: string;
+        data: { kind: string; publicationStatus: string; nativePublishAvailability: string };
+      };
+      nativeArticleHandoffIsError?: boolean;
       articleProjects: { status: string; error: { code: string } };
       articleProjectsIsError?: boolean;
       articleSaveWithoutPath: { status: string; error: { code: string } };
@@ -407,7 +415,15 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 49,
+      toolCount: 50,
+      nativeArticleHandoff: {
+        status: 'succeeded',
+        data: {
+          kind: 'manual_editor_handoff',
+          publicationStatus: 'not_published',
+          nativePublishAvailability: 'UNAVAILABLE',
+        },
+      },
       postSearch: {
         status: 'unsupported',
         data: { status: 'unavailable', providerOutcomes: [] },
@@ -532,6 +548,7 @@ describe('built stdio server', () => {
         'linkedin.article.draft.validate',
         'linkedin.article.draft.preview',
         'linkedin.article.draft.companion',
+        'linkedin.article.native.handoff',
         'linkedin.article.projects.create',
         'linkedin.article.projects.list',
         'linkedin.article.projects.get',

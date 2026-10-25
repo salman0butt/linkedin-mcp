@@ -157,6 +157,19 @@ describe('normalizeArticleDraft', () => {
     ['secret key query', 'https://example.org/article?secret_key=TOP_SECRET'],
     ['OAuth code query', 'https://example.org/article?oauth_code=TOP_SECRET'],
     ['auth code query', 'https://example.org/article?auth_code=TOP_SECRET'],
+    ['bare authorization code', 'https://example.org/article?code=TOP_SECRET'],
+    ['uppercase authorization code', 'https://example.org/article?CODE=TOP_SECRET'],
+    ['percent-encoded authorization code', 'https://example.org/article?%63ode=TOP_SECRET'],
+    ['double-encoded authorization code', 'https://example.org/article?%2563ode=TOP_SECRET'],
+    ['camelCase access code', 'https://example.org/article?accessCode=TOP_SECRET'],
+    ['underscore-separated access code', 'https://example.org/article?Access_CODE=TOP_SECRET'],
+    ['hyphen-separated access code', 'https://example.org/article?Access-Code=TOP_SECRET'],
+    ['percent-encoded access code', 'https://example.org/article?access%43ode=TOP_SECRET'],
+    ['percent-encoded access_code', 'https://example.org/article?access%5Fcode=TOP_SECRET'],
+    ['bare authentication ticket', 'https://example.org/article?ticket=TOP_SECRET'],
+    ['uppercase authentication ticket', 'https://example.org/article?TICKET=TOP_SECRET'],
+    ['percent-encoded authentication ticket', 'https://example.org/article?ti%63ket=TOP_SECRET'],
+    ['mixed safe and credential queries', 'https://example.org/article?topic=types&ticket=TOP_SECRET'],
     ['cloud access key alias', 'https://example.org/article?s3Key=TOP_SECRET'],
     ['AWS signed URL', 'https://example.org/article?X-Amz-Signature=TOP_SECRET'],
     ['AWS credential URL', 'https://example.org/article?X-Amz-Credential=TOP_SECRET'],
@@ -174,7 +187,20 @@ describe('normalizeArticleDraft', () => {
   ])('rejects unsafe source URL: %s', (_name, url) => {
     const input = clone();
     (input.research as { sources: { url: string }[] }).sources[0]!.url = url;
-    expect(() => normalizeArticleDraft(input)).toThrow();
+    expect(() => normalizeArticleDraft(input)).toThrow('Invalid article draft: source.url');
+  });
+
+  it.each([
+    'https://example.org/article?topic=types&page=2',
+    'https://example.org/article?languageCode=en&statusCode=200',
+    'https://example.org/article?category=api&discount_code=welcome',
+  ])('preserves legitimate non-credential source URL query: %s', (url) => {
+    const input = clone();
+    (input.research as { sources: { url: string }[] }).sources[0]!.url = url;
+    const normalized = normalizeArticleDraft(input);
+    expect(normalized.research.sources[0]?.url).toBe(url);
+    expect(normalized.research.sources[0]?.provenance).toBe('user_supplied_unverified');
+    expect(normalizeArticleDraft(normalized)).toEqual(normalized);
   });
 
   it('rejects missing, duplicate and noncanonical IDs and unknown/duplicate block source links', () => {

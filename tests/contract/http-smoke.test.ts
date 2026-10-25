@@ -78,6 +78,7 @@ try {
   const articleValidation = await client.callTool({ name: 'linkedin.article.draft.validate', arguments: { draft: articleDraft } });
   const articlePreview = await client.callTool({ name: 'linkedin.article.draft.preview', arguments: { draft: articleDraft } });
   const articleCompanion = await client.callTool({ name: 'linkedin.article.draft.companion', arguments: { draft: articleDraft } });
+  const nativeArticleHandoff = await client.callTool({ name: 'linkedin.article.native.handoff', arguments: { draft: articleDraft } });
   const privateList = await client.callTool({ name: 'linkedin.article.projects.list', arguments: {} });
   process.stdout.write(JSON.stringify({
     health: health.structuredContent,
@@ -106,6 +107,8 @@ try {
     articlePreviewIsError: articlePreview.isError,
     articleCompanion: articleCompanion.structuredContent,
     articleCompanionIsError: articleCompanion.isError,
+    nativeArticleHandoff: nativeArticleHandoff.structuredContent,
+    nativeArticleHandoffIsError: nativeArticleHandoff.isError,
     privateList: privateList.structuredContent,
     privateListIsError: privateList.isError,
   }));
@@ -271,6 +274,11 @@ describe('built HTTP server', () => {
         data: { status: string; text: string };
       };
       articleCompanionIsError?: boolean;
+      nativeArticleHandoff: {
+        status: string;
+        data: { kind: string; publicationStatus: string; nativePublishAvailability: string };
+      };
+      nativeArticleHandoffIsError?: boolean;
       privateList: { status: string; error: { code: string } };
       privateListIsError?: boolean;
     };
@@ -294,7 +302,15 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 49,
+      toolCount: 50,
+      nativeArticleHandoff: {
+        status: 'succeeded',
+        data: {
+          kind: 'manual_editor_handoff',
+          publicationStatus: 'not_published',
+          nativePublishAvailability: 'UNAVAILABLE',
+        },
+      },
       postSearch: {
         status: 'unsupported',
         data: { status: 'unavailable', providerOutcomes: [] },
@@ -419,6 +435,7 @@ describe('built HTTP server', () => {
         'linkedin.article.draft.validate',
         'linkedin.article.draft.preview',
         'linkedin.article.draft.companion',
+        'linkedin.article.native.handoff',
         'linkedin.article.projects.create',
         'linkedin.article.projects.list',
         'linkedin.article.projects.get',

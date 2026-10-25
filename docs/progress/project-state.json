@@ -1,23 +1,26 @@
 {
   "schemaVersion": 1,
   "currentMilestone": "M09",
-  "currentIteration": "M09.0",
-  "status": "PLANNED",
-  "activeBranch": "main",
+  "currentIteration": "M09.3",
+  "status": "IMPLEMENTING",
+  "activeBranch": "feat/m09-native-article-preparation",
   "activePr": null,
   "baseBranch": "main",
-  "latestVerifiedSha": "4b56a8411eed258ad2e2832b1796031288498a0e",
-  "ciStatus": "M07_FINAL_FEATURE_7f87429_RUN_40089032116_GREEN; M07_POST_MERGE_MAIN_80b5632_RUN_40089200098_GREEN_902_TESTS; M08_PR_12_FINAL_FEATURE_B2C1AD9ABEC69EC05F1A18024F7ABEBFFB9D007A_CI_40120392598_SUCCESS; M08_SQUASH_MERGE_MAIN_4B56A8411EED258AD2E2832B1796031288498A0E_CI_40120555718_SUCCESS_FROZEN_INSTALL_988_OF_988_TESTS_88_SUITES_FORMAT_LINT_TYPECHECK_BUILD_GREEN; M08_INDEPENDENT_M08_6_SIGNOFF_CRITICAL_0_IMPORTANT_0; M09_PLANNED_NOT_IMPLEMENTED; M08_DOCS_CLOSEOUT_BRANCH_CI_NOT_YET_VERIFIED",
+  "latestVerifiedSha": "9f10bc4488918ada401e7a25736f7945c8d80c23",
+  "ciStatus": "M07_FINAL_FEATURE_7f87429_RUN_40089032116_GREEN; M07_POST_MERGE_MAIN_80b5632_RUN_40089200098_GREEN_902_TESTS; M08_PR_12_FINAL_FEATURE_B2C1AD9ABEC69EC05F1A18024F7ABEBFFB9D007A_CI_40120392598_SUCCESS; M08_SQUASH_MERGE_MAIN_4B56A8411EED258AD2E2832B1796031288498A0E_CI_40120555718_SUCCESS_FROZEN_INSTALL_988_OF_988_TESTS_88_SUITES_FORMAT_LINT_TYPECHECK_BUILD_GREEN; M08_CLOSEOUT_PR_13_MERGED_MAIN_9F10BC4488918ADA401E7A25736F7945C8D80C23_CI_40121709957_SUCCESS; M08_INDEPENDENT_M08_6_SIGNOFF_CRITICAL_0_IMPORTANT_0; M09_PURE_HANDOFF_ORIGINAL_8_OF_8_GREEN_EXPANDED_ADVERSARIAL_11_OF_11_GREEN; M09_MCP_HANDOFF_FOCUSED_4_OF_4_GREEN; M09_BUILT_STDIO_HTTP_EXACT_TOOL_LIST_PREVIOUSLY_15_OF_15_GREEN; M08_FULL_MCP_WIRE_SIZE_IMPORTANT_RED_TO_GREEN; M09_AUDIT_URL_QUERY_CODE_ACCESSCODE_TICKET_RED_TO_GREEN_69_OF_69_STRICT_99_OF_99_BROAD_REVIEW_PENDING; M09_AUDIT_HTTP_CALLER_JSONRPC_ID_266342_GT_262144_OWNER_RED_GREEN_VALIDATION_PENDING; M09_LOCAL_FULL_NODE24_1023_OF_1023_90_SUITES_FORMAT_LINT_TYPECHECK_BUILD_DIFF_GREEN; M09_AUDIT_TWO_FINDINGS_INDEPENDENT_SIGNOFF_PENDING; M09_PR_REMOTE_CI_PENDING; M09_NATIVE_PUBLICATION_BLOCKED_UNAVAILABLE",
   "criticalFindings": 0,
-  "importantFindings": 0,
+  "importantFindings": 2,
   "blockers": [
-    "M08 COMPLETE: PR #12 final feature b2c1ad9abec69ec05f1a18024f7abebffb9d007a CI 40120392598 SUCCESS; squash-merged to main 4b56a8411eed258ad2e2832b1796031288498a0e; exact main push CI 40120555718 SUCCESS, frozen install, 988/988 tests across 88 suites, format/lint/typecheck/build GREEN. This documentation closeout branch is a separate unverified checkpoint until its own PR/CI completes.",
+    "M08 COMPLETE: PR #12 final feature b2c1ad9abec69ec05f1a18024f7abebffb9d007a CI 40120392598 SUCCESS; merged main 4b56a8411eed258ad2e2832b1796031288498a0e CI 40120555718 SUCCESS (988/988 tests). M08 closeout PR #13 also merged; verified latest main 9f10bc4488918ada401e7a25736f7945c8d80c23 CI 40121709957 SUCCESS.",
     "M08 independent M08.6 whole-branch reviewer SIGNED OFF unresolved Critical=0 Important=0 after three Important findings were reproduced RED and repaired GREEN: credential-bearing URL query aliases/fragments, parent-child sensitive config path collisions and invalid UTF-8 in persisted revision-2 article data.",
-    "M09 PLANNED M09.0: investigate legitimately authorized native LinkedIn article publishing feasibility and consent/security boundaries only. No official/partner entitlement, native publishing implementation or security challenge bypass is configured or implied.",
+    "M09 IMPLEMENTING M09.3: pure human-only handoff 8/8 original RED-to-GREEN, expanded adversarial 11/11 GREEN, MCP linkedin.article.native.handoff 4/4 missing-tool RED-to-GREEN, previous built STDIO/HTTP/exact tool list 15/15 GREEN. Independently found M08 full-wire MCP response-size Important was fixed RED-to-GREEN. Prime verified full Node24 local gates 1023/1023 tests across 90 suites and format/lint/typecheck/build/diff GREEN. Independent final M09 whole-branch security signoff and PR/exact-head remote CI remain PENDING; local testing is not remote verification.",
+    "M09 independent audit finding awaiting full signoff: HTTP caller-controlled oversized JSON-RPC id produced a 266342-byte response against the 262144-byte limit. The HTTP owner is implementing and validating genuine RED-to-GREEN; do not treat as independently resolved or assume previous M08 MCP dual-copy cap covers this transport case.",
+    "M09 independent audit finding awaiting full signoff: source URLs accepted query credential names code, accessCode and ticket (case/percent-encoded variants), which manual handoff preserved. Reproduced RED, narrow fail-closed input fix locally GREEN in 69/69 strict ArticleDraft and 99/99 broader M08/M09/transport tests; independent final reviewer confirmation is still PENDING.",
+    "M09 external native publishing BLOCKED/UNAVAILABLE: Microsoft Learn Posts API content.article is an external link preview, not native long-form Write article publishing; no independently authorized native API or compliant browser provider is configured. No anti-bot/challenge bypass, user or OAuth entitlement inference, or publish success claim.",
     "M06 COMPLETE: PR #9 squash-merged at 0ff384ae, exact post-merge main CI 40077809706 succeeded (713 tests in 77 files). Independent whole-branch review passed without unresolved Critical/Important findings.",
     "M07 COMPLETE: PR #10 squash-merged at 80b563293e48afd878158bcd2ee40553997ecb42. Exact feature CI 40089032116 and post-merge main CI 40089200098 both GREEN with 902 tests in 83 files and all quality gates. Independent M07.7 whole-branch Critical=0 Important=0. Locally available read-only analyze/compare; no configured live jobs source, LinkedIn Talent entitlement, employer or immigration verification, or automated application submission.",
     "Saved-job private-directory path checks are pinned and revalidated around IO, but Node pathname APIs are not an atomic openat guarantee. An attacker capable of renaming this user's private 0700 directory must already have same-UID/root file access; record as a low-impact hardening limitation."
   ],
-  "exactNextWork": "Begin M09.0 requirements/design and feasibility investigation for legitimately authorized optional native LinkedIn article publishing; no bypass, no entitlement assumption.",
-  "activeHeadSha": "4b56a8411eed258ad2e2832b1796031288498a0e"
+  "exactNextWork": "Obtain independent final M09 security audit re-review/signoff on the HTTP response-size and source URL findings.",
+  "activeHeadSha": "9f10bc4488918ada401e7a25736f7945c8d80c23"
 }

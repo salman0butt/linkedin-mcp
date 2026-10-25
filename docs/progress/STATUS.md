@@ -1,6 +1,18 @@
 # Project Status
 
-## Current checkpoint — 2026-10-24 (M08 COMPLETE; M09 PLANNED)
+## Current checkpoint — 2026-10-24 (M09 LOCAL HANDOFF IMPLEMENTING; EXTERNAL NATIVE PUBLISHING BLOCKED)
+
+Active `feat/m09-native-article-preparation` at verified `main` baseline `9f10bc4488918ada401e7a25736f7945c8d80c23` (M08 closeout PR #13 merged; post-merge main CI `40121709957` **SUCCESS**). Verified M08 PR #12, merged source and CI `40120392598` / `40120555718` remain intact. M07 PR #10 and its verified CI/history also remain intact.
+
+**M09.1 local pure manual native-editor handoff**: original 8/8 focused TDD GREEN, subsequently **11/11 expanded adversarial tests GREEN**, including genuine module/contract and invalid-URL-surrogate RED→GREEN. **M09.2 stateless `linkedin.article.native.handoff` MCP tool**: 4/4 GREEN after genuine missing-tool RED→GREEN; real built STDIO and HTTP plus exact tool registration list **15/15 combined GREEN**. The independently reproduced M08 full-wire-response-size Important bug was repaired with genuine RED→GREEN. **Prime's fresh whole-repository Node24 local gates passed: 1,023/1,023 tests across 90 suites, `pnpm format:check`, lint, typecheck, build and `git diff --check` GREEN.** This is local evidence only; independent M09 whole-branch security signoff, M09 PR and exact-final-head **remote** CI remain **PENDING**.
+
+**Two new independently discovered M09 audit findings await independent signoff:** (1) oversized caller-controlled HTTP JSON-RPC ID yields **266,342 bytes** against the **262,144-byte** response budget; the HTTP owner is validating a genuine RED→GREEN transport fix, and re-review remains pending. (2) credential-bearing article-source URL query names `code`, `accessCode`, `ticket` and case/encoded aliases reached manual handoff; the URL fix was reproduced RED and is **69/69 strict plus 99/99 broad GREEN locally**, but independent re-review has not closed it. Do not infer zero unresolved findings from local gates.
+
+Local handoff means **human copy only**, structured/inert original author content, unverified source notes, truthful `LOCAL_ONLY` provenance, `not_published` status and no private HTTP store access. Actual native LinkedIn long-form publishing is **BLOCKED/UNAVAILABLE**: Posts API `content.article` represents an external URL/link-preview post rather than native Write article; no approved provider/native editor API permission is configured. Browser/security-challenge automation is not authorized. Do not mark M09 complete, publish a link-preview as if it were native long-form, or infer external entitlement from local tests.
+
+Exact next work: **Obtain independent final M09 security audit re-review/signoff on the HTTP response-size and source URL findings.** M09 PR/exact-head remote CI remains the subsequent gate, not yet performed.
+
+## Previous checkpoint — 2026-10-24 (M08 COMPLETE; M09 PLANNED)
 
 M08 Article Authoring Engine [PR #12](https://github.com/salman0butt/linkedin-mcp/pull/12) was squash-merged to `main` at exact commit `4b56a8411eed258ad2e2832b1796031288498a0e`. Final feature head `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` CI `40120392598` and exact post-merge main-push CI `40120555718` both **SUCCESS**. Main CI verified frozen installation, **988/988 tests across 88 suites**, formatting, lint, typecheck and build. Independent M08.6 whole-branch reviewer signed off unresolved **Critical=0 Important=0** after three Important findings (credential-bearing URL query aliases/fragments, private configuration parent/child path overlap, revision-2 persisted invalid UTF-8) were reproduced RED and fixed GREEN.
 

@@ -177,6 +177,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.article.draft.companion',
         'linkedin.article.draft.preview',
         'linkedin.article.draft.validate',
+        'linkedin.article.native.handoff',
         'linkedin.article.projects.create',
         'linkedin.article.projects.get',
         'linkedin.article.projects.list',
