@@ -1,17 +1,18 @@
 # Current Milestone
 
-Milestone: M09 — Native Article Publishing
-Status: IMPLEMENTING — local human-only handoff independent security signoff Critical=0 Important=0 and Node24 gates GREEN; PR #14 initial head CI SUCCESS, docs-updated final-head/post-merge CI PENDING; native publication BLOCKED/UNAVAILABLE.
-Iteration: M09.3
-Branch: `feat/m09-native-article-preparation`
-PR: #14 (OPEN; initial head CI `40216591393` SUCCESS; final docs-updated head CI PENDING; M08 PRs #12 and #13 merged)
-Base/main: `9f10bc4488918ada401e7a25736f7945c8d80c23`
-Active remote feature head: `4cd38eb6f4b465dc4c7a65da49b79b635c7c41fd` (PR #14 OPEN; initial head CI `40216591393` SUCCESS, final docs-updated head CI PENDING).
+Milestone: M10 — Research & Content Intelligence
+Status: PLANNED — M09 local manual-editor handoff VERIFIED and MERGED; M09 native article publication BLOCKED/UNAVAILABLE pending legitimate provider authorization.
+Iteration: M10.0 (requirements/design/specification and implementation plan)
+Branch: `docs/m09-manual-handoff-closeout` (docs-only checkpoint branch from verified `main`).
+PR: none active for the docs-only checkpoint; M09 feature PR #14 squash-merged.
+Latest verified main: `073bf180823292dccf5719a0d55be03983705168`, exact push CI `40218532046` — SUCCESS.
+M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
 Verified M08 closeout PR #13: merged to main `9f10bc4488918ada401e7a25736f7945c8d80c23`, post-merge main CI `40121709957` — SUCCESS.
 Independent M08.6 audit: unresolved Critical=0 Important=0 after three Important RED→GREEN fixes (credential-bearing source URL query aliases/fragments, private config path parent/child collisions and invalid UTF-8 in persisted revision-2 article data).
-M09 ledger: `docs/milestones/M09-native-article-publishing.md`
+M09 blocked native-publishing ledger and verified local-handoff checkpoint: `docs/milestones/M09-native-article-publishing.md`
+M10 active planning ledger: `docs/milestones/M10-content-intelligence.md`
 Completed M08 ledger: `docs/milestones/M08-article-engine.md`
 Completed M08 design: `docs/superpowers/specs/2026-10-24-m08-article-authoring-design.md`
 Completed M08 plan: `docs/superpowers/plans/2026-10-24-m08-article-authoring.md`
@@ -29,8 +30,8 @@ M07 Job Intelligence is COMPLETE: PR #10 squash-merged at `80b563293e48afd878158
 
 M08 Article Authoring Engine is COMPLETE: PR #12 exact feature `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` CI `40120392598` SUCCESS, squash merge `4b56a8411eed258ad2e2832b1796031288498a0e`, post-merge main CI `40120555718` SUCCESS with 988 tests across 88 suites. Independent audit unresolved Critical=0 Important=0. `article.draft` is verified **LOCAL_ONLY**: user sources are unverified; project persistence is opt-in STDIO-private and inaccessible over HTTP. This milestone did **not** enable native LinkedIn article publication.
 
-M09 local preparation is **IMPLEMENTING (M09.3)**: pure manual-editor handoff **8/8 original TDD and 11/11 expanded adversarial tests GREEN**; stateless `linkedin.article.native.handoff` **4/4 missing-tool RED→GREEN**; built STDIO/HTTP and exact tool-list **15/15 GREEN**. The M08 full-MCP-wire response-size Important issue was repaired RED→GREEN. Two further independent M09 audit findings are now **resolved and independently signed off through complementary scopes**: (1) HTTP caller-controlled JSON-RPC ID original RED **267,238 vs 262,144 bytes**, patched with 128-byte UTF-8 ID ingress and 256-KiB full SSE bound; independent worker-4 HTTP review **23/23 GREEN, Critical=0 Important=0**; (2) credential-bearing source query keys `code`, `accessCode`, `ticket`, fixed RED→GREEN **69/69 strict, 99/99 broad**, independently reviewed by worker-5 **101/101 GREEN, 26 unsafe URLs rejected, 11 benign allowed, Critical=0 Important=0** (worker-5 excluded his HTTP patch; worker-4 excluded his URL patch). **Across complementary scopes, unresolved Critical=0 Important=0.** Prime verified full local Node24 gates **1,023/1,023 across 90 suites**, format:check, lint, typecheck, build and diff GREEN. **M09 PR #14 initial-head CI `40216591393` SUCCESS; final docs-updated head CI and post-merge main CI PENDING**; local signoff is not publication entitlement or overall milestone completion.
+M09 **local preparation is VERIFIED and MERGED**: the pure handoff passed 11/11 adversarial tests, the typed `linkedin.article.native.handoff` MCP tool passed 4/4 focused tests and built STDIO/HTTP checks passed. Two independently re-reviewed security fixes (URL credential aliases and HTTP response bounds) closed at **Critical=0, Important=0** across complementary reviewer scopes. Prime's full local Node24 gates passed **1,023/1,023 in 90 suites**. PR #14 final feature-head CI `40218390770` succeeded at `c6ef52f5`; it was squash-merged to `main` `073bf180823292dccf5719a0d55be03983705168`, whose exact push CI `40218532046` **SUCCESS**. The local handoff's verified state does **not** imply remote native publishing or a complete M09 milestone.
 
 Actual native LinkedIn article publishing remains **BLOCKED/UNAVAILABLE**: the documented Posts API `content.article` produces a URL/link-preview post, not a native long-form editor document; no authorized native editor API or approved browser provider is configured. Do not automate LinkedIn's browser without authorization, bypass challenges, treat author review as publication approval, or advertise remote publication from the local handoff.
 
-Exact next work: **Verify PR #14 exact feature-head SHA CI, then merge and verify post-merge main CI.**
+Exact next work: **Create the docs-only verified-handoff closeout PR from `docs/m09-manual-handoff-closeout` and verify its exact-head CI.** M10.0 sourced research planning is the next independent roadmap activity after that checkpoint; M09.P stays blocked pending legitimate native publication authorization.

@@ -1,6 +1,16 @@
 # Project Status
 
-## Current checkpoint — 2026-10-24 (M09 LOCAL HANDOFF IMPLEMENTING; EXTERNAL NATIVE PUBLISHING BLOCKED)
+## Current checkpoint — 2026-10-25 (M09 LOCAL HANDOFF VERIFIED AND MERGED; NATIVE PUBLISHING BLOCKED; M10.0 PLANNED)
+
+**Exact verified repository checkpoint:** PR [#14](https://github.com/salman0butt/linkedin-mcp/pull/14) final feature head `c6ef52f5` passed CI `40218390770` **SUCCESS**, then squash-merged to `main` commit `073bf180823292dccf5719a0d55be03983705168`. Exact main-push CI `40218532046` **COMPLETED/SUCCESS**. The `linkedin.article.native.handoff` feature is now **VERIFIED and MERGED** as `LOCAL_ONLY` manual native-editor preparation (human copy, inert blocks, unverified source notes, `manualOnly:true`, `publicationStatus:'not_published'`, `nativePublishAvailability:'UNAVAILABLE'`). Full local Node24 gates passed **1,023/1,023 tests across 90 suites**; complementary independent reviewer scopes found **Critical=0, Important=0** after repairing URL credential aliases and HTTP response-boundary defects.
+
+**M09.P actual native LinkedIn long-form publication remains BLOCKED/UNAVAILABLE.** The LinkedIn Posts `content.article` API is an external link preview, not the native Write article document; there is no authorized publishing provider, browser automation permission, publish receipt or verified native URL. **Do not mark overall M09 COMPLETE** or claim remote publication success from the manual-only tool.
+
+The docs-only post-merge checkpoint uses branch `docs/m09-manual-handoff-closeout` from verified `main` `073bf180823292dccf5719a0d55be03983705168`; its own PR/exact-head CI is not yet verified. Repository roadmap can proceed to **M10.0 — sourced Research & Content Intelligence planning** as the next independently feasible milestone, without waiving the blocked M09.P provider gate. `research.topic` stays PLANNED, with explicit source provenance, uncertainty/freshness and no invented provider/data.
+
+Exact next work: **Create the docs-only M09 verified-handoff closeout PR and verify its exact-head CI.** M10.0 sourced research planning follows this checkpoint.
+
+## Previous checkpoint — 2026-10-24 (M09 LOCAL HANDOFF IMPLEMENTING; EXTERNAL NATIVE PUBLISHING BLOCKED)
 
 Active `feat/m09-native-article-preparation` at verified `main` baseline `9f10bc4488918ada401e7a25736f7945c8d80c23` (M08 closeout PR #13 merged; post-merge main CI `40121709957` **SUCCESS**). Verified M08 PR #12, merged source and CI `40120392598` / `40120555718` remain intact. M07 PR #10 and its verified CI/history also remain intact.
 
