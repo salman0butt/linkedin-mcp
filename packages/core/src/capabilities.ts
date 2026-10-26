@@ -283,6 +283,19 @@ const descriptors: CapabilityDescriptor[] = [
     evidence: 'M10.1 deterministic bounded pure theme grouping and typed MCP/transport contracts.',
   },
   {
+    id: 'research.references.index',
+    desiredBehavior:
+      'Index explicit caller-supplied unverified research references and group repeat canonical display URLs without fetching.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M10',
+    status: 'ACTIVE',
+    accessNote:
+      'Stateless caller-only URL reference inventory; repeated URL is not independent corroboration, and no link or source is verified, stored or fetched.',
+    approvalRequired: false,
+    evidence: 'M10.2 strict local reference-index contract and typed MCP/transport coverage.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',

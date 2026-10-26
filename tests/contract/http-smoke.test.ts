@@ -77,6 +77,13 @@ try {
       { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
     ],
   } });
+  const referenceIndex = await client.callTool({ name: 'linkedin.research.index_references', arguments: {
+    sources: [
+      { id: 'alpha', title: 'Caller A', url: 'https://RESEARCH.example.org/report', body: 'PRIVATE FIRST INDEX BODY' },
+      { id: 'beta', title: 'Caller B', url: 'https://research.example.org/report', body: 'PRIVATE SECOND INDEX BODY' },
+      { id: 'gamma', title: 'Caller C', url: 'https://research.example.org/other', body: 'PRIVATE THIRD INDEX BODY' },
+    ],
+  } });
   const rawResearchResponse = await fetch(
     'http://' + server.address.host + ':' + server.address.port + '/mcp',
     {
@@ -120,6 +127,26 @@ try {
   const rawThemeWire = await rawThemeResponse.text();
   const rawThemeEvent = rawThemeWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
   const rawThemeResult = rawThemeEvent ? JSON.parse(rawThemeEvent.slice(6)) : null;
+  const rawReferenceResponse = await fetch(
+    'http://' + server.address.host + ':' + server.address.port + '/mcp',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 'm10-references-wire', method: 'tools/call',
+        params: { name: 'linkedin.research.index_references', arguments: {
+          sources: Array.from({ length: 4 }, (_, i) => ({
+            id: 'raw-' + i, title: 'Caller reference',
+            url: i % 2 === 0 ? 'https://RESEARCH.example.org/same' : 'https://research.example.org/same',
+            body: 'A'.repeat(49000) + i,
+          })),
+        } },
+      }),
+    },
+  );
+  const rawReferenceWire = await rawReferenceResponse.text();
+  const rawReferenceEvent = rawReferenceWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
+  const rawReferenceResult = rawReferenceEvent ? JSON.parse(rawReferenceEvent.slice(6)) : null;
   const articleDraft = {
     title: 'HTTP article smoke', topic: 'Secure local drafts', audience: 'Developers',
     goal: 'Demonstrate review-only authoring.',
@@ -165,6 +192,12 @@ try {
     researchIsError: research.isError,
     themeGrouping: themeGrouping.structuredContent,
     themeGroupingIsError: themeGrouping.isError,
+    referenceIndex: referenceIndex.structuredContent,
+    referenceIndexIsError: referenceIndex.isError,
+    rawReferenceStatus: rawReferenceResponse.status,
+    rawReferenceWireBytes: Buffer.byteLength(rawReferenceWire, 'utf8'),
+    rawReferenceResult,
+    rawReferenceBodyEcho: rawReferenceWire.includes('AAAAAAA'),
     rawThemeStatus: rawThemeResponse.status,
     rawThemeWireBytes: Buffer.byteLength(rawThemeWire, 'utf8'),
     rawThemeResult,
@@ -360,6 +393,29 @@ describe('built HTTP server', () => {
         };
       };
       themeGroupingIsError?: boolean;
+      referenceIndex: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          referenceOrigin: string;
+          sourceTrust: string;
+          repeatedUrlGroups: Array<{ url: string; sourceIds: string[] }>;
+          singleUrlSourceIds: string[];
+        };
+      };
+      referenceIndexIsError?: boolean;
+      rawReferenceStatus: number;
+      rawReferenceWireBytes: number;
+      rawReferenceResult: {
+        result: {
+          structuredContent: {
+            status: string;
+            data: { kind: string; repeatedUrlGroups: Array<{ sourceIds: string[] }> };
+          };
+        };
+      };
+      rawReferenceBodyEcho: boolean;
       rawThemeStatus: number;
       rawThemeWireBytes: number;
       rawThemeResult: {
@@ -414,7 +470,7 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 52,
+      toolCount: 53,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -503,6 +559,35 @@ describe('built HTTP server', () => {
     expect(result.toolNames).toContain('linkedin.post.preview.text');
     expect(result.researchIsError).not.toBe(true);
     expect(result.themeGroupingIsError).not.toBe(true);
+    expect(result.referenceIndexIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.index_references');
+    expect(result.referenceIndex).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_reference_register',
+        referenceOrigin: 'caller_supplied',
+        sourceTrust: 'caller_supplied_unverified',
+        repeatedUrlGroups: [{ url: 'https://research.example.org/report', sourceIds: ['alpha', 'beta'] }],
+        singleUrlSourceIds: ['gamma'],
+      },
+    });
+    expect(JSON.stringify(result.referenceIndex)).not.toContain('PRIVATE FIRST INDEX BODY');
+    expect(result.rawReferenceStatus).toBe(200);
+    expect(result.rawReferenceWireBytes).toBeLessThanOrEqual(256 * 1024);
+    expect(result.rawReferenceBodyEcho).toBe(false);
+    expect(result.rawReferenceResult).toMatchObject({
+      id: 'm10-references-wire',
+      result: {
+        structuredContent: {
+          status: 'succeeded',
+          data: {
+            kind: 'local_reference_register',
+            repeatedUrlGroups: [{ sourceIds: ['raw-0', 'raw-1', 'raw-2', 'raw-3'] }],
+          },
+        },
+      },
+    });
     expect(result.toolNames).toContain('linkedin.research.group_themes');
     expect(result.themeGrouping.data.themeGroups[0]?.phrases[0]?.evidence).toEqual([
       expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),

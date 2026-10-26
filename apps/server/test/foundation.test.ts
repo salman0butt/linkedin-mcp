@@ -46,7 +46,9 @@ describe('foundation result factories', () => {
           status: 'VERIFIED',
           availability: 'AVAILABLE',
         });
-      } else if (['research.analyze', 'research.group_themes'].includes(capability.id)) {
+      } else if (
+        ['research.analyze', 'research.group_themes', 'research.references.index'].includes(capability.id)
+      ) {
         expect(capability).toMatchObject({
           provider: 'LOCAL_ONLY',
           status: 'ACTIVE',
@@ -58,6 +60,13 @@ describe('foundation result factories', () => {
         expect(capability.availability).toBe('UNAVAILABLE');
       }
     }
+    expect(
+      result.data.capabilities.find((capability) => capability.id === 'research.references.index'),
+    ).toMatchObject({
+      status: 'ACTIVE',
+      availability: 'AVAILABLE',
+      provider: 'LOCAL_ONLY',
+    });
     expect(
       result.data.capabilities.find((capability) => capability.id === 'article.native.publish'),
     ).toMatchObject({

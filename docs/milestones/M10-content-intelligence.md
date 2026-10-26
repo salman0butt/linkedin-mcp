@@ -1,6 +1,6 @@
 # M10 — Research & Content Intelligence
 
-Status: **IMPLEMENTING — M10.0 verified/merged at PR #16 with exact feature and main CI success; M10.1 caller-defined theme grouping locally implemented, independent review and remote PR/CI pending.**
+Status: **IMPLEMENTING — M10.0 and M10.1 verified/merged (PRs #16/#17, feature and post-merge CI successful); M10.2 caller-only reference register implemented locally; independent review and PR/CI PENDING.**
 
 ## Goal
 
@@ -26,9 +26,9 @@ Insights trace to sources/providers; uncertainty and freshness are explicit; rep
 
 M10.0 is VERIFIED/MERGED: strict unverified caller-corpus normalization, deterministic literal topic/focus coverage with UTF-16 source spans, exact duplicate body grouping, and typed `linkedin.research.analyze` MCP integration over real STDIO/HTTP. Independent security and integration reviewers signed off with zero unresolved Critical or Important findings after targeted RED→GREEN repairs. This slice performs no theme mining, automated clustering, content-gap analysis, competitor verification, provider-backed research, trend detection, or publication.
 
-M10.1 local implementation on isolated `feat/m10-local-theme-grouping` includes strict caller-defined labels/phrases, deterministic source-ordered literal UTF-16 evidence projection from the existing analyzer, bounded pure output and a distinct typed `linkedin.research.group_themes` over built STDIO/HTTP. Genuine RED→GREEN fixes reject Unicode regex case-equivalence collisions and hidden single-line separator characters. No autonomous semantic theme inference, trend statistics, market gaps or external retrieval may be claimed; independent final review, exact feature-head and main CI remain pending.
+M10.1 **VERIFIED/MERGED** via PR #17: strict caller-defined labels/phrases, deterministic source-ordered literal UTF-16 evidence projection from the existing analyzer, bounded pure output and typed `linkedin.research.group_themes` over built STDIO/HTTP. Genuine RED→GREEN fixes reject Unicode regex case-equivalence collisions, lowercase-only false quote attribution and hidden U+2028/U+2029 separators. Independent final Critical=0 Important=0; exact feature CI `40300253462` SUCCESS and main push CI `40300553498` SUCCESS. No semantic clustering, trend statistics, verified market gaps or retrieval is claimed.
 
-Later M10 iterations still require an authorized external research provider, evidenced retrieval provenance, source-aware clustering/gap/competitor research design and tests, and milestone closeout.
+M10.2 local implementation adds strict `indexResearchReferences`/typed `linkedin.research.index_references`, caller-only canonical display-URL repeated/single-source mapping, unverified provenance and caller-reported dates without body echo. No topic/focus is required; no URL retrieval, source attestation, persistence, networking or publishing. New pure and MCP tests were genuinely RED on missing module/tool before GREEN; local full Node24 suite is 1,074/1,074 across 97 suites with required gates and built STDIO/HTTP 6/6. Independent reviews, exact PR CI and merged-main CI are still PENDING. Broader M10 requires authorized providers for discovered references, verified research, trend/gap/competitor inference and milestone closeout.
 
 ## TDD Evidence
 
@@ -36,9 +36,11 @@ M10.0 core, analysis and MCP tests exercised missing module/tool registration, U
 
 M10.1 missing pure module and MCP tool were separately reproduced RED, then repaired GREEN. The initial full local Node24 suite passed **1,055/1,055 in 95 suites**; after Unicode case-equivalence tests it passed **1,056/1,056**, and after correcting a separate Unicode topic/phrase false-evidence mapping regression, the **final full suite passed 1,057/1,057 tests across 95 suites** with all quality, framework and real built transport gates green. Unicode single-line separator and topic equivalence edge cases were genuine RED→GREEN repairs, not content truncations.
 
+M10.2 original missing-module/test and missing-MCP-tool RED failures were observed, then 8/8 pure and 9/9 MCP tests passed. First full Node24 run passed 1,074/1,074 across 97 suites, plus formatting/lint/typecheck/build, seven framework tests and actual built STDIO/HTTP 6/6. Final independent review and remote exact-SHA CI still pending.
+
 ## Integration Test Evidence
 
-Built real STDIO and loopback HTTP processes both invoked `linkedin.research.analyze` and verified `LOCAL_ONLY`, original UTF-16 evidence spans and source-provenance fidelity. Actual HTTP raw SSE POST of a large valid caller corpus produced 200 and a bounded 3,661-byte SSE response with no body echo; full SSE budget <=256 KiB. Remote exact feature-head and post-merge CI passed for M10.0 only.
+Built real STDIO and loopback HTTP processes both invoked `linkedin.research.analyze` and verified `LOCAL_ONLY`, original UTF-16 evidence spans and source-provenance fidelity. Actual HTTP raw SSE POST of a large valid caller corpus produced 200 and a bounded 3,661-byte SSE response with no body echo; full SSE budget <=256 KiB. M10.0 and M10.1 both passed exact feature-head and post-merge CI. M10.1 also passed real built STDIO/HTTP and raw SSE constraints; no third-party source verification follows.
 
 ## Security Review
 
@@ -46,11 +48,11 @@ Independent core/analyzer/MCP security review and separate integration/documenta
 
 ## Code Review Findings
 
-Both M10.0 reviewer scopes signed off with zero unresolved Critical/Important findings on the amended source and built transport integrations. Exact feature-head and post-merge main CI passed. M10.1 requires its own fresh independent review after implementation.
+Both M10.0 and M10.1 received independent source/integration review with unresolved Critical=0 Important=0, followed by successful exact feature-head and main CI. M10.2 requires its own new design, tests and review.
 
 ## Fresh Verification Results
 
-M10.0 PR [#16](https://github.com/salman0butt/linkedin-mcp/pull/16): exact feature commit `bb84e6e02656313e33dba5d992d8cfbcc9279706`, CI `40293170065` SUCCESS. Squash-merged `main` `865fd9fb4cd5ccd8438ef7a89f9bc08f3fb600df`, identical Git tree `38629469b6449be0883c6bbe122c8951b4b3d0ac`, exact push CI `40293411451` SUCCESS. Active M10.1 branch is local and has no feature CI or PR yet.
+M10.0 PR [#16](https://github.com/salman0butt/linkedin-mcp/pull/16): exact feature commit `bb84e6e02656313e33dba5d992d8cfbcc9279706`, CI `40293170065` SUCCESS. Squash-merged `main` `865fd9fb4cd5ccd8438ef7a89f9bc08f3fb600df`, identical Git tree `38629469b6449be0883c6bbe122c8951b4b3d0ac`, exact push CI `40293411451` SUCCESS. M10.1 PR [#17](https://github.com/salman0butt/linkedin-mcp/pull/17) final feature `c36bfbce83299d53bf8f743c0b5316ed861fea91`, CI `40300253462` SUCCESS; squash main `2899847a79dec7dd08714d8e2a3fb3e720c6c42e`, identical tree `0fc169222f5e2eb5c888ba7c126edda070467932`, push CI `40300553498` SUCCESS.
 
 ## Durable Recovery Sources
 
@@ -60,4 +62,4 @@ PRD, capability matrix, `docs/superpowers/specs/2026-10-25-m10-content-research-
 
 - [x] M10.0 local acceptance and exact feature/post-merge CI verified.
 - [x] Independent scoped Critical/Important findings resolved.
-- [ ] Broader M10 tasks, M10.1 implementation and final milestone closeout.
+- [ ] Broader M10 tasks, M10.2 reference register, further provider-backed research and final milestone closeout.

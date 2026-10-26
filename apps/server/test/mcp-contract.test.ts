@@ -156,6 +156,11 @@ describe('LinkedIn MCP server contract', () => {
         status: 'PLANNED',
         availability: 'UNAVAILABLE',
       });
+      expect(capabilities.find((capability) => capability.id === 'research.references.index')).toMatchObject({
+        status: 'ACTIVE',
+        availability: 'AVAILABLE',
+        provider: 'LOCAL_ONLY',
+      });
     } finally {
       await client.close();
       await handler.close();
@@ -221,6 +226,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.reactions.remove.preview',
         'linkedin.research.analyze',
         'linkedin.research.group_themes',
+        'linkedin.research.index_references',
         'linkedin.version',
       ]);
       for (const tool of tools) {
