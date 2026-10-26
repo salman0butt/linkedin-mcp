@@ -219,6 +219,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.reactions.remove',
         'linkedin.reactions.remove.approve',
         'linkedin.reactions.remove.preview',
+        'linkedin.research.analyze',
         'linkedin.version',
       ]);
       for (const tool of tools) {

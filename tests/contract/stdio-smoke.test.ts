@@ -122,6 +122,13 @@ try {
         postingDate: { state: 'unknown' }, description: 'Must have AWS.' },
     ], candidate: { skills: ['TypeScript'] },
   } });
+  const research = await client.callTool({ name: 'linkedin.research.analyze', arguments: {
+    topic: 'Agentic systems', focusTerms: ['RAG'],
+    sources: [
+      { id: 'one', title: 'First caller note', url: 'https://research.example.org/one', body: '🤖 Agentic systems use RAG.' },
+      { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
+    ],
+  } });
   const draft = {
     title: 'Safe local article smoke', topic: 'TypeScript', audience: 'Engineers',
     goal: 'Explain local draft authoring.',
@@ -166,6 +173,8 @@ try {
     analysisIsError: analysis.isError,
     comparison: comparison.structuredContent,
     comparisonIsError: comparison.isError,
+    research: research.structuredContent,
+    researchIsError: research.isError,
     promptNames, promptContents,
     articleValidation: articleValidation.structuredContent,
     articleValidationIsError: articleValidation.isError,
@@ -365,6 +374,18 @@ describe('built stdio server', () => {
       analysisIsError?: boolean;
       comparison: unknown;
       comparisonIsError?: boolean;
+      research: {
+        status: string;
+        provider: { type: string };
+        data: {
+          sourceTrust: string;
+          termCoverage: Array<{
+            term: string;
+            evidence: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+          }>;
+        };
+      };
+      researchIsError?: boolean;
       promptNames: string[];
       promptContents: string[];
       articleValidation: {
@@ -415,7 +436,15 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 50,
+      toolCount: 51,
+      research: {
+        status: 'succeeded',
+        provider: { type: 'LOCAL_ONLY' },
+        data: {
+          sourceTrust: 'caller_supplied_unverified',
+          termCoverage: [{ term: 'Agentic systems' }, { term: 'RAG' }],
+        },
+      },
       nativeArticleHandoff: {
         status: 'succeeded',
         data: {
@@ -482,6 +511,10 @@ describe('built stdio server', () => {
       },
     });
     expect(result.toolNames).toContain('linkedin.post.preview.text');
+    expect(result.researchIsError).not.toBe(true);
+    expect(result.research.data.termCoverage[0]?.evidence).toEqual([
+      expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),
+    ]);
     expect(result.toolNames).toContain('linkedin.post.approve.text');
     expect(result.toolNames).toContain('linkedin.post.create.text');
     expect(result.toolNames).toEqual(

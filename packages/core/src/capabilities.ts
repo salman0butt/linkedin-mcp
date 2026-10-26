@@ -257,6 +257,30 @@ const descriptors: CapabilityDescriptor[] = [
     evidence: 'M07.6 exact-source job-intelligence contract and real STDIO/HTTP comparison smoke tests.',
   },
   {
+    id: 'research.analyze',
+    desiredBehavior:
+      'Summarize literal focus-term evidence in explicitly caller-supplied research source text.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M10',
+    status: 'ACTIVE',
+    accessNote:
+      'Only caller-supplied unverified sources; no online research, market trends, fact verification or publication.',
+    approvalRequired: false,
+    evidence: 'M10 deterministic bounded local parser, analyzer and MCP client contracts.',
+  },
+  {
+    id: 'research.topic',
+    desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
+    provider: 'EXTERNAL_DISCOVERY',
+    availability: 'UNAVAILABLE',
+    milestone: 'M10',
+    status: 'PLANNED',
+    accessNote:
+      'No authorized external research provider is configured; do not claim live research or trend freshness.',
+    approvalRequired: false,
+  },
+  {
     id: 'article.draft',
     desiredBehavior: 'Create and manage a local long-form article draft package.',
     provider: 'LOCAL_ONLY',

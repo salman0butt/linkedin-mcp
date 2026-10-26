@@ -1,6 +1,16 @@
 # Project Status
 
-## Current checkpoint — 2026-10-25 (M09 LOCAL HANDOFF VERIFIED AND MERGED; NATIVE PUBLISHING BLOCKED; M10.0 PLANNED)
+## Current checkpoint — 2026-10-26 (M10.0 REVIEWED LOCALLY; FEATURE PR/CI PENDING)
+
+**Verified baseline only:** M09 documentation closeout PR #15 is merged; `main` commit `2a71c5ef402a19cdf6a7f340e5e28134c9980793` has exact main CI `40220317041` **SUCCESS**. The M10 feature worktree `feat/m10-content-intelligence` is based on this main commit, and its new source, tests and design/plan are currently local and uncommitted. **M10 has no final feature commit SHA, active PR, feature-head CI or post-merge verification.** The verified main CI proves the baseline, not the M10 implementation.
+
+**M10.0 implementation in progress:** strict `normalizeResearchCorpus`, literal `analyzeResearchCorpus` and typed `linkedin.research.analyze` MCP wiring/tests are present locally. They analyze 1–20 unverified caller-provided excerpts, with source-bound UTF-16 quotes for literal topic/focus coverage, exact duplicate bodies and bounded deterministic responses. The local tool is classified `LOCAL_ONLY` and remains **ACTIVE/in progress, not yet VERIFIED**. It does not fetch URLs, independently verify dates or facts, claim market trends, infer competitor gaps, access private stored drafts/jobs or publish content. `research.topic` remains `EXTERNAL_DISCOVERY` / `UNAVAILABLE` without an authorized source. Broader M10 research features remain unfinished.
+
+**Local verification evidence:** full Node24 test run on 2026-10-26 passed **1,043/1,043 tests across 93 suites**. Independent M10 security and integration reviewers closed all reproduced findings, each signing off **Critical=0, Important=0**; real built STDIO/HTTP tool invocation and bounded raw HTTP SSE response were verified. Final post-document-edit local gate completion and remote feature PR/exact-head CI/post-merge main CI remain pending. M09 manual native-editor handoff remains VERIFIED/MERGED; native article publication (M09.P) remains BLOCKED/UNAVAILABLE.
+
+Exact next work: **Complete the final M10.0 local typecheck/build/test/document validation gates and persist the reviewed feature as an exact GitHub Git tree and feature PR.**
+
+## Previous checkpoint — 2026-10-25 (M09 LOCAL HANDOFF VERIFIED AND MERGED; NATIVE PUBLISHING BLOCKED; M10.0 PLANNED)
 
 **Exact verified repository checkpoint:** PR [#14](https://github.com/salman0butt/linkedin-mcp/pull/14) final feature head `c6ef52f5` passed CI `40218390770` **SUCCESS**, then squash-merged to `main` commit `073bf180823292dccf5719a0d55be03983705168`. Exact main-push CI `40218532046` **COMPLETED/SUCCESS**. The `linkedin.article.native.handoff` feature is now **VERIFIED and MERGED** as `LOCAL_ONLY` manual native-editor preparation (human copy, inert blocks, unverified source notes, `manualOnly:true`, `publicationStatus:'not_published'`, `nativePublishAvailability:'UNAVAILABLE'`). Full local Node24 gates passed **1,023/1,023 tests across 90 suites**; complementary independent reviewer scopes found **Critical=0, Important=0** after repairing URL credential aliases and HTTP response-boundary defects.
 

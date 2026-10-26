@@ -1,18 +1,20 @@
 # Current Milestone
 
 Milestone: M10 — Research & Content Intelligence
-Status: PLANNED — M09 local manual-editor handoff VERIFIED and MERGED; M09 native article publication BLOCKED/UNAVAILABLE pending legitimate provider authorization.
-Iteration: M10.0 (requirements/design/specification and implementation plan)
-Branch: `docs/m09-manual-handoff-closeout` (docs-only checkpoint branch from verified `main`).
-PR: none active for the docs-only checkpoint; M09 feature PR #14 squash-merged.
-Latest verified main: `073bf180823292dccf5719a0d55be03983705168`, exact push CI `40218532046` — SUCCESS.
+Status: IMPLEMENTING — M10.0 LOCAL_ONLY caller-corpus analysis locally reviewed, 1,043/1,043 tests passed; remote exact-head CI pending. M09 manual handoff VERIFIED and M09 native article publication BLOCKED/UNAVAILABLE.
+Iteration: M10.0 (source-grounded analysis local security/integration review complete; PR and CI pending)
+Branch: `feat/m10-content-intelligence` (local worktree, no committed M10 feature head yet).
+PR: none active for M10; feature PR and exact-head CI PENDING. M09 documentation closeout PR #15 merged.
+Latest verified main: `2a71c5ef402a19cdf6a7f340e5e28134c9980793`, exact main CI `40220317041` — SUCCESS. This verifies the main baseline, not M10 source.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
 Verified M08 closeout PR #13: merged to main `9f10bc4488918ada401e7a25736f7945c8d80c23`, post-merge main CI `40121709957` — SUCCESS.
 Independent M08.6 audit: unresolved Critical=0 Important=0 after three Important RED→GREEN fixes (credential-bearing source URL query aliases/fragments, private config path parent/child collisions and invalid UTF-8 in persisted revision-2 article data).
 M09 blocked native-publishing ledger and verified local-handoff checkpoint: `docs/milestones/M09-native-article-publishing.md`
-M10 active planning ledger: `docs/milestones/M10-content-intelligence.md`
+M10 active implementation ledger: `docs/milestones/M10-content-intelligence.md`
+M10 design: `docs/superpowers/specs/2026-10-25-m10-content-research-design.md`
+M10 implementation plan: `docs/superpowers/plans/2026-10-25-m10-content-research.md`
 Completed M08 ledger: `docs/milestones/M08-article-engine.md`
 Completed M08 design: `docs/superpowers/specs/2026-10-24-m08-article-authoring-design.md`
 Completed M08 plan: `docs/superpowers/plans/2026-10-24-m08-article-authoring.md`
@@ -34,4 +36,6 @@ M09 **local preparation is VERIFIED and MERGED**: the pure handoff passed 11/11 
 
 Actual native LinkedIn article publishing remains **BLOCKED/UNAVAILABLE**: the documented Posts API `content.article` produces a URL/link-preview post, not a native long-form editor document; no authorized native editor API or approved browser provider is configured. Do not automate LinkedIn's browser without authorization, bypass challenges, treat author review as publication approval, or advertise remote publication from the local handoff.
 
-Exact next work: **Create the docs-only verified-handoff closeout PR from `docs/m09-manual-handoff-closeout` and verify its exact-head CI.** M10.0 sourced research planning is the next independent roadmap activity after that checkpoint; M09.P stays blocked pending legitimate native publication authorization.
+M10.0 local source/tests presently include `normalizeResearchCorpus`, `analyzeResearchCorpus`, the typed `linkedin.research.analyze` MCP tool and STDIO/HTTP test coverage. All M10 source claims are bounded to unverified caller text, literal UTF-16 source evidence and exact duplicate excerpts; no live research provider, verified trends, automatic theme mining, competitor gaps or new publication capability is included. Implementation owners and independent reviewers are still working; local full gates, exact final feature SHA, PR and CI are pending. `research.topic` remains `EXTERNAL_DISCOVERY` / `UNAVAILABLE`.
+
+Exact next work: **Complete the independent M10.0 security/correctness review of the current local implementation and resolve any blocking findings.** Then prime can run full gates, create the feature PR and verify exact-head CI; M09.P stays blocked.

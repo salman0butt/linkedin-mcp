@@ -46,6 +46,13 @@ describe('foundation result factories', () => {
           status: 'VERIFIED',
           availability: 'AVAILABLE',
         });
+      } else if (capability.id === 'research.analyze') {
+        expect(capability).toMatchObject({
+          provider: 'LOCAL_ONLY',
+          status: 'ACTIVE',
+          availability: 'AVAILABLE',
+          milestone: 'M10',
+        });
       } else {
         expect(capability.status).not.toBe('VERIFIED');
         expect(capability.availability).toBe('UNAVAILABLE');

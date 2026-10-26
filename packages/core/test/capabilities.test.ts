@@ -30,6 +30,8 @@ describe('capability registry', () => {
         'jobs.search',
         'article.draft',
         'article.native.publish',
+        'research.analyze',
+        'research.topic',
         'messages.send',
       ]),
     );
@@ -67,7 +69,16 @@ describe('capability registry', () => {
           descriptor.status === 'VERIFIED',
       ),
     ).toBe(true);
-    const others = futureCapabilities.filter((descriptor) => !verifiedLocal.includes(descriptor));
+    const research = futureCapabilities.find((descriptor) => descriptor.id === 'research.analyze');
+    expect(research).toMatchObject({
+      provider: 'LOCAL_ONLY',
+      availability: 'AVAILABLE',
+      status: 'ACTIVE',
+      milestone: 'M10',
+    });
+    const others = futureCapabilities.filter(
+      (descriptor) => !verifiedLocal.includes(descriptor) && descriptor.id !== 'research.analyze',
+    );
     expect(others.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);
     expect(others.every((descriptor) => descriptor.status !== 'VERIFIED')).toBe(true);
     expect(others.find((descriptor) => descriptor.id === 'article.native.publish')).toMatchObject({
