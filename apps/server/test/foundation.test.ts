@@ -46,7 +46,7 @@ describe('foundation result factories', () => {
           status: 'VERIFIED',
           availability: 'AVAILABLE',
         });
-      } else if (capability.id === 'research.analyze') {
+      } else if (['research.analyze', 'research.group_themes'].includes(capability.id)) {
         expect(capability).toMatchObject({
           provider: 'LOCAL_ONLY',
           status: 'ACTIVE',

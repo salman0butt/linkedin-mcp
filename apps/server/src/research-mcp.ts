@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
 import { analyzeResearchCorpus, ResearchOutputTooLargeError } from './research/content-analysis.js';
+import { groupResearchThemes } from './research/theme-grouping.js';
 
 interface ResearchDeps {
   createRequestId: () => string;
@@ -25,6 +26,22 @@ const researchInput = z.strictObject(
     sources: z.array(source).min(1).max(20),
   },
   { error: () => 'Invalid research request fields.' },
+);
+const callerThemeInput = z.strictObject(
+  {
+    id: z.string().min(1).max(80),
+    label: z.string().min(1).max(80),
+    phrases: z.array(z.string().min(1).max(80)).min(1).max(3),
+  },
+  { error: () => 'Invalid caller-defined theme fields.' },
+);
+const themeGroupingInput = z.strictObject(
+  {
+    topic: z.string().min(1).max(200),
+    themes: z.array(callerThemeInput).min(1).max(4),
+    sources: z.array(source).min(1).max(20),
+  },
+  { error: () => 'Invalid theme grouping request fields.' },
 );
 const evidence = z
   .object({
@@ -112,6 +129,51 @@ const output = z
     metadata: z.object({ requestId: z.string(), timestamp: z.string() }).strict(),
   })
   .strict();
+const themeGroupingData = z
+  .object({
+    kind: z.literal('local_caller_defined_theme_grouping'),
+    status: z.enum(['available', 'insufficient_evidence']),
+    themeOrigin: z.literal('caller_defined'),
+    sourceTrust: z.literal('caller_supplied_unverified'),
+    verification: z.literal('not_performed'),
+    topic: z.string().max(200),
+    sourceSummaries: output.shape.data.unwrap().shape.sourceSummaries,
+    themeGroups: z
+      .array(
+        z
+          .object({
+            id: z.string().max(80),
+            label: z.string().max(80),
+            sourceIds: z.array(z.string().max(80)).max(20),
+            phrases: z.array(termCoverage).min(1).max(3),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(4),
+    unmatchedSourceIds: z.array(z.string().max(80)).max(20),
+    warnings: z
+      .array(
+        z.enum([
+          'caller_sources_unverified',
+          'coverage_is_corpus_only',
+          'insufficient_sources',
+          'dates_caller_reported_only',
+          'themes_caller_defined_only',
+        ]),
+      )
+      .max(5),
+  })
+  .strict();
+const themeGroupingOutput = z
+  .object({
+    status: output.shape.status,
+    data: themeGroupingData.optional(),
+    provider: output.shape.provider,
+    error: output.shape.error,
+    metadata: output.shape.metadata,
+  })
+  .strict();
 
 const MAX_RESULT_BYTES = 262_144;
 const WIRE_ALLOWANCE_BYTES = 2_048;
@@ -186,6 +248,30 @@ export function registerResearchTools(server: McpServer, deps: ResearchDeps): vo
       try {
         const result = reply(deps, 'succeeded', analyzeResearchCorpus(input));
         if (!output.safeParse(result.structuredContent).success)
+          return reply(deps, 'failed', undefined, 'invalid_output');
+        return result;
+      } catch (error) {
+        return reply(
+          deps,
+          'failed',
+          undefined,
+          error instanceof ResearchOutputTooLargeError ? 'analysis_too_large' : 'invalid_input',
+        );
+      }
+    },
+  );
+  server.registerTool(
+    'linkedin.research.group_themes',
+    {
+      description:
+        'Read-only grouping of literal evidence under caller-defined themes in unverified supplied excerpts; never external research, inferred trends or market gaps.',
+      inputSchema: themeGroupingInput,
+      outputSchema: themeGroupingOutput,
+    },
+    (input) => {
+      try {
+        const result = reply(deps, 'succeeded', groupResearchThemes(input));
+        if (!themeGroupingOutput.safeParse(result.structuredContent).success)
           return reply(deps, 'failed', undefined, 'invalid_output');
         return result;
       } catch (error) {

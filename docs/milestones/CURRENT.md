@@ -1,11 +1,11 @@
 # Current Milestone
 
 Milestone: M10 — Research & Content Intelligence
-Status: IMPLEMENTING — M10.0 LOCAL_ONLY caller-corpus analysis locally reviewed, 1,043/1,043 tests passed; remote exact-head CI pending. M09 manual handoff VERIFIED and M09 native article publication BLOCKED/UNAVAILABLE.
-Iteration: M10.0 (source-grounded analysis local security/integration review complete; PR and CI pending)
-Branch: `feat/m10-content-intelligence` (local worktree, no committed M10 feature head yet).
-PR: none active for M10; feature PR and exact-head CI PENDING. M09 documentation closeout PR #15 merged.
-Latest verified main: `2a71c5ef402a19cdf6a7f340e5e28134c9980793`, exact main CI `40220317041` — SUCCESS. This verifies the main baseline, not M10 source.
+Status: IMPLEMENTING — M10.0 LOCAL_ONLY caller-corpus analysis VERIFIED/MERGED; M10.1 caller-defined local theme grouping locally implemented and undergoing final review/CI. M09 manual handoff VERIFIED and native article publication BLOCKED/UNAVAILABLE.
+Iteration: M10.1 (source-grounded grouping built/tested locally; remote PR/CI pending)
+Branch: `feat/m10-local-theme-grouping` (isolated local worktree based on verified main).
+PR: M10.0 PR #16 merged. M10.1 PR not yet created; no M10.1 CI.
+Latest verified main: `865fd9fb4cd5ccd8438ef7a89f9bc08f3fb600df`, exact main CI `40293411451` — SUCCESS (M10.0 source; 1,043/1,043 local tests in 93 suites).
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -36,6 +36,6 @@ M09 **local preparation is VERIFIED and MERGED**: the pure handoff passed 11/11 
 
 Actual native LinkedIn article publishing remains **BLOCKED/UNAVAILABLE**: the documented Posts API `content.article` produces a URL/link-preview post, not a native long-form editor document; no authorized native editor API or approved browser provider is configured. Do not automate LinkedIn's browser without authorization, bypass challenges, treat author review as publication approval, or advertise remote publication from the local handoff.
 
-M10.0 local source/tests presently include `normalizeResearchCorpus`, `analyzeResearchCorpus`, the typed `linkedin.research.analyze` MCP tool and STDIO/HTTP test coverage. All M10 source claims are bounded to unverified caller text, literal UTF-16 source evidence and exact duplicate excerpts; no live research provider, verified trends, automatic theme mining, competitor gaps or new publication capability is included. Implementation owners and independent reviewers are still working; local full gates, exact final feature SHA, PR and CI are pending. `research.topic` remains `EXTERNAL_DISCOVERY` / `UNAVAILABLE`.
+M10.0 is **VERIFIED/MERGED**: `normalizeResearchCorpus`, `analyzeResearchCorpus`, typed `linkedin.research.analyze`, real built STDIO/HTTP and complete SSE tests passed locally (1,043/1,043; 93 suites). Two independent scoped reviews closed Critical=0 Important=0. PR #16 exact feature commit `bb84e6e02656313e33dba5d992d8cfbcc9279706` CI `40293170065` SUCCESS, squash main `865fd9fb4cd5ccd8438ef7a89f9bc08f3fb600df` CI `40293411451` SUCCESS. Unverified caller text and literal UTF-16 source evidence are the only analysis authority; no live provider, verified trends, automatic thematic inference, competitor gaps or publication capability was enabled. `research.topic` remains `EXTERNAL_DISCOVERY` / `UNAVAILABLE`.
 
-Exact next work: **Complete the independent M10.0 security/correctness review of the current local implementation and resolve any blocking findings.** Then prime can run full gates, create the feature PR and verify exact-head CI; M09.P stays blocked.
+Exact next work: **Close M10.1 independent reviewer findings, run complete final Node24 quality gates, then open the reviewed feature PR and verify exact head/merged-main CI.** M09.P stays blocked.

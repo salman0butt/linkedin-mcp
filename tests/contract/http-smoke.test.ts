@@ -66,6 +66,17 @@ try {
       { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
     ],
   } });
+  const themeGrouping = await client.callTool({ name: 'linkedin.research.group_themes', arguments: {
+    topic: 'Agentic systems',
+    themes: [
+      { id: 'agents', label: 'Caller-defined automation theme', phrases: ['Agentic systems'] },
+      { id: 'retrieval', label: 'Caller-defined retrieval theme', phrases: ['RAG'] },
+    ],
+    sources: [
+      { id: 'one', title: 'First caller note', url: 'https://research.example.org/one', body: '🤖 Agentic systems use RAG.' },
+      { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
+    ],
+  } });
   const rawResearchResponse = await fetch(
     'http://' + server.address.host + ':' + server.address.port + '/mcp',
     {
@@ -87,6 +98,28 @@ try {
   const rawResearchWire = await rawResearchResponse.text();
   const rawResearchEvent = rawResearchWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
   const rawResearchResult = rawResearchEvent ? JSON.parse(rawResearchEvent.slice(6)) : null;
+  const rawThemeResponse = await fetch(
+    'http://' + server.address.host + ':' + server.address.port + '/mcp',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 'm10-themes-wire', method: 'tools/call',
+        params: { name: 'linkedin.research.group_themes', arguments: {
+          topic: 'Bounded evidence',
+          themes: [{ id: 'theme', label: 'Caller-defined bound', phrases: ['Bounded evidence'] }],
+          sources: Array.from({ length: 4 }, (_, i) => ({
+            id: 'raw-' + i, title: 'Original note',
+            url: 'https://research.example.org/theme-' + i,
+            body: 'Bounded evidence ' + 'A'.repeat(49000) + i,
+          })),
+        } },
+      }),
+    },
+  );
+  const rawThemeWire = await rawThemeResponse.text();
+  const rawThemeEvent = rawThemeWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
+  const rawThemeResult = rawThemeEvent ? JSON.parse(rawThemeEvent.slice(6)) : null;
   const articleDraft = {
     title: 'HTTP article smoke', topic: 'Secure local drafts', audience: 'Developers',
     goal: 'Demonstrate review-only authoring.',
@@ -130,6 +163,12 @@ try {
     comparisonIsError: comparison.isError,
     research: research.structuredContent,
     researchIsError: research.isError,
+    themeGrouping: themeGrouping.structuredContent,
+    themeGroupingIsError: themeGrouping.isError,
+    rawThemeStatus: rawThemeResponse.status,
+    rawThemeWireBytes: Buffer.byteLength(rawThemeWire, 'utf8'),
+    rawThemeResult,
+    rawThemeBodyEcho: rawThemeWire.includes('AAAAAAA'),
     rawResearchStatus: rawResearchResponse.status,
     rawResearchWireBytes: Buffer.byteLength(rawResearchWire, 'utf8'),
     rawResearchResult,
@@ -304,6 +343,29 @@ describe('built HTTP server', () => {
         };
       };
       researchIsError?: boolean;
+      themeGrouping: {
+        status: string;
+        provider: { type: string };
+        data: {
+          themeOrigin: string;
+          sourceTrust: string;
+          themeGroups: Array<{
+            id: string;
+            sourceIds: string[];
+            phrases: Array<{
+              term: string;
+              evidence: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+            }>;
+          }>;
+        };
+      };
+      themeGroupingIsError?: boolean;
+      rawThemeStatus: number;
+      rawThemeWireBytes: number;
+      rawThemeResult: {
+        result: { structuredContent: { status: string; data: { kind: string; themeOrigin: string } } };
+      };
+      rawThemeBodyEcho: boolean;
       rawResearchStatus: number;
       rawResearchWireBytes: number;
       rawResearchResult: { result: { structuredContent: { status: string; data: { sourceTrust: string } } } };
@@ -352,7 +414,19 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 51,
+      toolCount: 52,
+      themeGrouping: {
+        status: 'succeeded',
+        provider: { type: 'LOCAL_ONLY' },
+        data: {
+          themeOrigin: 'caller_defined',
+          sourceTrust: 'caller_supplied_unverified',
+          themeGroups: [
+            { id: 'agents', sourceIds: ['one'] },
+            { id: 'retrieval', sourceIds: ['one'] },
+          ],
+        },
+      },
       research: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -428,6 +502,22 @@ describe('built HTTP server', () => {
     });
     expect(result.toolNames).toContain('linkedin.post.preview.text');
     expect(result.researchIsError).not.toBe(true);
+    expect(result.themeGroupingIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.group_themes');
+    expect(result.themeGrouping.data.themeGroups[0]?.phrases[0]?.evidence).toEqual([
+      expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),
+    ]);
+    expect(result.rawThemeStatus).toBe(200);
+    expect(result.rawThemeWireBytes).toBeLessThanOrEqual(256 * 1024);
+    expect(result.rawThemeBodyEcho).toBe(false);
+    expect(result.rawThemeResult).toMatchObject({
+      result: {
+        structuredContent: {
+          status: 'succeeded',
+          data: { kind: 'local_caller_defined_theme_grouping', themeOrigin: 'caller_defined' },
+        },
+      },
+    });
     expect(result.research.data.termCoverage[0]?.evidence).toEqual([
       expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),
     ]);
