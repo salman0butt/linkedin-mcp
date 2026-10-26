@@ -59,6 +59,34 @@ try {
         postingDate: { state: 'unknown' }, description: 'Must have AWS.' },
     ], candidate: { skills: ['TypeScript'] },
   } });
+  const research = await client.callTool({ name: 'linkedin.research.analyze', arguments: {
+    topic: 'Agentic systems', focusTerms: ['RAG'],
+    sources: [
+      { id: 'one', title: 'First caller note', url: 'https://research.example.org/one', body: '🤖 Agentic systems use RAG.' },
+      { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
+    ],
+  } });
+  const rawResearchResponse = await fetch(
+    'http://' + server.address.host + ':' + server.address.port + '/mcp',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 'm10-research-wire', method: 'tools/call',
+        params: { name: 'linkedin.research.analyze', arguments: {
+          topic: 'Bounded evidence',
+          sources: Array.from({ length: 4 }, (_, i) => ({
+            id: 'raw-' + i, title: 'Original note',
+            url: 'https://research.example.org/raw-' + i,
+            body: 'Bounded evidence ' + 'A'.repeat(49000) + i,
+          })),
+        } },
+      }),
+    },
+  );
+  const rawResearchWire = await rawResearchResponse.text();
+  const rawResearchEvent = rawResearchWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
+  const rawResearchResult = rawResearchEvent ? JSON.parse(rawResearchEvent.slice(6)) : null;
   const articleDraft = {
     title: 'HTTP article smoke', topic: 'Secure local drafts', audience: 'Developers',
     goal: 'Demonstrate review-only authoring.',
@@ -100,6 +128,12 @@ try {
     analysisIsError: analysis.isError,
     comparison: comparison.structuredContent,
     comparisonIsError: comparison.isError,
+    research: research.structuredContent,
+    researchIsError: research.isError,
+    rawResearchStatus: rawResearchResponse.status,
+    rawResearchWireBytes: Buffer.byteLength(rawResearchWire, 'utf8'),
+    rawResearchResult,
+    rawResearchBodyEcho: rawResearchWire.includes('AAAAAAA'),
     promptNames, promptContents,
     articleValidation: articleValidation.structuredContent,
     articleValidationIsError: articleValidation.isError,
@@ -258,6 +292,22 @@ describe('built HTTP server', () => {
       analysisIsError?: boolean;
       comparison: unknown;
       comparisonIsError?: boolean;
+      research: {
+        status: string;
+        provider: { type: string };
+        data: {
+          sourceTrust: string;
+          termCoverage: Array<{
+            term: string;
+            evidence: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+          }>;
+        };
+      };
+      researchIsError?: boolean;
+      rawResearchStatus: number;
+      rawResearchWireBytes: number;
+      rawResearchResult: { result: { structuredContent: { status: string; data: { sourceTrust: string } } } };
+      rawResearchBodyEcho: boolean;
       promptNames: string[];
       promptContents: string[];
       articleValidation: { status: string; provider: { type: string }; data: { readyForReview: boolean } };
@@ -302,7 +352,15 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 50,
+      toolCount: 51,
+      research: {
+        status: 'succeeded',
+        provider: { type: 'LOCAL_ONLY' },
+        data: {
+          sourceTrust: 'caller_supplied_unverified',
+          termCoverage: [{ term: 'Agentic systems' }, { term: 'RAG' }],
+        },
+      },
       nativeArticleHandoff: {
         status: 'succeeded',
         data: {
@@ -369,6 +427,21 @@ describe('built HTTP server', () => {
       },
     });
     expect(result.toolNames).toContain('linkedin.post.preview.text');
+    expect(result.researchIsError).not.toBe(true);
+    expect(result.research.data.termCoverage[0]?.evidence).toEqual([
+      expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),
+    ]);
+    expect(result.rawResearchStatus).toBe(200);
+    expect(result.rawResearchWireBytes).toBeLessThanOrEqual(256 * 1024);
+    expect(result.rawResearchBodyEcho).toBe(false);
+    expect(result.rawResearchResult).toMatchObject({
+      result: {
+        structuredContent: {
+          status: 'succeeded',
+          data: { sourceTrust: 'caller_supplied_unverified' },
+        },
+      },
+    });
     expect(result.toolNames).toContain('linkedin.post.approve.text');
     expect(result.toolNames).toContain('linkedin.post.create.text');
     expect(result.toolNames).toEqual(
