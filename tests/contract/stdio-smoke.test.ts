@@ -140,6 +140,13 @@ try {
       { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
     ],
   } });
+  const referenceIndex = await client.callTool({ name: 'linkedin.research.index_references', arguments: {
+    sources: [
+      { id: 'alpha', title: 'Caller reference A', url: 'https://RESEARCH.example.org/report', body: 'PRIVATE FIRST REFERENCE BODY' },
+      { id: 'beta', title: 'Caller reference B', url: 'https://research.example.org/report', body: 'PRIVATE SECOND REFERENCE BODY' },
+      { id: 'gamma', title: 'Caller reference C', url: 'https://research.example.org/other', body: 'PRIVATE THIRD REFERENCE BODY' },
+    ],
+  } });
   const draft = {
     title: 'Safe local article smoke', topic: 'TypeScript', audience: 'Engineers',
     goal: 'Explain local draft authoring.',
@@ -188,6 +195,8 @@ try {
     researchIsError: research.isError,
     themeGrouping: themeGrouping.structuredContent,
     themeGroupingIsError: themeGrouping.isError,
+    referenceIndex: referenceIndex.structuredContent,
+    referenceIndexIsError: referenceIndex.isError,
     promptNames, promptContents,
     articleValidation: articleValidation.structuredContent,
     articleValidationIsError: articleValidation.isError,
@@ -416,6 +425,18 @@ describe('built stdio server', () => {
         };
       };
       themeGroupingIsError?: boolean;
+      referenceIndex: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          referenceOrigin: string;
+          sourceTrust: string;
+          repeatedUrlGroups: Array<{ url: string; sourceIds: string[] }>;
+          singleUrlSourceIds: string[];
+        };
+      };
+      referenceIndexIsError?: boolean;
       promptNames: string[];
       promptContents: string[];
       articleValidation: {
@@ -466,7 +487,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 52,
+      toolCount: 53,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -555,6 +576,20 @@ describe('built stdio server', () => {
     expect(result.toolNames).toContain('linkedin.post.preview.text');
     expect(result.researchIsError).not.toBe(true);
     expect(result.themeGroupingIsError).not.toBe(true);
+    expect(result.referenceIndexIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.index_references');
+    expect(result.referenceIndex).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_reference_register',
+        referenceOrigin: 'caller_supplied',
+        sourceTrust: 'caller_supplied_unverified',
+        repeatedUrlGroups: [{ url: 'https://research.example.org/report', sourceIds: ['alpha', 'beta'] }],
+        singleUrlSourceIds: ['gamma'],
+      },
+    });
+    expect(JSON.stringify(result.referenceIndex)).not.toContain('PRIVATE FIRST REFERENCE BODY');
     expect(result.toolNames).toContain('linkedin.research.group_themes');
     expect(result.themeGrouping.data.themeGroups[0]?.phrases[0]?.evidence).toEqual([
       expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),

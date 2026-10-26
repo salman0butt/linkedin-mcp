@@ -3,6 +3,7 @@ import * as z from 'zod/v4';
 
 import { analyzeResearchCorpus, ResearchOutputTooLargeError } from './research/content-analysis.js';
 import { groupResearchThemes } from './research/theme-grouping.js';
+import { indexResearchReferences } from './research/reference-register.js';
 
 interface ResearchDeps {
   createRequestId: () => string;
@@ -42,6 +43,12 @@ const themeGroupingInput = z.strictObject(
     sources: z.array(source).min(1).max(20),
   },
   { error: () => 'Invalid theme grouping request fields.' },
+);
+const referenceIndexInput = z.strictObject(
+  {
+    sources: z.array(source).min(1).max(20),
+  },
+  { error: () => 'Invalid local reference index request fields.' },
 );
 const evidence = z
   .object({
@@ -174,6 +181,46 @@ const themeGroupingOutput = z
     metadata: output.shape.metadata,
   })
   .strict();
+const referenceIndexData = z
+  .object({
+    kind: z.literal('local_reference_register'),
+    status: z.literal('available'),
+    referenceOrigin: z.literal('caller_supplied'),
+    sourceTrust: z.literal('caller_supplied_unverified'),
+    verification: z.literal('not_performed'),
+    sourceSummaries: output.shape.data.unwrap().shape.sourceSummaries,
+    repeatedUrlGroups: z
+      .array(
+        z
+          .object({
+            url: z.string().max(2048),
+            sourceIds: z.array(z.string().max(80)).min(2).max(20),
+          })
+          .strict(),
+      )
+      .max(10),
+    singleUrlSourceIds: z.array(z.string().max(80)).max(20),
+    warnings: z
+      .array(
+        z.enum([
+          'caller_sources_unverified',
+          'same_url_not_independent_confirmation',
+          'dates_caller_reported_only',
+        ]),
+      )
+      .min(2)
+      .max(3),
+  })
+  .strict();
+const referenceIndexOutput = z
+  .object({
+    status: output.shape.status,
+    data: referenceIndexData.optional(),
+    provider: output.shape.provider,
+    error: output.shape.error,
+    metadata: output.shape.metadata,
+  })
+  .strict();
 
 const MAX_RESULT_BYTES = 262_144;
 const WIRE_ALLOWANCE_BYTES = 2_048;
@@ -272,6 +319,30 @@ export function registerResearchTools(server: McpServer, deps: ResearchDeps): vo
       try {
         const result = reply(deps, 'succeeded', groupResearchThemes(input));
         if (!themeGroupingOutput.safeParse(result.structuredContent).success)
+          return reply(deps, 'failed', undefined, 'invalid_output');
+        return result;
+      } catch (error) {
+        return reply(
+          deps,
+          'failed',
+          undefined,
+          error instanceof ResearchOutputTooLargeError ? 'analysis_too_large' : 'invalid_input',
+        );
+      }
+    },
+  );
+  server.registerTool(
+    'linkedin.research.index_references',
+    {
+      description:
+        'Read-only stateless catalog of 1–20 caller-supplied unverified references grouped by exact canonical display URL; no storage, URL fetching, verification or independent corroboration.',
+      inputSchema: referenceIndexInput,
+      outputSchema: referenceIndexOutput,
+    },
+    (input) => {
+      try {
+        const result = reply(deps, 'succeeded', indexResearchReferences(input));
+        if (!referenceIndexOutput.safeParse(result.structuredContent).success)
           return reply(deps, 'failed', undefined, 'invalid_output');
         return result;
       } catch (error) {
