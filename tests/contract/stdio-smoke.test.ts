@@ -129,6 +129,17 @@ try {
       { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
     ],
   } });
+  const themeGrouping = await client.callTool({ name: 'linkedin.research.group_themes', arguments: {
+    topic: 'Agentic systems',
+    themes: [
+      { id: 'agents', label: 'Caller-defined AI theme', phrases: ['Agentic systems'] },
+      { id: 'retrieval', label: 'Caller-defined retrieval theme', phrases: ['RAG'] },
+    ],
+    sources: [
+      { id: 'one', title: 'First caller note', url: 'https://research.example.org/one', body: '🤖 Agentic systems use RAG.' },
+      { id: 'two', title: 'Second caller note', url: 'https://research.example.org/two', body: 'No matching terms in this note.' },
+    ],
+  } });
   const draft = {
     title: 'Safe local article smoke', topic: 'TypeScript', audience: 'Engineers',
     goal: 'Explain local draft authoring.',
@@ -175,6 +186,8 @@ try {
     comparisonIsError: comparison.isError,
     research: research.structuredContent,
     researchIsError: research.isError,
+    themeGrouping: themeGrouping.structuredContent,
+    themeGroupingIsError: themeGrouping.isError,
     promptNames, promptContents,
     articleValidation: articleValidation.structuredContent,
     articleValidationIsError: articleValidation.isError,
@@ -386,6 +399,23 @@ describe('built stdio server', () => {
         };
       };
       researchIsError?: boolean;
+      themeGrouping: {
+        status: string;
+        provider: { type: string };
+        data: {
+          themeOrigin: string;
+          sourceTrust: string;
+          themeGroups: Array<{
+            id: string;
+            sourceIds: string[];
+            phrases: Array<{
+              term: string;
+              evidence: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+            }>;
+          }>;
+        };
+      };
+      themeGroupingIsError?: boolean;
       promptNames: string[];
       promptContents: string[];
       articleValidation: {
@@ -436,7 +466,19 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 51,
+      toolCount: 52,
+      themeGrouping: {
+        status: 'succeeded',
+        provider: { type: 'LOCAL_ONLY' },
+        data: {
+          themeOrigin: 'caller_defined',
+          sourceTrust: 'caller_supplied_unverified',
+          themeGroups: [
+            { id: 'agents', sourceIds: ['one'] },
+            { id: 'retrieval', sourceIds: ['one'] },
+          ],
+        },
+      },
       research: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -512,6 +554,11 @@ describe('built stdio server', () => {
     });
     expect(result.toolNames).toContain('linkedin.post.preview.text');
     expect(result.researchIsError).not.toBe(true);
+    expect(result.themeGroupingIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.group_themes');
+    expect(result.themeGrouping.data.themeGroups[0]?.phrases[0]?.evidence).toEqual([
+      expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),
+    ]);
     expect(result.research.data.termCoverage[0]?.evidence).toEqual([
       expect.objectContaining({ sourceId: 'one', quote: 'Agentic systems', start: 3, end: 18 }),
     ]);

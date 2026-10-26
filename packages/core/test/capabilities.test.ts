@@ -31,6 +31,7 @@ describe('capability registry', () => {
         'article.draft',
         'article.native.publish',
         'research.analyze',
+        'research.group_themes',
         'research.topic',
         'messages.send',
       ]),
@@ -76,8 +77,16 @@ describe('capability registry', () => {
       status: 'ACTIVE',
       milestone: 'M10',
     });
+    expect(futureCapabilities.find((descriptor) => descriptor.id === 'research.group_themes')).toMatchObject({
+      provider: 'LOCAL_ONLY',
+      availability: 'AVAILABLE',
+      status: 'ACTIVE',
+      milestone: 'M10',
+    });
     const others = futureCapabilities.filter(
-      (descriptor) => !verifiedLocal.includes(descriptor) && descriptor.id !== 'research.analyze',
+      (descriptor) =>
+        !verifiedLocal.includes(descriptor) &&
+        !['research.analyze', 'research.group_themes'].includes(descriptor.id),
     );
     expect(others.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);
     expect(others.every((descriptor) => descriptor.status !== 'VERIFIED')).toBe(true);

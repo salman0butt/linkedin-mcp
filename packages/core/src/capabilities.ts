@@ -270,6 +270,19 @@ const descriptors: CapabilityDescriptor[] = [
     evidence: 'M10 deterministic bounded local parser, analyzer and MCP client contracts.',
   },
   {
+    id: 'research.group_themes',
+    desiredBehavior:
+      'Group unverified caller-provided research excerpts under explicit caller-authored theme labels and literal phrases.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M10',
+    status: 'ACTIVE',
+    accessNote:
+      'Caller-defined labels only; local exact source-body evidence, no semantic clustering, verified trends, market gaps or provider access.',
+    approvalRequired: false,
+    evidence: 'M10.1 deterministic bounded pure theme grouping and typed MCP/transport contracts.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',
