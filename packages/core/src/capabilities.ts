@@ -296,6 +296,19 @@ const descriptors: CapabilityDescriptor[] = [
     evidence: 'M10.2 strict local reference-index contract and typed MCP/transport coverage.',
   },
   {
+    id: 'research.compare_cohorts',
+    desiredBehavior:
+      'Compare source-linked literal focus-term evidence in two explicit disjoint caller-defined cohorts from one supplied corpus.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M10',
+    status: 'ACTIVE',
+    accessNote:
+      'Caller-defined cohort membership and unverified local excerpts only; no external search, competitor advantage, trend, statistical or content-gap conclusion.',
+    approvalRequired: false,
+    evidence: 'M10.3 bounded deterministic corpus-cohort comparison, typed MCP and real transport contracts.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',

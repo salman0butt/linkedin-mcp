@@ -147,6 +147,19 @@ try {
       { id: 'gamma', title: 'Caller reference C', url: 'https://research.example.org/other', body: 'PRIVATE THIRD REFERENCE BODY' },
     ],
   } });
+  const cohortComparison = await client.callTool({ name: 'linkedin.research.compare_cohorts', arguments: {
+    topic: 'Unverified comparison', focusTerms: ['RAG', 'SQL'],
+    sources: [
+      { id: 'cohort-a', title: 'A note', url: 'https://research.example.org/cohort-a', body: '🤖 RAG in group A. PRIVATE UNMATCHED CONTENT' },
+      { id: 'cohort-b', title: 'B note', url: 'https://research.example.org/cohort-b', body: 'SQL in group B.' },
+      { id: 'cohort-u', title: 'Unmatched', url: 'https://research.example.org/cohort-u', body: 'RAG SQL outside groups.' },
+    ],
+    cohorts: [
+      { id: 'first', label: 'Caller first', sourceIds: ['cohort-a'] },
+      { id: 'second', label: 'Caller second', sourceIds: ['cohort-b'] },
+    ],
+    unmatchedSourceIds: ['cohort-u'],
+  } });
   const draft = {
     title: 'Safe local article smoke', topic: 'TypeScript', audience: 'Engineers',
     goal: 'Explain local draft authoring.',
@@ -197,6 +210,8 @@ try {
     themeGroupingIsError: themeGrouping.isError,
     referenceIndex: referenceIndex.structuredContent,
     referenceIndexIsError: referenceIndex.isError,
+    cohortComparison: cohortComparison.structuredContent,
+    cohortComparisonIsError: cohortComparison.isError,
     promptNames, promptContents,
     articleValidation: articleValidation.structuredContent,
     articleValidationIsError: articleValidation.isError,
@@ -437,6 +452,26 @@ describe('built stdio server', () => {
         };
       };
       referenceIndexIsError?: boolean;
+      cohortComparison: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          sourceTrust: string;
+          verification: string;
+          unmatchedSourceIds: string[];
+          cohorts: Array<{
+            id: string;
+            sourceIds: string[];
+            termObservations: Array<{
+              term: string;
+              state: string;
+              evidence: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+            }>;
+          }>;
+        };
+      };
+      cohortComparisonIsError?: boolean;
       promptNames: string[];
       promptContents: string[];
       articleValidation: {
@@ -487,7 +522,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 53,
+      toolCount: 54,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -577,6 +612,45 @@ describe('built stdio server', () => {
     expect(result.researchIsError).not.toBe(true);
     expect(result.themeGroupingIsError).not.toBe(true);
     expect(result.referenceIndexIsError).not.toBe(true);
+    expect(result.cohortComparisonIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.compare_cohorts');
+    expect(result.cohortComparison).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_caller_defined_corpus_comparison',
+        sourceTrust: 'caller_supplied_unverified',
+        verification: 'not_performed',
+        unmatchedSourceIds: ['cohort-u'],
+        cohorts: [
+          {
+            id: 'first',
+            sourceIds: ['cohort-a'],
+            termObservations: [
+              {
+                term: 'RAG',
+                state: 'observed_in_supplied_cohort',
+                evidence: [expect.objectContaining({ sourceId: 'cohort-a', quote: 'RAG', start: 3, end: 6 })],
+              },
+              { term: 'SQL', state: 'not_observed_in_supplied_cohort', evidence: [] },
+            ],
+          },
+          {
+            id: 'second',
+            sourceIds: ['cohort-b'],
+            termObservations: [
+              { term: 'RAG', state: 'not_observed_in_supplied_cohort', evidence: [] },
+              {
+                term: 'SQL',
+                state: 'observed_in_supplied_cohort',
+                evidence: [expect.objectContaining({ sourceId: 'cohort-b', quote: 'SQL' })],
+              },
+            ],
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(result.cohortComparison)).not.toContain('RAG SQL outside groups.');
     expect(result.toolNames).toContain('linkedin.research.index_references');
     expect(result.referenceIndex).toMatchObject({
       status: 'succeeded',

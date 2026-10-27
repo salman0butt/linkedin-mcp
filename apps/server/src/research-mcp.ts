@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
 import { analyzeResearchCorpus, ResearchOutputTooLargeError } from './research/content-analysis.js';
+import { compareResearchCohorts } from './research/corpus-comparison.js';
 import { groupResearchThemes } from './research/theme-grouping.js';
 import { indexResearchReferences } from './research/reference-register.js';
 
@@ -49,6 +50,24 @@ const referenceIndexInput = z.strictObject(
     sources: z.array(source).min(1).max(20),
   },
   { error: () => 'Invalid local reference index request fields.' },
+);
+const comparisonCohortInput = z.strictObject(
+  {
+    id: z.string().min(1).max(80),
+    label: z.string().min(1).max(80),
+    sourceIds: z.array(z.string().min(1).max(80)).min(1).max(20),
+  },
+  { error: () => 'Invalid caller-defined cohort fields.' },
+);
+const cohortComparisonInput = z.strictObject(
+  {
+    topic: z.string().min(1).max(200),
+    focusTerms: z.array(z.string().min(1).max(80)).min(1).max(12),
+    sources: z.array(source).min(2).max(20),
+    cohorts: z.array(comparisonCohortInput).length(2),
+    unmatchedSourceIds: z.array(z.string().min(1).max(80)).max(20),
+  },
+  { error: () => 'Invalid corpus comparison request fields.' },
 );
 const evidence = z
   .object({
@@ -221,6 +240,60 @@ const referenceIndexOutput = z
     metadata: output.shape.metadata,
   })
   .strict();
+const cohortTermObservation = z
+  .object({
+    term: z.string().min(1).max(80),
+    state: z.enum(['observed_in_supplied_cohort', 'not_observed_in_supplied_cohort']),
+    evidence: z.array(evidence).max(20),
+  })
+  .strict();
+const cohortComparisonData = z
+  .object({
+    kind: z.literal('local_caller_defined_corpus_comparison'),
+    status: z.literal('available'),
+    comparisonOrigin: z.literal('caller_defined_cohorts'),
+    sourceTrust: z.literal('caller_supplied_unverified'),
+    verification: z.literal('not_performed'),
+    topic: z.string().max(200),
+    focusTerms: z.array(z.string().min(1).max(80)).min(1).max(12),
+    sourceSummaries: output.shape.data.unwrap().shape.sourceSummaries,
+    cohorts: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1).max(80),
+            label: z.string().min(1).max(80),
+            sourceIds: z.array(z.string().min(1).max(80)).min(1).max(20),
+            termObservations: z.array(cohortTermObservation).min(1).max(12),
+          })
+          .strict(),
+      )
+      .length(2),
+    unmatchedSourceIds: z.array(z.string().min(1).max(80)).max(20),
+    warnings: z
+      .array(
+        z.enum([
+          'caller_sources_unverified',
+          'comparison_is_corpus_only',
+          'cohorts_caller_defined_only',
+          'single_source_cohort',
+          'unmatched_sources_excluded',
+          'dates_caller_reported_only',
+        ]),
+      )
+      .min(3)
+      .max(6),
+  })
+  .strict();
+const cohortComparisonOutput = z
+  .object({
+    status: output.shape.status,
+    data: cohortComparisonData.optional(),
+    provider: output.shape.provider,
+    error: output.shape.error,
+    metadata: output.shape.metadata,
+  })
+  .strict();
 
 const MAX_RESULT_BYTES = 262_144;
 const WIRE_ALLOWANCE_BYTES = 2_048;
@@ -343,6 +416,30 @@ export function registerResearchTools(server: McpServer, deps: ResearchDeps): vo
       try {
         const result = reply(deps, 'succeeded', indexResearchReferences(input));
         if (!referenceIndexOutput.safeParse(result.structuredContent).success)
+          return reply(deps, 'failed', undefined, 'invalid_output');
+        return result;
+      } catch (error) {
+        return reply(
+          deps,
+          'failed',
+          undefined,
+          error instanceof ResearchOutputTooLargeError ? 'analysis_too_large' : 'invalid_input',
+        );
+      }
+    },
+  );
+  server.registerTool(
+    'linkedin.research.compare_cohorts',
+    {
+      description:
+        'Read-only comparison of literal focus-term observations inside two disjoint caller-defined source cohorts; supplied excerpts are unverified, with no inferred trends, market or competitor gaps.',
+      inputSchema: cohortComparisonInput,
+      outputSchema: cohortComparisonOutput,
+    },
+    (input) => {
+      try {
+        const result = reply(deps, 'succeeded', compareResearchCohorts(input));
+        if (!cohortComparisonOutput.safeParse(result.structuredContent).success)
           return reply(deps, 'failed', undefined, 'invalid_output');
         return result;
       } catch (error) {

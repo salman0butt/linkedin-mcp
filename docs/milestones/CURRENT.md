@@ -1,11 +1,11 @@
 # Current Milestone
 
 Milestone: M10 — Research & Content Intelligence
-Status: IMPLEMENTING — M10.0 and M10.1 LOCAL_ONLY capabilities VERIFIED/MERGED; M10.2 caller-supplied reference register PLANNED; provider-backed research remains unavailable. M09 native article publishing BLOCKED/UNAVAILABLE.
-Iteration: M10.2 (LOCAL_ONLY reference register implemented/tested locally; independent reviews and PR/CI pending).
-Branch: `feat/m10-local-reference-register` (new isolated worktree from verified main).
-PR: M10.0 PR #16 and M10.1 PR #17 merged. No M10.2 PR or feature/main CI yet; local full Node24 1,074/1,074 tests in 97 suites GREEN.
-Latest verified main: `2899847a79dec7dd08714d8e2a3fb3e720c6c42e`, exact main CI `40300553498` — SUCCESS (M10.1; 1,057/1,057 local tests in 95 suites).
+Status: IMPLEMENTING — M10.0/M10.1/M10.2 caller-supplied LOCAL_ONLY research utilities VERIFIED/MERGED; M10.3 corpus-only comparison LOCALLY IMPLEMENTED/TESTED; independent MCP review and remote CI PENDING; external discovery and M09 native publication remain UNAVAILABLE.
+Iteration: M10.3 (local strict two-cohort corpus comparison implemented, 1,090/1,090 tests across 99 suites; real built STDIO/HTTP and raw SSE GREEN).
+Branch: `feat/m10-local-corpus-comparison` (new isolated worktree based on exact verified M10.2 main).
+PR: #16 M10.0, #17 M10.1, #18 M10.2 all MERGED. M10.3 locally green, independent pure Critical=0 Important=0; MCP independent review and feature PR/CI pending.
+Latest verified main: `e7be937961f138a7df769c5a63dba7646d0fface`; exact main push CI `40304868402` SUCCESS. M10.2 feature `b39f30ca1089a8b02f3a099eb8238555ebb25a09` CI `40304586073` SUCCESS; local 1,074/1,074 across 97 suites, independent Critical=0 Important=0.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -40,6 +40,6 @@ M10.0 is **VERIFIED/MERGED**: `normalizeResearchCorpus`, `analyzeResearchCorpus`
 
 M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-mcp/pull/17) feature `c36bfbce83299d53bf8f743c0b5316ed861fea91` CI `40300253462` SUCCESS, squash main `2899847a79dec7dd08714d8e2a3fb3e720c6c42e` with identical source tree `0fc169222f5e2eb5c888ba7c126edda070467932`, push CI `40300553498` SUCCESS. Node24 local 1,057/1,057 across 95 suites and all gates GREEN; independent Critical=0 Important=0. Caller-defined literal themes and unverified corpus only; broader M10 unfinished.
 
-M10.2 **LOCAL IMPLEMENTATION VERIFIED, REMOTE PENDING**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent reviews/PR CI and post-merge CI PENDING; not yet VERIFIED or merged.
+M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Close independent M10.2 security reviews, fix any reproduced Critical/Important failures, rerun final gates and verify exact feature/merged-main CI.** M09.P and provider-backed research remain blocked.
+Exact next work: **Finish M10.3 independent MCP/transport review, GitHub exact-tree feature PR, exact feature CI, squash merge and post-merge main CI.** M09.P and provider-backed research remain blocked.
