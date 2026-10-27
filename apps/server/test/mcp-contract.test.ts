@@ -166,6 +166,13 @@ describe('LinkedIn MCP server contract', () => {
         availability: 'AVAILABLE',
         provider: 'LOCAL_ONLY',
       });
+      expect(
+        capabilities.find((capability) => capability.id === 'research.repurposing.prepare'),
+      ).toMatchObject({
+        status: 'ACTIVE',
+        availability: 'AVAILABLE',
+        provider: 'LOCAL_ONLY',
+      });
     } finally {
       await client.close();
       await handler.close();
@@ -233,6 +240,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.research.compare_cohorts',
         'linkedin.research.group_themes',
         'linkedin.research.index_references',
+        'linkedin.research.prepare_repurposing',
         'linkedin.version',
       ]);
       for (const tool of tools) {

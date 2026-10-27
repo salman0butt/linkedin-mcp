@@ -34,6 +34,7 @@ describe('capability registry', () => {
         'research.group_themes',
         'research.references.index',
         'research.compare_cohorts',
+        'research.repurposing.prepare',
         'research.topic',
         'messages.send',
       ]),
@@ -103,6 +104,15 @@ describe('capability registry', () => {
       milestone: 'M10',
       approvalRequired: false,
     });
+    expect(
+      futureCapabilities.find((descriptor) => descriptor.id === 'research.repurposing.prepare'),
+    ).toMatchObject({
+      provider: 'LOCAL_ONLY',
+      availability: 'AVAILABLE',
+      status: 'ACTIVE',
+      milestone: 'M10',
+      approvalRequired: false,
+    });
     const others = futureCapabilities.filter(
       (descriptor) =>
         !verifiedLocal.includes(descriptor) &&
@@ -111,6 +121,7 @@ describe('capability registry', () => {
           'research.group_themes',
           'research.references.index',
           'research.compare_cohorts',
+          'research.repurposing.prepare',
         ].includes(descriptor.id),
     );
     expect(others.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);

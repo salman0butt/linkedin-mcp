@@ -3,6 +3,7 @@ import * as z from 'zod/v4';
 
 import { analyzeResearchCorpus, ResearchOutputTooLargeError } from './research/content-analysis.js';
 import { compareResearchCohorts } from './research/corpus-comparison.js';
+import { prepareResearchRepurposingEvidence } from './research/repurposing-evidence.js';
 import { groupResearchThemes } from './research/theme-grouping.js';
 import { indexResearchReferences } from './research/reference-register.js';
 
@@ -68,6 +69,31 @@ const cohortComparisonInput = z.strictObject(
     unmatchedSourceIds: z.array(z.string().min(1).max(80)).max(20),
   },
   { error: () => 'Invalid corpus comparison request fields.' },
+);
+const repurposingSelectionInput = z.strictObject(
+  {
+    sourceId: z.string().min(1).max(80),
+    start: z.number().int().nonnegative(),
+    end: z.number().int().nonnegative(),
+  },
+  { error: () => 'Invalid caller-selected evidence fields.' },
+);
+const repurposingTargetInput = z.strictObject(
+  {
+    id: z.string().min(1).max(80),
+    label: z.string().min(1).max(80),
+    format: z.enum(['post', 'article', 'carousel']),
+    selections: z.array(repurposingSelectionInput).min(1).max(12),
+  },
+  { error: () => 'Invalid caller-selected target fields.' },
+);
+const repurposingInput = z.strictObject(
+  {
+    topic: z.string().min(1).max(200),
+    sources: z.array(source).min(1).max(20),
+    targets: z.array(repurposingTargetInput).min(1).max(3),
+  },
+  { error: () => 'Invalid local repurposing request fields.' },
 );
 const evidence = z
   .object({
@@ -294,6 +320,51 @@ const cohortComparisonOutput = z
     metadata: output.shape.metadata,
   })
   .strict();
+const repurposingEvidenceData = z
+  .object({
+    kind: z.literal('local_caller_curated_repurposing_evidence'),
+    status: z.literal('available'),
+    selectionOrigin: z.literal('caller_defined_utf16_offsets'),
+    sourceTrust: z.literal('caller_supplied_unverified'),
+    verification: z.literal('not_performed'),
+    topic: z.string().max(200),
+    sourceSummaries: output.shape.data.unwrap().shape.sourceSummaries,
+    targets: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1).max(80),
+            label: z.string().min(1).max(80),
+            format: z.enum(['post', 'article', 'carousel']),
+            excerpts: z.array(evidence).min(1).max(12),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(3),
+    warnings: z
+      .array(
+        z.enum([
+          'caller_sources_unverified',
+          'selections_caller_defined_only',
+          'evidence_is_excerpt_only',
+          'human_review_required',
+          'dates_caller_reported_only',
+        ]),
+      )
+      .min(4)
+      .max(5),
+  })
+  .strict();
+const repurposingEvidenceOutput = z
+  .object({
+    status: output.shape.status,
+    data: repurposingEvidenceData.optional(),
+    provider: output.shape.provider,
+    error: output.shape.error,
+    metadata: output.shape.metadata,
+  })
+  .strict();
 
 const MAX_RESULT_BYTES = 262_144;
 const WIRE_ALLOWANCE_BYTES = 2_048;
@@ -440,6 +511,30 @@ export function registerResearchTools(server: McpServer, deps: ResearchDeps): vo
       try {
         const result = reply(deps, 'succeeded', compareResearchCohorts(input));
         if (!cohortComparisonOutput.safeParse(result.structuredContent).success)
+          return reply(deps, 'failed', undefined, 'invalid_output');
+        return result;
+      } catch (error) {
+        return reply(
+          deps,
+          'failed',
+          undefined,
+          error instanceof ResearchOutputTooLargeError ? 'analysis_too_large' : 'invalid_input',
+        );
+      }
+    },
+  );
+  server.registerTool(
+    'linkedin.research.prepare_repurposing',
+    {
+      description:
+        'Read-only caller-curated exact UTF-16 evidence excerpts for human-selected post, article or carousel targets. Sources and dates are unverified; does not generate drafts, fetch sources or publish.',
+      inputSchema: repurposingInput,
+      outputSchema: repurposingEvidenceOutput,
+    },
+    (input) => {
+      try {
+        const result = reply(deps, 'succeeded', prepareResearchRepurposingEvidence(input));
+        if (!repurposingEvidenceOutput.safeParse(result.structuredContent).success)
           return reply(deps, 'failed', undefined, 'invalid_output');
         return result;
       } catch (error) {

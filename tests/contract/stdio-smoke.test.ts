@@ -160,6 +160,18 @@ try {
     ],
     unmatchedSourceIds: ['cohort-u'],
   } });
+  const repurposingEvidence = await client.callTool({ name: 'linkedin.research.prepare_repurposing', arguments: {
+    topic: 'Selected unverified evidence',
+    sources: [
+      { id: 'curated-a', title: 'Caller source A', url: 'https://RESEARCH.example.org/curated-a', body: '🤖 RAG\tworks. PRIVATE_UNSELECTED_BODY' },
+      { id: 'curated-b', title: 'Caller source B', url: 'https://research.example.org/curated-b', body: 'SQL queues require validation.' },
+      { id: 'curated-u', title: 'PRIVATE_UNSELECTED_TITLE', url: 'https://research.example.org/PRIVATE_UNSELECTED_URL', body: 'PRIVATE_UNSELECTED_ALL' },
+    ],
+    targets: [
+      { id: 'post', label: 'Post evidence', format: 'post', selections: [{sourceId:'curated-a', start:3, end:12}] },
+      { id: 'article', label: 'Article evidence', format: 'article', selections: [{sourceId:'curated-b', start:0, end:3}] },
+    ],
+  } });
   const draft = {
     title: 'Safe local article smoke', topic: 'TypeScript', audience: 'Engineers',
     goal: 'Explain local draft authoring.',
@@ -212,6 +224,8 @@ try {
     referenceIndexIsError: referenceIndex.isError,
     cohortComparison: cohortComparison.structuredContent,
     cohortComparisonIsError: cohortComparison.isError,
+    repurposingEvidence: repurposingEvidence.structuredContent,
+    repurposingEvidenceIsError: repurposingEvidence.isError,
     promptNames, promptContents,
     articleValidation: articleValidation.structuredContent,
     articleValidationIsError: articleValidation.isError,
@@ -472,6 +486,22 @@ describe('built stdio server', () => {
         };
       };
       cohortComparisonIsError?: boolean;
+      repurposingEvidence: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          sourceTrust: string;
+          verification: string;
+          sourceSummaries: Array<{ id: string; url: string }>;
+          targets: Array<{
+            id: string;
+            format: string;
+            excerpts: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+          }>;
+        };
+      };
+      repurposingEvidenceIsError?: boolean;
       promptNames: string[];
       promptContents: string[];
       articleValidation: {
@@ -522,7 +552,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 54,
+      toolCount: 55,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -613,6 +643,40 @@ describe('built stdio server', () => {
     expect(result.themeGroupingIsError).not.toBe(true);
     expect(result.referenceIndexIsError).not.toBe(true);
     expect(result.cohortComparisonIsError).not.toBe(true);
+    expect(result.repurposingEvidenceIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.prepare_repurposing');
+    expect(result.repurposingEvidence).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_caller_curated_repurposing_evidence',
+        sourceTrust: 'caller_supplied_unverified',
+        verification: 'not_performed',
+        sourceSummaries: [
+          { id: 'curated-a', url: 'https://research.example.org/curated-a' },
+          { id: 'curated-b' },
+        ],
+        targets: [
+          {
+            id: 'post',
+            format: 'post',
+            excerpts: [{ sourceId: 'curated-a', start: 3, end: 12, quote: 'RAG\tworks' }],
+          },
+          {
+            id: 'article',
+            format: 'article',
+            excerpts: [{ sourceId: 'curated-b', start: 0, end: 3, quote: 'SQL' }],
+          },
+        ],
+      },
+    });
+    for (const canary of [
+      'PRIVATE_UNSELECTED_BODY',
+      'PRIVATE_UNSELECTED_TITLE',
+      'PRIVATE_UNSELECTED_URL',
+      'PRIVATE_UNSELECTED_ALL',
+    ])
+      expect(JSON.stringify(result.repurposingEvidence)).not.toContain(canary);
     expect(result.toolNames).toContain('linkedin.research.compare_cohorts');
     expect(result.cohortComparison).toMatchObject({
       status: 'succeeded',

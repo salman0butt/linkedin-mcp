@@ -52,6 +52,7 @@ describe('foundation result factories', () => {
           'research.group_themes',
           'research.references.index',
           'research.compare_cohorts',
+          'research.repurposing.prepare',
         ].includes(capability.id)
       ) {
         expect(capability).toMatchObject({
@@ -74,6 +75,14 @@ describe('foundation result factories', () => {
     });
     expect(
       result.data.capabilities.find((capability) => capability.id === 'research.compare_cohorts'),
+    ).toMatchObject({
+      status: 'ACTIVE',
+      availability: 'AVAILABLE',
+      provider: 'LOCAL_ONLY',
+      milestone: 'M10',
+    });
+    expect(
+      result.data.capabilities.find((capability) => capability.id === 'research.repurposing.prepare'),
     ).toMatchObject({
       status: 'ACTIVE',
       availability: 'AVAILABLE',
