@@ -97,6 +97,18 @@ try {
     ],
     unmatchedSourceIds: ['cohort-u'],
   } });
+  const repurposingEvidence = await client.callTool({ name: 'linkedin.research.prepare_repurposing', arguments: {
+    topic: 'Selected unverified evidence',
+    sources: [
+      { id: 'curated-a', title: 'Caller source A', url: 'https://RESEARCH.example.org/curated-a', body: '🤖 RAG\tworks. PRIVATE_UNSELECTED_BODY' },
+      { id: 'curated-b', title: 'Caller source B', url: 'https://research.example.org/curated-b', body: 'SQL queues require validation.' },
+      { id: 'curated-u', title: 'PRIVATE_UNSELECTED_TITLE', url: 'https://research.example.org/PRIVATE_UNSELECTED_URL', body: 'PRIVATE_UNSELECTED_ALL' },
+    ],
+    targets: [
+      { id: 'post', label: 'Post evidence', format: 'post', selections: [{sourceId:'curated-a', start:3, end:12}] },
+      { id: 'article', label: 'Article evidence', format: 'article', selections: [{sourceId:'curated-b', start:0, end:3}] },
+    ],
+  } });
   const rawResearchResponse = await fetch(
     'http://' + server.address.host + ':' + server.address.port + '/mcp',
     {
@@ -186,6 +198,31 @@ try {
   const rawCohortWire = await rawCohortResponse.text();
   const rawCohortEvent = rawCohortWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
   const rawCohortResult = rawCohortEvent ? JSON.parse(rawCohortEvent.slice(6)) : null;
+  const rawRepurposingResponse = await fetch(
+    'http://' + server.address.host + ':' + server.address.port + '/mcp',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 'm10-repurpose-wire', method: 'tools/call',
+        params: { name: 'linkedin.research.prepare_repurposing', arguments: {
+          topic: 'Caller-curated huge corpus',
+          sources: Array.from({ length: 4 }, (_, i) => ({
+            id: 'r' + i, title: i % 2 ? 'PRIVATE_UNSELECTED_TITLE' : 'Selected reference',
+            url: 'https://research.example.org/r' + i,
+            body: 'EVIDENCE ' + 'X'.repeat(49000) + i,
+          })),
+          targets: [
+            { id: 'post', label: 'Caller post evidence', format: 'post', selections: [{sourceId:'r0',start:0,end:8}] },
+            { id: 'carousel', label: 'Caller carousel evidence', format: 'carousel', selections: [{sourceId:'r2',start:0,end:8}] },
+          ],
+        } },
+      }),
+    },
+  );
+  const rawRepurposingWire = await rawRepurposingResponse.text();
+  const rawRepurposingEvent = rawRepurposingWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
+  const rawRepurposingResult = rawRepurposingEvent ? JSON.parse(rawRepurposingEvent.slice(6)) : null;
   const articleDraft = {
     title: 'HTTP article smoke', topic: 'Secure local drafts', audience: 'Developers',
     goal: 'Demonstrate review-only authoring.',
@@ -235,6 +272,13 @@ try {
     referenceIndexIsError: referenceIndex.isError,
     cohortComparison: cohortComparison.structuredContent,
     cohortComparisonIsError: cohortComparison.isError,
+    repurposingEvidence: repurposingEvidence.structuredContent,
+    repurposingEvidenceIsError: repurposingEvidence.isError,
+    rawRepurposingStatus: rawRepurposingResponse.status,
+    rawRepurposingWireBytes: Buffer.byteLength(rawRepurposingWire,'utf8'),
+    rawRepurposingResult,
+    rawRepurposingBodyEcho: rawRepurposingWire.includes('XXXXXXXXXXXX'),
+    rawRepurposingUnselectedEcho: rawRepurposingWire.includes('PRIVATE_UNSELECTED_TITLE'),
     rawCohortStatus: rawCohortResponse.status,
     rawCohortWireBytes: Buffer.byteLength(rawCohortWire, 'utf8'),
     rawCohortResult,
@@ -470,6 +514,29 @@ describe('built HTTP server', () => {
         };
       };
       cohortComparisonIsError?: boolean;
+      repurposingEvidence: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          sourceTrust: string;
+          verification: string;
+          sourceSummaries: Array<{ id: string; url: string }>;
+          targets: Array<{
+            id: string;
+            format: string;
+            excerpts: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+          }>;
+        };
+      };
+      repurposingEvidenceIsError?: boolean;
+      rawRepurposingStatus: number;
+      rawRepurposingWireBytes: number;
+      rawRepurposingResult: {
+        result: { structuredContent: { status: string; data: { kind: string; targets: unknown[] } } };
+      };
+      rawRepurposingBodyEcho: boolean;
+      rawRepurposingUnselectedEcho: boolean;
       rawCohortStatus: number;
       rawCohortWireBytes: number;
       rawCohortResult: {
@@ -541,7 +608,7 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 54,
+      toolCount: 55,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -632,6 +699,52 @@ describe('built HTTP server', () => {
     expect(result.themeGroupingIsError).not.toBe(true);
     expect(result.referenceIndexIsError).not.toBe(true);
     expect(result.cohortComparisonIsError).not.toBe(true);
+    expect(result.repurposingEvidenceIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.prepare_repurposing');
+    expect(result.repurposingEvidence).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_caller_curated_repurposing_evidence',
+        sourceTrust: 'caller_supplied_unverified',
+        verification: 'not_performed',
+        sourceSummaries: [
+          { id: 'curated-a', url: 'https://research.example.org/curated-a' },
+          { id: 'curated-b' },
+        ],
+        targets: [
+          {
+            id: 'post',
+            format: 'post',
+            excerpts: [{ sourceId: 'curated-a', start: 3, end: 12, quote: 'RAG\tworks' }],
+          },
+          {
+            id: 'article',
+            format: 'article',
+            excerpts: [{ sourceId: 'curated-b', start: 0, end: 3, quote: 'SQL' }],
+          },
+        ],
+      },
+    });
+    for (const canary of [
+      'PRIVATE_UNSELECTED_BODY',
+      'PRIVATE_UNSELECTED_TITLE',
+      'PRIVATE_UNSELECTED_URL',
+      'PRIVATE_UNSELECTED_ALL',
+    ])
+      expect(JSON.stringify(result.repurposingEvidence)).not.toContain(canary);
+    expect(result.rawRepurposingStatus).toBe(200);
+    expect(result.rawRepurposingWireBytes).toBeLessThanOrEqual(256 * 1024);
+    expect(result.rawRepurposingBodyEcho).toBe(false);
+    expect(result.rawRepurposingUnselectedEcho).toBe(false);
+    expect(result.rawRepurposingResult).toMatchObject({
+      result: {
+        structuredContent: {
+          status: 'succeeded',
+          data: { kind: 'local_caller_curated_repurposing_evidence' },
+        },
+      },
+    });
     expect(result.toolNames).toContain('linkedin.research.compare_cohorts');
     expect(result.cohortComparison).toMatchObject({
       status: 'succeeded',

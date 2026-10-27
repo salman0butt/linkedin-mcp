@@ -309,6 +309,20 @@ const descriptors: CapabilityDescriptor[] = [
     evidence: 'M10.3 bounded deterministic corpus-cohort comparison, typed MCP and real transport contracts.',
   },
   {
+    id: 'research.repurposing.prepare',
+    desiredBehavior:
+      'Prepare reusable evidence packets by copying only explicitly caller-selected literal UTF-16 excerpts into caller-defined post, article or carousel input groups.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M10',
+    status: 'ACTIVE',
+    accessNote:
+      'Unverified caller-controlled sources, formats and quote offsets only; no generated drafts, claims, source verification, retrieval, storage or publishing.',
+    approvalRequired: false,
+    evidence:
+      'M10.4 bounded caller-curated excerpt pack, typed MCP and built STDIO/HTTP transport contracts.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',
