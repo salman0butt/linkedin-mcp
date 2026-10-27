@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-27 (M10.4 VERIFIED/MERGED; M11.0 LOCAL IMPLEMENTATION)
+## Current checkpoint — 2026-10-27 (M11.0 VERIFIED/MERGED; M11.1 PRIVATE CALENDAR PLANS IMPLEMENTING)
+
+**M11.0 VERIFIED/MERGED:** PR [#21](https://github.com/salman0butt/linkedin-mcp/pull/21) exact feature `7f6c75431c43330cf78c6abaed1c779c4951c67a` CI `40472594047` **completed/success**; guarded squash main `96e4052eb4fd92d24afb0489c3142e65447e63c7`, tree `72e192cbc0ada8dd300561e032fe703c0911cbb5`, exact push CI `40475275490` **completed/success**, quality success. Local Node24 **1,119/1,119 in 103 suites**, real built STDIO/HTTP/SSE, independent pure+MCP Critical=0 Important=0. Only `LOCAL_ONLY` caller-defined preview is available, not a durable calendar/scheduler, trusted approval, LinkedIn provider or publisher.
+
+**M11.1 ACTIVE:** `feat/m11-private-calendar-plans` isolated from that verified main, frozen Node24 baseline 1,119/1,119. Design `docs/superpowers/specs/2026-10-27-m11-private-calendar-plans-design.md`, plan `docs/superpowers/plans/2026-10-27-m11-private-calendar-plans.md`. Implements opt-in private STDIO file-backed caller-defined calendar plans with strict schema, revisions, create-idempotency, no HTTP private state and no queued execution. Genuine config/capability/MCP inventory integration RED observed before implementation, focused corrections under test. M11.1 full Node24 format/lint/typecheck/build, **1,156/1,156 tests in 106 suites**, real compiled STDIO/HTTP and private HTTP getter isolation **GREEN**. Genuine test-first store-module/real SDK missing-tool/capability RED→GREEN; independent store+config and MCP+transport cross-reviews **Critical=0 Important=0**, following semantic malformed-result RED→GREEN repair. GitHub feature PR and exact feature/main CI **PENDING**; do not report release success.
+
+Exact next work: **Complete M11.1 locally, cross-review private-store and MCP/transport disjointly, full Node24/compiled transport checks; persist a connector-first PR, exact feature-head CI, guarded squash and exact main push CI.** Actual `schedule.create` stays UNAVAILABLE/PLANNED; M09.P and external M10 research remain unavailable.
+
+## Previous checkpoint — 2026-10-27 (M10.4 VERIFIED/MERGED; M11.0 LOCAL IMPLEMENTATION)
 
 **M10.4 VERIFIED/MERGED:** PR [#20](https://github.com/salman0butt/linkedin-mcp/pull/20) feature `9fa9f87bfa546aa14ed1f9e16cddb25147eb37f1` exact CI `40469138021` SUCCESS; squash main `2366139cffcc080332dd25ec9438018ee1863b33`, exact tree `e462c3bd4bc4975eba69e8900f79fc0b9d81953a`, main push CI `40469415495` SUCCESS. Local Node24 **1,104/1,104** tests (101 suites), format/lint/typecheck/build/built STDIO+HTTP/SSE GREEN, two independent security scopes **Critical=0 Important=0** after raw-ID attribution RED→GREEN repair. All M10.0–M10.4 LOCAL_ONLY milestones verified, but broader M10 external discovery remains UNAVAILABLE; M09.P native publishing BLOCKED.
 

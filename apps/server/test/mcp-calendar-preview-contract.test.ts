@@ -73,8 +73,9 @@ describe('M11.0 typed stateless LOCAL_ONLY calendar preview MCP contract', () =>
     const { client, connect } = capturedClient();
     await connect;
     const { tools } = await client.listTools();
-    // The real SDK inventory exposes 51 baseline registered tools (new calendar tool = 52).
-    expect(tools).toHaveLength(52);
+    // The M11.0 calendar preview is still one stateless tool; five M11.1
+    // private-plan methods raise the default in-memory inventory to 57.
+    expect(tools).toHaveLength(57);
     const matches = tools.filter((tool) => tool.name === TOOL);
     expect(matches).toHaveLength(1);
     expect(matches[0]?.inputSchema).toMatchObject({

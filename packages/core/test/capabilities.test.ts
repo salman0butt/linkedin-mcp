@@ -36,6 +36,7 @@ describe('capability registry', () => {
         'research.compare_cohorts',
         'research.repurposing.prepare',
         'calendar.preview',
+        'calendar.plans',
         'research.topic',
         'messages.send',
       ]),
@@ -117,6 +118,13 @@ describe('capability registry', () => {
     expect(futureCapabilities.find((descriptor) => descriptor.id === 'calendar.preview')).toMatchObject({
       provider: 'LOCAL_ONLY',
       availability: 'AVAILABLE',
+      status: 'ACTIVE',
+      milestone: 'M11',
+      approvalRequired: false,
+    });
+    expect(futureCapabilities.find((descriptor) => descriptor.id === 'calendar.plans')).toMatchObject({
+      provider: 'LOCAL_ONLY',
+      availability: 'UNAVAILABLE',
       status: 'ACTIVE',
       milestone: 'M11',
       approvalRequired: false,

@@ -1,11 +1,11 @@
 # Current Milestone
 
 Milestone: M11 — Scheduling & Automation (M10 provider-backed research remainder unavailable)
-Status: IMPLEMENTING — M10.0–M10.4 caller-supplied LOCAL_ONLY research utilities VERIFIED/MERGED. M11.0 stateless caller-defined calendar preview is LOCALLY TESTED with both independent security scopes Critical=0 Important=0, not a durable scheduler, authorizer, queue, or LinkedIn publisher. M10 provider-backed discovery and M09 native publication remain UNAVAILABLE.
-Iteration: M11.0 — strictly bounded UTC calendar planning, 56th LOCAL_ONLY MCP; **Node24 1,119/1,119 tests in 103 suites plus format/lint/type/build and real STDIO/HTTP raw SSE GREEN, both independent pure and MCP/transport scopes Critical=0 Important=0; remote CI pending**.
-Branch: `feat/m11-local-content-calendar` (isolated worktree from exact M10.4 verified main).
-PR: #16–#20 MERGED; M11.0 PR and exact CI PENDING. M10.4 PR #20 feature `9fa9f87bfa546aa14ed1f9e16cddb25147eb37f1` CI `40469138021` SUCCESS, squash main `2366139cffcc080332dd25ec9438018ee1863b33` CI `40469415495` SUCCESS.
-Latest verified main: `2366139cffcc080332dd25ec9438018ee1863b33`; exact push CI `40469415495` SUCCESS; tree `e462c3bd4bc4975eba69e8900f79fc0b9d81953a`, full local M10.4 Node24 1,104/1,104 in 101 suites, independent Critical=0 Important=0.
+Status: IMPLEMENTING — M10.0–M10.4 and M11.0 LOCAL_ONLY increments VERIFIED/MERGED. M11.0 previews an inert caller-authored UTC calendar; M11.1 is implementing opt-in private STDIO-only persisted plans. No scheduler, queue, approval, publication or external research capability is enabled.
+Iteration: M11.1 — private calendar plans with strict local durability, revisions, idempotent create and HTTP isolation. Design `docs/superpowers/specs/2026-10-27-m11-private-calendar-plans-design.md`; plan `docs/superpowers/plans/2026-10-27-m11-private-calendar-plans.md`. Local Node24 1,156/1,156 in 106 suites, full quality/compiled transport and independent Critical=0 Important=0 GREEN; remote feature/main CI PENDING.
+Branch: `feat/m11-private-calendar-plans` (clean isolated worktree from exact verified M11.0 squash main).
+PR: #16–#21 MERGED. M11.0 PR #21 feature `7f6c75431c43330cf78c6abaed1c779c4951c67a` CI `40472594047` SUCCESS; squash main `96e4052eb4fd92d24afb0489c3142e65447e63c7` CI `40475275490` SUCCESS. M11.1 PR PENDING.
+Latest verified main: `96e4052eb4fd92d24afb0489c3142e65447e63c7`; exact push CI `40475275490` SUCCESS; tree `72e192cbc0ada8dd300561e032fe703c0911cbb5`. M11.0 local Node24 1,119/1,119 in 103 suites, independent Critical=0 Important=0, actual compiled STDIO/HTTP/raw SSE green.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -42,4 +42,4 @@ M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-m
 
 M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Complete M11.0 scoped pure/MCP RED→GREEN, independent reviews, full Node24 gates, exact-tree PR and feature/merged-main CI.** M11 durable execution is not implemented; M09.P and M10 provider-backed research remain blocked.
+Exact next work: **Complete M11.1 opt-in STDIO-private store and typed MCP using genuine RED→GREEN, independent reviews, full Node24 gates, connector-first exact-tree PR, feature/merged-main CI.** Actual `schedule.create` remains unavailable; M09.P and M10 provider-backed research remain blocked.

@@ -1,6 +1,6 @@
 # M11 — Scheduling & Automation
 
-Status: **IMPLEMENTING — M11.0 read-only LOCAL_ONLY content calendar preview in isolated branch; durable scheduling/approval-aware execution remains PLANNED/UNAVAILABLE.**
+Status: **IMPLEMENTING — M11.0 strictly LOCAL_ONLY preview VERIFIED/MERGED; M11.1 private STDIO-only persisted planning in implementation. Actual scheduling, approval-aware execution and publication remain PLANNED/UNAVAILABLE.**
 
 ## Goal
 
@@ -24,7 +24,7 @@ Scheduled actions are durable/idempotent, respect approval/capability/auth state
 
 ## Tasks / Iterations
 
-M11.0 caller-authored UTC content calendar **preview only** (strict user input, no persistence/queue/provider/approval/publish), design `docs/superpowers/specs/2026-10-27-m11-local-content-calendar-preview-design.md` and plan `docs/superpowers/plans/2026-10-27-m11-local-content-calendar-preview.md`. Further slices: optional trusted private STDIO durable calendar state, then scheduler claims, at-execution trusted human approvals and auth/scopes/capability checks, bounded retries/uncertain-outcome handling, cancellation/rescheduling, auditable verification. None is authorized merely by M11.0.
+M11.0 caller-authored UTC content calendar **preview only** (strict user input, no persistence/queue/provider/approval/publish), design `docs/superpowers/specs/2026-10-27-m11-local-content-calendar-preview-design.md` and plan `docs/superpowers/plans/2026-10-27-m11-local-content-calendar-preview.md`, verified via PR #21 feature `7f6c75431c43330cf78c6abaed1c779c4951c67a` CI `40472594047` SUCCESS and squash main `96e4052eb4fd92d24afb0489c3142e65447e63c7` exact push CI `40475275490` SUCCESS. M11.1 opt-in private STDIO-only durable calendar planning CRUD is the next independently scoped slice (`docs/superpowers/specs/2026-10-27-m11-private-calendar-plans-design.md`, `docs/superpowers/plans/2026-10-27-m11-private-calendar-plans.md`); no queue or publishing. Later executor design must address scheduler claims, at-execution trusted approval and auth/scopes/capability checks, bounded retries/uncertain-outcome handling, cancellation/rescheduling and auditable verification.
 
 ## TDD Evidence
 
@@ -32,7 +32,7 @@ M11.0 genuine test-first missing-module RED (`ERR_MODULE_NOT_FOUND` for `calenda
 
 ## Integration Test Evidence
 
-Fresh Node24 **1,119/1,119 tests across 103 suites** with built STDIO and loopback HTTP smoke and actual raw SSE full wire bytes ≤256KiB, 56 real built tools. Full format/lint/typecheck/build/diff GREEN; independent cross-owner security re-review and remote PR/CI are PENDING.
+M11.0 Node24 **1,119/1,119 tests across 103 suites** with built STDIO and loopback HTTP smoke and actual raw SSE full wire bytes ≤256KiB, 56 real built tools. Full format/lint/typecheck/build/diff GREEN; independent cross-owner security reviews and exact feature/main CI all succeeded. M11.1 Node24 baseline 1,119/1,119; final Node24 1,156/1,156 in 106 suites, all quality/real STDIO/HTTP checks GREEN, independent cross-owner security review Critical=0 Important=0 after semantic stored-result validation RED→GREEN; remote feature/main CI PENDING.
 
 ## Security Review
 
@@ -40,11 +40,13 @@ For eventual execution: recheck live credentials/scopes/entitlements and trusted
 
 ## Code Review Findings
 
-Independent PURE calendar-preview security review signed off unresolved Critical=0 Important=0: 90/90 standalone hostile probes plus 8/8 focused tests, revoked/proxy/getter/accessor safety, real UTC minute/90-day bounds, deep freeze, source-only data and no IO. Complementary independent MCP/capability/transport review signed off Critical=0 Important=0 after built STDIO+HTTP 6/6, direct raw HTTP/SSE 22/22, private-store 13/13; 56 built tools, no `schedule.create`, no remote publishing. Do not mark remotely VERIFIED/MERGED before both scopes and exact-SHA feature/main CI.
+Independent M11.0 PURE calendar-preview security review signed off unresolved Critical=0 Important=0: 90/90 standalone hostile probes plus 8/8 focused tests, revoked/proxy/getter/accessor safety, real UTC minute/90-day bounds, deep freeze, source-only data and no IO. Complementary MCP/capability/transport review signed off Critical=0 Important=0 after built STDIO+HTTP 6/6, direct raw HTTP/SSE 22/22, private-store 13/13; 56 built tools, no `schedule.create`, no remote publishing. Exact feature/main CI verified; new M11.1 security review must be independent and cannot inherit that signoff.
+
+M11.1 additional independent host-integration audit found two Important path-isolation defects: macOS case/Unicode/physical aliases could bypass private-store collision checks, and media roots could overlap private `.lock`/`.initialized`/`.ready`/hidden-lock companions (including inherited job/ledger overlaps). Both were reproduced with three failing focused regression groups each, repaired with read-only physical-ancestor identity and symmetric five-store/sidecar/media checks, and verified by local Node24 1,156/1,156 tests across 106 suites, plus formatting, lint, typecheck, build, real STDIO and HTTP. Final independent re-review of the second remediation is pending before release.
 
 ## Fresh Verification Results
 
-Node24 format, lint, typecheck, build and all 1,119 tests PASS locally in isolated `feat/m11-local-content-calendar` worktree; independent disjoint pure/MCP scopes Critical=0 Important=0; not yet GitHub feature/main CI.
+M11.0 Node24 full gates and all 1,119 tests PASS; PR #21 squash merge exact tree `72e192cbc0ada8dd300561e032fe703c0911cbb5`, feature/main CI success. M11.1 genuine store missing-module RED, real SDK missing-tool RED, prime capability/config/inventory RED; focused and full Node24 1,156/1,156 GREEN with built real transports. Independently reproduced Important: semantically invalid store-produced calendar initially passed MCP structural output parser; fixed with M11.0 preview semantic validator, regression GREEN and cross-owner reviewer Critical=0 Important=0. Exact remote feature/main CI PENDING.
 
 ## Durable Recovery Sources
 
@@ -52,6 +54,7 @@ PRD, capability matrix, M11 spec/plan, Git/PR/CI.
 
 ## Completion Checklist
 
-- [ ] Acceptance verified.
-- [ ] Critical/Important resolved.
-- [ ] Exact-final-head/post-merge CI green.
+- [x] M11.0 preview scoped acceptance, independent Critical/Important and exact feature/main CI verified.
+- [x] M11.1 local private calendar plan scoped acceptance and independent security review Critical=0 Important=0.
+- [ ] M11.1 exact-final-head/post-merge CI green.
+- [ ] Full M11 scheduler execution acceptance remains blocked pending separate at-execution approval and provider design.

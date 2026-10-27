@@ -336,6 +336,20 @@ const descriptors: CapabilityDescriptor[] = [
     evidence: 'M11.0 strict deterministic local calendar preview and typed MCP/real transport contracts.',
   },
   {
+    id: 'calendar.plans',
+    desiredBehavior:
+      'Create, revise, view, list and remove durable private caller-defined UTC content calendar plans, never execute or publish them.',
+    provider: 'LOCAL_ONLY',
+    availability: 'UNAVAILABLE',
+    milestone: 'M11',
+    status: 'ACTIVE',
+    accessNote:
+      'Disabled by default; opt in with a host-owned private calendar store path and STDIO transport only. HTTP never accesses saved calendars. Plans do not schedule or authorize LinkedIn publication.',
+    approvalRequired: false,
+    evidence:
+      'M11.1 opt-in private STDIO saved-plan CRUD, revision/idempotency and HTTP isolation contracts.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',
