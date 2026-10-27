@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-27 (M10.3 VERIFIED/MERGED; M10.4 LOCAL IMPLEMENTATION/REMOTE PENDING)
+## Current checkpoint — 2026-10-27 (M10.4 VERIFIED/MERGED; M11.0 LOCAL IMPLEMENTATION)
+
+**M10.4 VERIFIED/MERGED:** PR [#20](https://github.com/salman0butt/linkedin-mcp/pull/20) feature `9fa9f87bfa546aa14ed1f9e16cddb25147eb37f1` exact CI `40469138021` SUCCESS; squash main `2366139cffcc080332dd25ec9438018ee1863b33`, exact tree `e462c3bd4bc4975eba69e8900f79fc0b9d81953a`, main push CI `40469415495` SUCCESS. Local Node24 **1,104/1,104** tests (101 suites), format/lint/typecheck/build/built STDIO+HTTP/SSE GREEN, two independent security scopes **Critical=0 Important=0** after raw-ID attribution RED→GREEN repair. All M10.0–M10.4 LOCAL_ONLY milestones verified, but broader M10 external discovery remains UNAVAILABLE; M09.P native publishing BLOCKED.
+
+**M11.0 LOCAL IMPLEMENTATION INDEPENDENTLY REVIEWED:** In isolated worktree `feat/m11-local-content-calendar` from verified main above, stateless `linkedin.calendar.preview` / `calendar.preview` read-only local UTC planning is implemented; no background scheduler, durable queue, approval evaluation, retries or publication. Full Node24 **1,119/1,119 in 103 suites**, format/lint/type/build and real STDIO/HTTP/raw SSE GREEN. Disjoint pure (90/90 probes) and MCP/capability/transport (22/22 raw SSE and 13/13 HTTP private-store probes) security reviewers report **Critical=0 Important=0**. Feature PR/head CI/merge still PENDING.
+
+Exact next work: **Persist independent-reviewed M11.0 exact-tree feature PR, verify feature CI, squash merge and exact main CI; do not enable `schedule.create`.**
+
+## Historical checkpoint — 2026-10-27 (before M10.4 PR #20)
 
 **M10.0/M10.1/M10.2 LOCAL_ONLY VERIFIED/MERGED:** PR #16 feature CI `40293170065` / main `865fd9fb4cd5ccd8438ef7a89f9bc08f3fb600df` CI `40293411451`; PR #17 feature CI `40300253462` / main `2899847a79dec7dd08714d8e2a3fb3e720c6c42e` CI `40300553498`; PR [#18](https://github.com/salman0butt/linkedin-mcp/pull/18) exact feature head `b39f30ca1089a8b02f3a099eb8238555ebb25a09` CI `40304586073` SUCCESS, squash main `e7be937961f138a7df769c5a63dba7646d0fface` exact push CI `40304868402` SUCCESS. M10.2 final Node24 1,074/1,074 tests across 97 suites, full gates, real built STDIO/HTTP and independent Critical=0 Important=0. All three utilities consume only unverified caller material, not live providers, validated sources or verified trends.
 

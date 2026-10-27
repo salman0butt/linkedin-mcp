@@ -1,6 +1,6 @@
 # M10 — Research & Content Intelligence
 
-Status: **IMPLEMENTING — M10.0, M10.1 and M10.2 VERIFIED/MERGED via PRs #16/#17/#18 and exact feature/main CI; M10.3 caller-defined two-cohort comparison VERIFIED/MERGED; M10.4 human-curated literal excerpt packs LOCAL IMPLEMENTATION; independent reviews Critical=0 Important=0; PR/CI pending; provider-backed research unavailable.**
+Status: **IMPLEMENTING — M10.0, M10.1 and M10.2 VERIFIED/MERGED via PRs #16/#17/#18 and exact feature/main CI; M10.3 caller-defined two-cohort comparison VERIFIED/MERGED; M10.4 human-curated literal excerpt packs VERIFIED/MERGED via PR #20 with independent Critical=0 Important=0 and exact feature/main CI; provider-backed research unavailable.**
 
 ## Goal
 
@@ -38,7 +38,7 @@ M10.0 core, analysis and MCP tests exercised missing module/tool registration, U
 
 M10.1 missing pure module and MCP tool were separately reproduced RED, then repaired GREEN. The initial full local Node24 suite passed **1,055/1,055 in 95 suites**; after Unicode case-equivalence tests it passed **1,056/1,056**, and after correcting a separate Unicode topic/phrase false-evidence mapping regression, the **final full suite passed 1,057/1,057 tests across 95 suites** with all quality, framework and real built transport gates green. Unicode single-line separator and topic equivalence edge cases were genuine RED→GREEN repairs, not content truncations.
 
-M10.2 original missing-module/test and missing-MCP-tool RED failures were observed, then 8/8 pure and 9/9 MCP tests passed. First full Node24 run passed 1,074/1,074 across 97 suites, plus formatting/lint/typecheck/build, seven framework tests and actual built STDIO/HTTP 6/6. Final two disjoint independent review scopes Critical=0 Important=0; exact feature and merged-main CI SUCCESS. M10.3 independently reviewed and VERIFIED/MERGED via PR #19 and exact feature/main CI. M10.4 first missing-module and missing-tool RED were genuinely reproduced before GREEN; final local Node24 full suite passed 1,104/1,104 in 101 suites plus format/lint/typecheck/build, framework 14/14 and built STDIO/HTTP with raw SSE. Independent M10.4 security scopes signed off Critical=0 Important=0 after genuine raw-ID RED→GREEN repair; remote PR/CI remain pending.
+M10.2 original missing-module/test and missing-MCP-tool RED failures were observed, then 8/8 pure and 9/9 MCP tests passed. First full Node24 run passed 1,074/1,074 across 97 suites, plus formatting/lint/typecheck/build, seven framework tests and actual built STDIO/HTTP 6/6. Final two disjoint independent review scopes Critical=0 Important=0; exact feature and merged-main CI SUCCESS. M10.3 independently reviewed and VERIFIED/MERGED via PR #19 and exact feature/main CI. M10.4 first missing-module and missing-tool RED were genuinely reproduced before GREEN; final local Node24 full suite passed 1,104/1,104 in 101 suites plus format/lint/typecheck/build, framework 14/14 and built STDIO/HTTP with raw SSE. Independent M10.4 security scopes signed off Critical=0 Important=0 after genuine raw-ID RED→GREEN repair; PR #20 exact feature-head CI 40469138021 and main push CI 40469415495 both SUCCESS.
 
 ## Integration Test Evidence
 
@@ -50,7 +50,7 @@ Independent core/analyzer/MCP security review and separate integration/documenta
 
 ## Code Review Findings
 
-Both M10.0 and M10.1 received independent source/integration review with unresolved Critical=0 Important=0, followed by successful exact feature-head and main CI. M10.2 also completed genuine RED→GREEN source/tool, separate independent scoped Critical=0 Important=0 reviews and exact remote feature/main CI; M10.3 independently reviewed and VERIFIED/MERGED; M10.4 independent source and MCP/transport security reviews signed off Critical=0 Important=0; remote feature/main CI remain pending.
+Both M10.0 and M10.1 received independent source/integration review with unresolved Critical=0 Important=0, followed by successful exact feature-head and main CI. M10.2 also completed genuine RED→GREEN source/tool, separate independent scoped Critical=0 Important=0 reviews and exact remote feature/main CI; M10.3 independently reviewed and VERIFIED/MERGED; M10.4 independent source and MCP/transport security reviews signed off Critical=0 Important=0; PR #20 exact feature/head and squash-merged-main CI SUCCESS.
 
 ## Fresh Verification Results
 
@@ -58,7 +58,7 @@ M10.0 PR [#16](https://github.com/salman0butt/linkedin-mcp/pull/16): exact featu
 
 M10.2 PR [#18](https://github.com/salman0butt/linkedin-mcp/pull/18): feature `b39f30ca1089a8b02f3a099eb8238555ebb25a09` CI `40304586073` SUCCESS, squash main `e7be937961f138a7df769c5a63dba7646d0fface`, tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`, exact push CI `40304868402` SUCCESS.
 
-M10.3 is VERIFIED/MERGED. M10.4 next safe slice is **caller-curated original UTF-16 excerpt packs** grouped by user-selected post/article/carousel destination hints in one bounded corpus; locally implemented, no remote verification yet. No inferred market trends, published content, competitor gaps or authorized external research provider.
+M10.3 and M10.4 are VERIFIED/MERGED; M10.4 provides **caller-curated original UTF-16 excerpt packs** grouped by user-selected post/article/carousel destination hints in one bounded corpus; exact feature and merged main CI verified. No inferred market trends, published content, competitor gaps or authorized external research provider.
 
 ## Durable Recovery Sources
 
@@ -70,5 +70,5 @@ PRD, capability matrix, `docs/superpowers/specs/2026-10-25-m10-content-research-
 - [x] Independent scoped Critical/Important findings resolved.
 - [x] M10.3 caller cohort comparison PR #19 and exact feature/main CI verified.
 - [x] M10.4 independent source and MCP/transport security reviews Critical=0 Important=0.
-- [ ] M10.4 evidence repurposing feature PR and merged-main CI.
+- [x] M10.4 evidence repurposing PR #20 feature CI 40469138021 and main CI 40469415495 SUCCESS.
 - [ ] Broader provider-backed topic research/trends/gaps and M10 milestone closeout await authorized source provider.

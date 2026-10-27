@@ -172,6 +172,14 @@ try {
       { id: 'article', label: 'Article evidence', format: 'article', selections: [{sourceId:'curated-b', start:0, end:3}] },
     ],
   } });
+  const calendarPreview = await client.callTool({ name: 'linkedin.calendar.preview', arguments: {
+    referenceUtc: '2026-10-27T10:00:00.000Z',
+    items: [
+      { id: 'second', label: 'Image later', kind: 'image_post', plannedAtUtc: '2026-10-29T12:00:00.000Z' },
+      { id: 'first', label: 'Text first', kind: 'text_post', plannedAtUtc: '2026-10-28T12:00:00.000Z' },
+      { id: 'manual', label: 'Article handoff', kind: 'manual_article_handoff', plannedAtUtc: '2026-10-28T12:00:00.000Z' },
+    ],
+  } });
   const draft = {
     title: 'Safe local article smoke', topic: 'TypeScript', audience: 'Engineers',
     goal: 'Explain local draft authoring.',
@@ -226,6 +234,8 @@ try {
     cohortComparisonIsError: cohortComparison.isError,
     repurposingEvidence: repurposingEvidence.structuredContent,
     repurposingEvidenceIsError: repurposingEvidence.isError,
+    calendarPreview: calendarPreview.structuredContent,
+    calendarPreviewIsError: calendarPreview.isError,
     promptNames, promptContents,
     articleValidation: articleValidation.structuredContent,
     articleValidationIsError: articleValidation.isError,
@@ -502,6 +512,19 @@ describe('built stdio server', () => {
         };
       };
       repurposingEvidenceIsError?: boolean;
+      calendarPreview: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          persistence: string;
+          execution: string;
+          publication: string;
+          days: Array<{ utcDate: string; items: Array<{ id: string; manualOnly: boolean }> }>;
+          collisions: Array<{ plannedAtUtc: string; itemIds: string[] }>;
+        };
+      };
+      calendarPreviewIsError?: boolean;
       promptNames: string[];
       promptContents: string[];
       articleValidation: {
@@ -552,7 +575,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 55,
+      toolCount: 56,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -645,6 +668,29 @@ describe('built stdio server', () => {
     expect(result.cohortComparisonIsError).not.toBe(true);
     expect(result.repurposingEvidenceIsError).not.toBe(true);
     expect(result.toolNames).toContain('linkedin.research.prepare_repurposing');
+    expect(result.toolNames).toContain('linkedin.calendar.preview');
+    expect(result.calendarPreviewIsError).not.toBe(true);
+    expect(result.calendarPreview).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_content_calendar_preview',
+        persistence: 'none',
+        execution: 'not_queued',
+        publication: 'not_attempted',
+        days: [
+          {
+            utcDate: '2026-10-28',
+            items: [
+              { id: 'first', manualOnly: false },
+              { id: 'manual', manualOnly: true },
+            ],
+          },
+          { utcDate: '2026-10-29', items: [{ id: 'second', manualOnly: false }] },
+        ],
+        collisions: [{ plannedAtUtc: '2026-10-28T12:00:00.000Z', itemIds: ['first', 'manual'] }],
+      },
+    });
     expect(result.repurposingEvidence).toMatchObject({
       status: 'succeeded',
       provider: { type: 'LOCAL_ONLY' },

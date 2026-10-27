@@ -323,6 +323,19 @@ const descriptors: CapabilityDescriptor[] = [
       'M10.4 bounded caller-curated excerpt pack, typed MCP and built STDIO/HTTP transport contracts.',
   },
   {
+    id: 'calendar.preview',
+    desiredBehavior:
+      'Preview a chronological UTC content calendar from caller-authored planning hints without saving, queuing, approving or publishing.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M11',
+    status: 'ACTIVE',
+    accessNote:
+      'Pure caller-defined planning only; no persistence, scheduled execution, LinkedIn provider, durable queue, approval checks or publication.',
+    approvalRequired: false,
+    evidence: 'M11.0 strict deterministic local calendar preview and typed MCP/real transport contracts.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',
