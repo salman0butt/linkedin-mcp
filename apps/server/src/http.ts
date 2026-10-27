@@ -180,8 +180,19 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
   const requestBodyLimitBytes = options.requestBodyLimitBytes ?? DEFAULT_REQUEST_BODY_LIMIT_BYTES;
   const config = parseConfig();
   const runtime = options.runtime ?? createLinkedInRuntime({ ...config, transport: 'http' });
-  // Force HTTP isolation even with an injected STDIO runtime/store.
-  const handler = createMcpHandler(() => createLinkedInMcpServer({ ...runtime, transport: 'http' }));
+  // Build an explicit safe allowlist: never even read any injected private-store
+  // properties/getters when constructing an HTTP MCP server.
+  const handler = createMcpHandler(() =>
+    createLinkedInMcpServer({
+      version: runtime.version,
+      authService: runtime.authService,
+      discovery: runtime.discovery,
+      jobs: runtime.jobs,
+      publishing: runtime.publishing,
+      ...(runtime.engagement === undefined ? {} : { engagement: runtime.engagement }),
+      transport: 'http',
+    }),
+  );
 
   const server = createServer((request, response) => {
     if (

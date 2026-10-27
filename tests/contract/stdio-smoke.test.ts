@@ -575,7 +575,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 56,
+      toolCount: 61,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -669,6 +669,9 @@ describe('built stdio server', () => {
     expect(result.repurposingEvidenceIsError).not.toBe(true);
     expect(result.toolNames).toContain('linkedin.research.prepare_repurposing');
     expect(result.toolNames).toContain('linkedin.calendar.preview');
+    for (const action of ['create', 'update', 'get', 'list', 'remove']) {
+      expect(result.toolNames).toContain(`linkedin.calendar.plans.${action}`);
+    }
     expect(result.calendarPreviewIsError).not.toBe(true);
     expect(result.calendarPreview).toMatchObject({
       status: 'succeeded',

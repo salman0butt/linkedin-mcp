@@ -14,6 +14,8 @@ import { registerArticleTools } from './article-mcp.js';
 import { registerArticlePrompts } from './article-prompts.js';
 import { registerResearchTools } from './research-mcp.js';
 import { registerCalendarTools } from './calendar-mcp.js';
+import { registerCalendarPlanTools } from './calendar-plan-mcp.js';
+import type { LocalCalendarPlanStore } from './scheduling/calendar-plan-store.js';
 import type { LocalArticleStore } from './articles/article-store.js';
 import { registerSavedJobTools, type LocalSavedJobsStore } from './jobs/job-saved-mcp.js';
 import { registerMediaPostTools } from './media-mcp.js';
@@ -26,6 +28,7 @@ export interface LinkedInMcpServerDeps extends BaseLinkedInMcpServerDeps {
   jobs?: JobSearchService;
   jobStore?: LocalSavedJobsStore;
   articleStore?: LocalArticleStore;
+  calendarStore?: LocalCalendarPlanStore;
   transport?: 'stdio' | 'http';
 }
 
@@ -66,6 +69,12 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
   registerJobIntelligenceTools(server, { createRequestId, now });
   registerResearchTools(server, { createRequestId, now });
   registerCalendarTools(server, { createRequestId, now });
+  registerCalendarPlanTools(server, {
+    ...(normalizedDeps.calendarStore === undefined ? {} : { calendarStore: normalizedDeps.calendarStore }),
+    ...(normalizedDeps.transport === undefined ? {} : { transport: normalizedDeps.transport }),
+    createRequestId,
+    now,
+  });
 
   registerArticlePrompts(server);
   registerArticleTools(server, {

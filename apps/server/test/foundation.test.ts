@@ -99,6 +99,13 @@ describe('foundation result factories', () => {
         approvalRequired: false,
       },
     );
+    expect(result.data.capabilities.find((capability) => capability.id === 'calendar.plans')).toMatchObject({
+      status: 'ACTIVE',
+      availability: 'UNAVAILABLE',
+      provider: 'LOCAL_ONLY',
+      milestone: 'M11',
+      approvalRequired: false,
+    });
     expect(
       result.data.capabilities.find((capability) => capability.id === 'article.native.publish'),
     ).toMatchObject({
