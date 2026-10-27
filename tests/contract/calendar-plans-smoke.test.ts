@@ -38,9 +38,12 @@ try {
   const id = create.structuredContent?.data?.id;
   const list = await client.callTool({ name:'linkedin.calendar.plans.list', arguments:{} });
   const get = id ? await client.callTool({ name:'linkedin.calendar.plans.get', arguments:{id} }) : null;
+  const inspect = id ? await client.callTool({name:'linkedin.calendar.plans.inspect',
+    arguments:{id,expectedRevision:1,asOfUtc:'2026-10-28T12:00:00.000Z'}}) : null;
   process.stdout.write(JSON.stringify({create:create.structuredContent,
     createError:create.isError,list:list.structuredContent,listError:list.isError,
-    get:get?.structuredContent,getError:get?.isError}));
+    get:get?.structuredContent,getError:get?.isError,
+    inspect:inspect?.structuredContent,inspectError:inspect?.isError}));
 } finally { await client.close(); }
 `;
 
@@ -63,6 +66,7 @@ try {
     {name:'linkedin.calendar.plans.create',arguments:{idempotencyKey:'http-must-fail',calendar:${JSON.stringify(calendar)}}},
     {name:'linkedin.calendar.plans.list',arguments:{}},
     {name:'linkedin.calendar.plans.get',arguments:{id:'123e4567-e89b-42d3-a456-426614174000'}},
+    {name:'linkedin.calendar.plans.inspect',arguments:{id:'123e4567-e89b-42d3-a456-426614174000',expectedRevision:1,asOfUtc:'2026-10-28T12:00:00.000Z'}},
     {name:'linkedin.calendar.plans.update',arguments:{id:'123e4567-e89b-42d3-a456-426614174000',expectedRevision:1,calendar:${JSON.stringify(calendar)}}},
     {name:'linkedin.calendar.plans.remove',arguments:{id:'123e4567-e89b-42d3-a456-426614174000',expectedRevision:1}},
   ];
@@ -104,24 +108,49 @@ describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
           createError?: boolean;
           listError?: boolean;
           getError?: boolean;
+          inspectError?: boolean;
           create: { status: string; data: { id: string; revision: number; calendar: typeof calendar } };
           list: { status: string; data: Array<Record<string, unknown>> };
           get: { status: string; data: { id: string; calendar: typeof calendar } };
+          inspect: {
+            status: string;
+            data: {
+              id: string;
+              revision: number;
+              planDigest: string;
+              pastAsOf: Array<{ id: string }>;
+              futureAsOf: Array<{ id: string }>;
+              counts: { pastAsOf: number; futureAsOf: number };
+            };
+          };
         };
       const first = run();
       const replayAfterRestart = run();
       expect(first.createError).not.toBe(true);
       expect(first.listError).not.toBe(true);
       expect(first.getError).not.toBe(true);
+      expect(first.inspectError).not.toBe(true);
       expect(first.create.status).toBe('succeeded');
       expect(first.create.data.id).toMatch(/^[0-9a-f-]{36}$/iu);
       expect(first.create.data.revision).toBe(1);
       expect(first.create.data.calendar.items).toEqual(calendar.items);
       expect(first.get.data).toMatchObject({ id: first.create.data.id, calendar });
+      expect(first.inspect.status).toBe('succeeded');
+      expect(first.inspect.data).toMatchObject({
+        id: first.create.data.id,
+        revision: 1,
+        pastAsOf: [{ id: 'first' }],
+        futureAsOf: [{ id: 'second' }],
+        counts: { pastAsOf: 1, futureAsOf: 1 },
+      });
+      expect(first.inspect.data.planDigest).toMatch(/^[0-9a-f]{64}$/u);
+      expect(JSON.stringify(first.inspect)).not.toContain('Earlier 🤖 plan');
+      expect(JSON.stringify(first.inspect)).not.toContain('Later 🌍 plan');
       expect(first.list.data).toHaveLength(1);
       expect(JSON.stringify(first.list)).not.toContain('Earlier 🤖 plan');
       expect(replayAfterRestart.create.data.id).toBe(first.create.data.id);
       expect(replayAfterRestart.get.data.calendar).toEqual(first.get.data.calendar);
+      expect(replayAfterRestart.inspect.data.planDigest).toBe(first.inspect.data.planDigest);
       expect((await readFile(path, 'utf8')).includes('Later 🌍 plan')).toBe(true);
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -134,7 +163,7 @@ describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
       results: Array<{ name: string; isError?: boolean; body: { status: string; error?: { code: string } } }>;
     };
     expect(output.reads).toBe(0);
-    expect(output.results).toHaveLength(5);
+    expect(output.results).toHaveLength(6);
     for (const result of output.results) {
       expect(result.isError).toBe(true);
       expect(result.body).toMatchObject({

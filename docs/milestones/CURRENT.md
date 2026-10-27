@@ -1,11 +1,11 @@
 # Current Milestone
 
 Milestone: M11 — Scheduling & Automation (M10 provider-backed research remainder unavailable)
-Status: IMPLEMENTING — M10.0–M10.4 and M11.0 LOCAL_ONLY increments VERIFIED/MERGED. M11.0 previews an inert caller-authored UTC calendar; M11.1 is implementing opt-in private STDIO-only persisted plans. No scheduler, queue, approval, publication or external research capability is enabled.
-Iteration: M11.1 — private calendar plans with strict local durability, revisions, idempotent create and HTTP isolation. Design `docs/superpowers/specs/2026-10-27-m11-private-calendar-plans-design.md`; plan `docs/superpowers/plans/2026-10-27-m11-private-calendar-plans.md`. Local Node24 1,156/1,156 in 106 suites, full quality/compiled transport and independent Critical=0 Important=0 GREEN; remote feature/main CI PENDING.
-Branch: `feat/m11-private-calendar-plans` (clean isolated worktree from exact verified M11.0 squash main).
-PR: #16–#21 MERGED. M11.0 PR #21 feature `7f6c75431c43330cf78c6abaed1c779c4951c67a` CI `40472594047` SUCCESS; squash main `96e4052eb4fd92d24afb0489c3142e65447e63c7` CI `40475275490` SUCCESS. M11.1 PR PENDING.
-Latest verified main: `96e4052eb4fd92d24afb0489c3142e65447e63c7`; exact push CI `40475275490` SUCCESS; tree `72e192cbc0ada8dd300561e032fe703c0911cbb5`. M11.0 local Node24 1,119/1,119 in 103 suites, independent Critical=0 Important=0, actual compiled STDIO/HTTP/raw SSE green.
+Status: IMPLEMENTING — M10.0–M10.4, M11.0 and M11.1 LOCAL_ONLY increments VERIFIED/MERGED. M11.1 saves host-opted-in STDIO-private caller plans; M11.2 is implementing private read-only revision-gated plan inspection. No scheduler, queue, approval, publication or external research capability is enabled.
+Iteration: M11.2 — deterministic strictly LOCAL_ONLY inspection of saved calendar plans, at caller-supplied UTC minute, without labels or execution. Design `docs/superpowers/specs/2026-10-27-m11-calendar-plan-inspection-design.md`; plan `docs/superpowers/plans/2026-10-27-m11-calendar-plan-inspection.md`. Full local Node24 1,173/1,173 tests in 108 suites, formatting/lint/typecheck/build and compiled STDIO/HTTP GREEN; independent review and remote CI PENDING.
+Branch: `feat/m11-local-plan-inspection` (isolated worktree from verified M11.1 squash main).
+PR: #16–#22 MERGED. M11.1 PR #22 corrected feature `4382b54d579e211c0aeac916ec265d82b4730934` CI `40493902705` SUCCESS; guarded squash main `4dbecdebb2b94ee26d646b3933f268e4796251fa` exact push CI `40494259585` SUCCESS. M11.2 PR PENDING.
+Latest verified main: `4dbecdebb2b94ee26d646b3933f268e4796251fa`; exact push CI `40494259585` SUCCESS; tree `2be8c57c58a6d9c8c62e3d68dc2446444d09d46f`. M11.1 Node24 local 1,156/1,156 in 106 suites, independent Critical=0 Important=0, actual compiled STDIO/HTTP green.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -42,4 +42,4 @@ M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-m
 
 M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Complete M11.1 opt-in STDIO-private store and typed MCP using genuine RED→GREEN, independent reviews, full Node24 gates, connector-first exact-tree PR, feature/merged-main CI.** Actual `schedule.create` remains unavailable; M09.P and M10 provider-backed research remain blocked.
+Exact next work: **Complete M11.2 read-only private saved-plan inspection using genuine RED→GREEN, independent review, full Node24 gates, connector-first exact-tree PR, feature/merged-main CI.** Actual `schedule.create` remains unavailable; M09.P and M10 provider-backed research remain blocked.
