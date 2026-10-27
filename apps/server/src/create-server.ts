@@ -13,6 +13,7 @@ import { registerJobIntelligenceTools } from './jobs-intelligence-mcp.js';
 import { registerArticleTools } from './article-mcp.js';
 import { registerArticlePrompts } from './article-prompts.js';
 import { registerResearchTools } from './research-mcp.js';
+import { registerCalendarTools } from './calendar-mcp.js';
 import type { LocalArticleStore } from './articles/article-store.js';
 import { registerSavedJobTools, type LocalSavedJobsStore } from './jobs/job-saved-mcp.js';
 import { registerMediaPostTools } from './media-mcp.js';
@@ -64,6 +65,7 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
 
   registerJobIntelligenceTools(server, { createRequestId, now });
   registerResearchTools(server, { createRequestId, now });
+  registerCalendarTools(server, { createRequestId, now });
 
   registerArticlePrompts(server);
   registerArticleTools(server, {

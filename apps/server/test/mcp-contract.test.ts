@@ -200,6 +200,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.article.projects.list',
         'linkedin.article.projects.remove',
         'linkedin.article.projects.update',
+        'linkedin.calendar.preview',
         'linkedin.capabilities',
         'linkedin.comments.get',
         'linkedin.comments.inbox',

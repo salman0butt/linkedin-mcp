@@ -109,6 +109,14 @@ try {
       { id: 'article', label: 'Article evidence', format: 'article', selections: [{sourceId:'curated-b', start:0, end:3}] },
     ],
   } });
+  const calendarPreview = await client.callTool({ name: 'linkedin.calendar.preview', arguments: {
+    referenceUtc: '2026-10-27T10:00:00.000Z',
+    items: [
+      { id: 'second', label: 'Image later', kind: 'image_post', plannedAtUtc: '2026-10-29T12:00:00.000Z' },
+      { id: 'first', label: 'Text first', kind: 'text_post', plannedAtUtc: '2026-10-28T12:00:00.000Z' },
+      { id: 'manual', label: 'Article handoff', kind: 'manual_article_handoff', plannedAtUtc: '2026-10-28T12:00:00.000Z' },
+    ],
+  } });
   const rawResearchResponse = await fetch(
     'http://' + server.address.host + ':' + server.address.port + '/mcp',
     {
@@ -223,6 +231,26 @@ try {
   const rawRepurposingWire = await rawRepurposingResponse.text();
   const rawRepurposingEvent = rawRepurposingWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
   const rawRepurposingResult = rawRepurposingEvent ? JSON.parse(rawRepurposingEvent.slice(6)) : null;
+  const rawCalendarResponse = await fetch(
+    'http://' + server.address.host + ':' + server.address.port + '/mcp',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 'm11-calendar-wire', method: 'tools/call',
+        params: { name: 'linkedin.calendar.preview', arguments: {
+          referenceUtc: '2026-10-27T10:00:00.000Z',
+          items: Array.from({length:20},(_,i)=>({
+            id:'item-'+i, label:'🙂'.repeat(60),
+            kind:'text_post', plannedAtUtc:'2026-10-28T12:00:00.000Z',
+          })),
+        } },
+      }),
+    },
+  );
+  const rawCalendarWire = await rawCalendarResponse.text();
+  const rawCalendarEvent = rawCalendarWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
+  const rawCalendarResult = rawCalendarEvent ? JSON.parse(rawCalendarEvent.slice(6)) : null;
   const articleDraft = {
     title: 'HTTP article smoke', topic: 'Secure local drafts', audience: 'Developers',
     goal: 'Demonstrate review-only authoring.',
@@ -274,6 +302,11 @@ try {
     cohortComparisonIsError: cohortComparison.isError,
     repurposingEvidence: repurposingEvidence.structuredContent,
     repurposingEvidenceIsError: repurposingEvidence.isError,
+    calendarPreview: calendarPreview.structuredContent,
+    calendarPreviewIsError: calendarPreview.isError,
+    rawCalendarStatus: rawCalendarResponse.status,
+    rawCalendarWireBytes: Buffer.byteLength(rawCalendarWire,'utf8'),
+    rawCalendarResult,
     rawRepurposingStatus: rawRepurposingResponse.status,
     rawRepurposingWireBytes: Buffer.byteLength(rawRepurposingWire,'utf8'),
     rawRepurposingResult,
@@ -530,6 +563,24 @@ describe('built HTTP server', () => {
         };
       };
       repurposingEvidenceIsError?: boolean;
+      calendarPreview: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          persistence: string;
+          execution: string;
+          publication: string;
+          days: Array<{ utcDate: string; items: Array<{ id: string; manualOnly: boolean }> }>;
+          collisions: Array<{ plannedAtUtc: string; itemIds: string[] }>;
+        };
+      };
+      calendarPreviewIsError?: boolean;
+      rawCalendarStatus: number;
+      rawCalendarWireBytes: number;
+      rawCalendarResult: {
+        result: { structuredContent: { status: string; data: { kind: string; collisions: unknown[] } } };
+      };
       rawRepurposingStatus: number;
       rawRepurposingWireBytes: number;
       rawRepurposingResult: {
@@ -608,7 +659,7 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 55,
+      toolCount: 56,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -701,6 +752,36 @@ describe('built HTTP server', () => {
     expect(result.cohortComparisonIsError).not.toBe(true);
     expect(result.repurposingEvidenceIsError).not.toBe(true);
     expect(result.toolNames).toContain('linkedin.research.prepare_repurposing');
+    expect(result.toolNames).toContain('linkedin.calendar.preview');
+    expect(result.calendarPreviewIsError).not.toBe(true);
+    expect(result.calendarPreview).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_content_calendar_preview',
+        persistence: 'none',
+        execution: 'not_queued',
+        publication: 'not_attempted',
+        days: [
+          {
+            utcDate: '2026-10-28',
+            items: [
+              { id: 'first', manualOnly: false },
+              { id: 'manual', manualOnly: true },
+            ],
+          },
+          { utcDate: '2026-10-29', items: [{ id: 'second', manualOnly: false }] },
+        ],
+        collisions: [{ plannedAtUtc: '2026-10-28T12:00:00.000Z', itemIds: ['first', 'manual'] }],
+      },
+    });
+    expect(result.rawCalendarStatus).toBe(200);
+    expect(result.rawCalendarWireBytes).toBeLessThanOrEqual(256 * 1024);
+    expect(result.rawCalendarResult).toMatchObject({
+      result: {
+        structuredContent: { status: 'succeeded', data: { kind: 'local_content_calendar_preview' } },
+      },
+    });
     expect(result.repurposingEvidence).toMatchObject({
       status: 'succeeded',
       provider: { type: 'LOCAL_ONLY' },
