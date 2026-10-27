@@ -1,8 +1,9 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
+import { inspectLocalCalendarPlan } from './scheduling/calendar-plan-inspection.js';
 import { previewLocalContentCalendar } from './scheduling/calendar-preview.js';
-import type { LocalCalendarPlanStore } from './scheduling/calendar-plan-store.js';
+import { CalendarPlanStoreError, type LocalCalendarPlanStore } from './scheduling/calendar-plan-store.js';
 
 interface CalendarPlanToolsDeps {
   transport?: 'stdio' | 'http';
@@ -46,6 +47,20 @@ const removeInput = z.strictObject(
   { error: () => 'Invalid calendar plan remove request.' },
 );
 const listInput = z.strictObject({}, { error: () => 'Invalid calendar plan list request.' });
+const inspectInput = z.strictObject(
+  {
+    id,
+    expectedRevision: revision,
+    asOfUtc: utcMinute.refine(
+      (value) => {
+        const instant = Date.parse(value);
+        return Number.isFinite(instant) && new Date(instant).toISOString() === value;
+      },
+      { error: () => 'Invalid calendar plan inspection UTC minute.' },
+    ),
+  },
+  { error: () => 'Invalid calendar plan inspection request.' },
+);
 
 const timestamp = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u);
 const rawPlan = z.strictObject({
@@ -77,6 +92,51 @@ const summary = z.strictObject({
   itemCount: z.number().int().min(1).max(20),
 });
 const summaries = z.array(summary).max(20);
+const inspectionItem = z.strictObject({
+  id: item.shape.id,
+  kind: item.shape.kind,
+  plannedAtUtc: utcMinute,
+  manualOnly: z.boolean(),
+});
+const inspection = z.strictObject({
+  kind: z.literal('local_saved_plan_inspection'),
+  status: z.literal('planning_only'),
+  origin: z.literal('caller_defined'),
+  ...planning.shape,
+  id,
+  revision,
+  createdAt: timestamp,
+  updatedAt: timestamp,
+  referenceUtc: utcMinute,
+  asOfUtc: utcMinute,
+  planDigest: z.string().regex(/^[0-9a-f]{64}$/u),
+  pastAsOf: z.array(inspectionItem).max(20),
+  futureAsOf: z.array(inspectionItem).max(20),
+  counts: z.strictObject({
+    pastAsOf: z.number().int().min(0).max(20),
+    futureAsOf: z.number().int().min(0).max(20),
+  }),
+  collisions: z
+    .array(
+      z.strictObject({
+        plannedAtUtc: utcMinute,
+        itemIds: z.array(item.shape.id).min(2).max(20),
+      }),
+    )
+    .max(20),
+  warnings: z
+    .array(
+      z.enum([
+        'caller_planned_only',
+        'no_scheduling_or_publishing',
+        'approval_not_evaluated',
+        'same_minute_collision',
+        'manual_article_handoff_only',
+      ]),
+    )
+    .min(3)
+    .max(5),
+});
 
 const codes = [
   'local_store_not_available',
@@ -254,6 +314,27 @@ export function registerCalendarPlanTools(server: McpServer, deps: CalendarPlanT
       saved(savedPlan.nullable(), false, async (store) => {
         const result = await store.get(input);
         return result === null ? null : planResult(result);
+      }),
+  );
+  server.registerTool(
+    'linkedin.calendar.plans.inspect',
+    {
+      description:
+        'Read-only inspect one exact revision of a private STDIO calendar plan at a caller-declared UTC minute; never queue, approve or publish.',
+      inputSchema: inspectInput,
+      outputSchema: outputFor(inspection),
+    },
+    (input) =>
+      saved(inspection, false, async (store) => {
+        // The stored snapshot is retrieved exactly once. Validation, digest
+        // and ordering are pure; inspection cannot reserve or execute a slot.
+        const plan = await store.get({ id: input.id });
+        if (plan === null) throw new CalendarPlanStoreError('not_found');
+        return inspectLocalCalendarPlan({
+          plan,
+          expectedRevision: input.expectedRevision,
+          asOfUtc: input.asOfUtc,
+        });
       }),
   );
   server.registerTool(

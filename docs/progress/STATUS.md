@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-27 (M11.0 VERIFIED/MERGED; M11.1 PRIVATE CALENDAR PLANS IMPLEMENTING)
+## Current checkpoint — 2026-10-27 (M11.1 VERIFIED/MERGED; M11.2 PRIVATE PLAN INSPECTION IMPLEMENTING)
+
+**M11.1 VERIFIED/MERGED:** [PR #22](https://github.com/salman0butt/linkedin-mcp/pull/22) corrected feature SHA `4382b54d579e211c0aeac916ec265d82b4730934` passed exact pull-request CI `40493902705` (quality SUCCESS), then guarded squash main `4dbecdebb2b94ee26d646b3933f268e4796251fa` tree `2be8c57c58a6d9c8c62e3d68dc2446444d09d46f` passed exact main push CI `40494259585` (quality SUCCESS). The initial feature CI failed Ubuntu-only `/private/tmp` virtual-fixture assumptions; test-only portable fixture remediation preserved all four reviewed private filesystem safeguards. Full Node24 1,156/1,156 tests in 106 suites plus formatting, lint, typecheck, build, real STDIO/HTTP GREEN; independent Critical=0 Important=0. Private saved plans are opt-in STDIO metadata only; no queue or LinkedIn publication.
+
+**M11.2 ACTIVE:** `feat/m11-local-plan-inspection` isolated at exact verified M11.1 main, clean baseline Node24 1,156/1,156. Spec `docs/superpowers/specs/2026-10-27-m11-calendar-plan-inspection-design.md`, plan `docs/superpowers/plans/2026-10-27-m11-calendar-plan-inspection.md`: revision-gated, caller-as-of UTC, private label-free, read-only saved-plan inspection. Genuine missing-inventory RED (57 found vs 58 expected; inspect method absent) and pure missing-module and MCP absent-tool RED→GREEN. Full local Node24 1,173/1,173 in 108 suites, format/lint/typecheck/build and actual compiled STDIO/HTTP GREEN. Independent review and M11.2 feature/main CI PENDING; no scheduler, timer, trusted approval carry-forward or provider publishing.
+
+Exact next work: **Finish M11.2 pure and MCP tests/implementation, built real STDIO/HTTP read-only/secret-safe validation, independent review, full Node24 gates, connector-first exact-tree feature PR, guarded squash and exact main push CI.** `schedule.create` stays PLANNED/UNAVAILABLE.
+
+## Previous checkpoint — 2026-10-27 (M11.0 VERIFIED/MERGED; M11.1 PRIVATE CALENDAR PLANS IMPLEMENTING)
 
 **M11.0 VERIFIED/MERGED:** PR [#21](https://github.com/salman0butt/linkedin-mcp/pull/21) exact feature `7f6c75431c43330cf78c6abaed1c779c4951c67a` CI `40472594047` **completed/success**; guarded squash main `96e4052eb4fd92d24afb0489c3142e65447e63c7`, tree `72e192cbc0ada8dd300561e032fe703c0911cbb5`, exact push CI `40475275490` **completed/success**, quality success. Local Node24 **1,119/1,119 in 103 suites**, real built STDIO/HTTP/SSE, independent pure+MCP Critical=0 Important=0. Only `LOCAL_ONLY` caller-defined preview is available, not a durable calendar/scheduler, trusted approval, LinkedIn provider or publisher.
 

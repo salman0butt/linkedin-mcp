@@ -100,17 +100,17 @@ afterEach(async () => {
 });
 
 describe('M11.1 private planning-only calendar MCP contracts', () => {
-  it('registers five strictly typed tools over the real SDK; never exposes scheduling or publication', async () => {
+  it('registers six strictly typed private calendar operations over the real SDK; no scheduling or publication', async () => {
     const { client, connected } = clientFor();
     await connected;
     const { tools } = await client.listTools();
-    for (const method of ['create', 'update', 'get', 'list', 'remove']) {
+    for (const method of ['create', 'update', 'get', 'inspect', 'list', 'remove']) {
       expect(tools.find((tool) => tool.name === `${PREFIX}${method}`)).toMatchObject({
         inputSchema: { type: 'object', additionalProperties: false },
         outputSchema: { type: 'object', additionalProperties: false },
       });
     }
-    expect(tools.filter((tool) => tool.name.startsWith(PREFIX))).toHaveLength(5);
+    expect(tools.filter((tool) => tool.name.startsWith(PREFIX))).toHaveLength(6);
     expect(tools.some((tool) => tool.name === 'linkedin.schedule.create')).toBe(false);
     expect(tools.some((tool) => tool.name === 'linkedin.article.native.publish')).toBe(false);
   });
