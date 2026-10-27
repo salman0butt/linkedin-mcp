@@ -47,7 +47,12 @@ describe('foundation result factories', () => {
           availability: 'AVAILABLE',
         });
       } else if (
-        ['research.analyze', 'research.group_themes', 'research.references.index'].includes(capability.id)
+        [
+          'research.analyze',
+          'research.group_themes',
+          'research.references.index',
+          'research.compare_cohorts',
+        ].includes(capability.id)
       ) {
         expect(capability).toMatchObject({
           provider: 'LOCAL_ONLY',
@@ -66,6 +71,14 @@ describe('foundation result factories', () => {
       status: 'ACTIVE',
       availability: 'AVAILABLE',
       provider: 'LOCAL_ONLY',
+    });
+    expect(
+      result.data.capabilities.find((capability) => capability.id === 'research.compare_cohorts'),
+    ).toMatchObject({
+      status: 'ACTIVE',
+      availability: 'AVAILABLE',
+      provider: 'LOCAL_ONLY',
+      milestone: 'M10',
     });
     expect(
       result.data.capabilities.find((capability) => capability.id === 'article.native.publish'),

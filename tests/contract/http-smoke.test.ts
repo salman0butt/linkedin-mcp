@@ -84,6 +84,19 @@ try {
       { id: 'gamma', title: 'Caller C', url: 'https://research.example.org/other', body: 'PRIVATE THIRD INDEX BODY' },
     ],
   } });
+  const cohortComparison = await client.callTool({ name: 'linkedin.research.compare_cohorts', arguments: {
+    topic: 'Unverified comparison', focusTerms: ['RAG', 'SQL'],
+    sources: [
+      { id: 'cohort-a', title: 'A note', url: 'https://research.example.org/cohort-a', body: '🤖 RAG in group A. PRIVATE UNMATCHED CONTENT' },
+      { id: 'cohort-b', title: 'B note', url: 'https://research.example.org/cohort-b', body: 'SQL in group B.' },
+      { id: 'cohort-u', title: 'Unmatched', url: 'https://research.example.org/cohort-u', body: 'RAG SQL outside groups.' },
+    ],
+    cohorts: [
+      { id: 'first', label: 'Caller first', sourceIds: ['cohort-a'] },
+      { id: 'second', label: 'Caller second', sourceIds: ['cohort-b'] },
+    ],
+    unmatchedSourceIds: ['cohort-u'],
+  } });
   const rawResearchResponse = await fetch(
     'http://' + server.address.host + ':' + server.address.port + '/mcp',
     {
@@ -147,6 +160,32 @@ try {
   const rawReferenceWire = await rawReferenceResponse.text();
   const rawReferenceEvent = rawReferenceWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
   const rawReferenceResult = rawReferenceEvent ? JSON.parse(rawReferenceEvent.slice(6)) : null;
+  const rawCohortResponse = await fetch(
+    'http://' + server.address.host + ':' + server.address.port + '/mcp',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 'm10-cohorts-wire', method: 'tools/call',
+        params: { name: 'linkedin.research.compare_cohorts', arguments: {
+          topic: 'Bounded evidence', focusTerms: ['Bounded evidence'],
+          sources: Array.from({ length: 4 }, (_, i) => ({
+            id: 'cohort-raw-' + i, title: 'Caller cohort note',
+            url: 'https://research.example.org/cohort-raw-' + i,
+            body: 'Bounded evidence ' + 'C'.repeat(49000) + i,
+          })),
+          cohorts: [
+            { id: 'first', label: 'Caller first', sourceIds: ['cohort-raw-0','cohort-raw-1'] },
+            { id: 'second', label: 'Caller second', sourceIds: ['cohort-raw-2','cohort-raw-3'] },
+          ],
+          unmatchedSourceIds: [],
+        } },
+      }),
+    },
+  );
+  const rawCohortWire = await rawCohortResponse.text();
+  const rawCohortEvent = rawCohortWire.split(String.fromCharCode(10)).find((line) => line.startsWith('data: '));
+  const rawCohortResult = rawCohortEvent ? JSON.parse(rawCohortEvent.slice(6)) : null;
   const articleDraft = {
     title: 'HTTP article smoke', topic: 'Secure local drafts', audience: 'Developers',
     goal: 'Demonstrate review-only authoring.',
@@ -194,6 +233,12 @@ try {
     themeGroupingIsError: themeGrouping.isError,
     referenceIndex: referenceIndex.structuredContent,
     referenceIndexIsError: referenceIndex.isError,
+    cohortComparison: cohortComparison.structuredContent,
+    cohortComparisonIsError: cohortComparison.isError,
+    rawCohortStatus: rawCohortResponse.status,
+    rawCohortWireBytes: Buffer.byteLength(rawCohortWire, 'utf8'),
+    rawCohortResult,
+    rawCohortBodyEcho: rawCohortWire.includes('CCCCCCCCCCCC'),
     rawReferenceStatus: rawReferenceResponse.status,
     rawReferenceWireBytes: Buffer.byteLength(rawReferenceWire, 'utf8'),
     rawReferenceResult,
@@ -405,6 +450,32 @@ describe('built HTTP server', () => {
         };
       };
       referenceIndexIsError?: boolean;
+      cohortComparison: {
+        status: string;
+        provider: { type: string };
+        data: {
+          kind: string;
+          sourceTrust: string;
+          verification: string;
+          unmatchedSourceIds: string[];
+          cohorts: Array<{
+            id: string;
+            sourceIds: string[];
+            termObservations: Array<{
+              term: string;
+              state: string;
+              evidence: Array<{ sourceId: string; quote: string; start: number; end: number }>;
+            }>;
+          }>;
+        };
+      };
+      cohortComparisonIsError?: boolean;
+      rawCohortStatus: number;
+      rawCohortWireBytes: number;
+      rawCohortResult: {
+        result: { structuredContent: { status: string; data: { kind: string; cohorts: unknown[] } } };
+      };
+      rawCohortBodyEcho: boolean;
       rawReferenceStatus: number;
       rawReferenceWireBytes: number;
       rawReferenceResult: {
@@ -470,7 +541,7 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 53,
+      toolCount: 54,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },
@@ -560,6 +631,53 @@ describe('built HTTP server', () => {
     expect(result.researchIsError).not.toBe(true);
     expect(result.themeGroupingIsError).not.toBe(true);
     expect(result.referenceIndexIsError).not.toBe(true);
+    expect(result.cohortComparisonIsError).not.toBe(true);
+    expect(result.toolNames).toContain('linkedin.research.compare_cohorts');
+    expect(result.cohortComparison).toMatchObject({
+      status: 'succeeded',
+      provider: { type: 'LOCAL_ONLY' },
+      data: {
+        kind: 'local_caller_defined_corpus_comparison',
+        sourceTrust: 'caller_supplied_unverified',
+        verification: 'not_performed',
+        unmatchedSourceIds: ['cohort-u'],
+        cohorts: [
+          {
+            id: 'first',
+            termObservations: [
+              {
+                term: 'RAG',
+                state: 'observed_in_supplied_cohort',
+                evidence: [expect.objectContaining({ sourceId: 'cohort-a', quote: 'RAG', start: 3, end: 6 })],
+              },
+              { term: 'SQL', state: 'not_observed_in_supplied_cohort', evidence: [] },
+            ],
+          },
+          {
+            id: 'second',
+            termObservations: [
+              { term: 'RAG', state: 'not_observed_in_supplied_cohort', evidence: [] },
+              {
+                term: 'SQL',
+                state: 'observed_in_supplied_cohort',
+                evidence: [expect.objectContaining({ sourceId: 'cohort-b', quote: 'SQL' })],
+              },
+            ],
+          },
+        ],
+      },
+    });
+    expect(result.rawCohortStatus).toBe(200);
+    expect(result.rawCohortWireBytes).toBeLessThanOrEqual(256 * 1024);
+    expect(result.rawCohortBodyEcho).toBe(false);
+    expect(result.rawCohortResult).toMatchObject({
+      result: {
+        structuredContent: {
+          status: 'succeeded',
+          data: { kind: 'local_caller_defined_corpus_comparison' },
+        },
+      },
+    });
     expect(result.toolNames).toContain('linkedin.research.index_references');
     expect(result.referenceIndex).toMatchObject({
       status: 'succeeded',

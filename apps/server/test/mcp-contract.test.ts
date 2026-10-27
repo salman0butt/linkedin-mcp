@@ -161,6 +161,11 @@ describe('LinkedIn MCP server contract', () => {
         availability: 'AVAILABLE',
         provider: 'LOCAL_ONLY',
       });
+      expect(capabilities.find((capability) => capability.id === 'research.compare_cohorts')).toMatchObject({
+        status: 'ACTIVE',
+        availability: 'AVAILABLE',
+        provider: 'LOCAL_ONLY',
+      });
     } finally {
       await client.close();
       await handler.close();
@@ -225,6 +230,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.reactions.remove.approve',
         'linkedin.reactions.remove.preview',
         'linkedin.research.analyze',
+        'linkedin.research.compare_cohorts',
         'linkedin.research.group_themes',
         'linkedin.research.index_references',
         'linkedin.version',
