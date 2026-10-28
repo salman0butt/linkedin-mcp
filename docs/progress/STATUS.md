@@ -1,5 +1,9 @@
 # Project Status
 
+## Concurrent M17.0 OAuth callback security increment — local GREEN, remote release pending
+
+Verified upstream main `cef8e9791c6fad6fdb56c2242340e7e437f3f88f` after docs closeout PR #30 (main push CI `40680570366` SUCCESS). In isolated `feat/m17-oauth-callback-lifecycle`, a real half-open loopback TCP client independently reproduced an OAuth callback result hang on valid code and terminal error despite HTTP success/error response; source RED regression then GREEN by forcibly closing lingering HTTP sockets only after response flush. Node24 local 1,264/1,264 across 124 suites, framework 14/14, format/lint/typecheck/build and compiled STDIO/HTTP PASS. Independent post-fix audit, feature CI, guarded merge and separate main push CI still PENDING in this source checkpoint. M17 overall is NOT complete; M13.1 provider-backed organization access is BLOCKED/UNAVAILABLE.
+
 ## Current checkpoint — 2026-10-28 (M13.0 VERIFIED/MERGED; M13 PROVIDER ACCESS BLOCKED)
 
 **M13.0 VERIFIED/MERGED:** [PR #29](https://github.com/salman0butt/linkedin-mcp/pull/29) feature `07599e1d151c3737f2c4cf995c408a88eca54a7f` CI `40679056408` SUCCESS; guarded squash main `e93d3c300b8e77317d93076d96c4eff392ded1de` tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90` separate push CI `40679432769` SUCCESS; Node24 1,260/1,260 in 124 suites and independent pure/MCP Critical0 Important0. Independent GitHub main `push` workflow matched the exact squash commit and completed format/lint/typecheck/build/tests. The first feature workflow `40677507731` failed due to a real unawaited SDK handshake lifecycle race in a raw-SSE test despite 1,260/1,260 assertions; a one-file test-only fix independently reproduced the old RED and achieved GREEN. Rerun exact feature CI `40679056408` SUCCESS and separate main CI `40679432769` SUCCESS. All 316 remote feature tree blobs matched local.

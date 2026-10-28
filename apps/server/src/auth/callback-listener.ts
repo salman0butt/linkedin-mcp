@@ -21,11 +21,27 @@ function normalizeHostname(hostname: string): string {
   return hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname;
 }
 
-function closeHttpServer(server: Server): Promise<void> {
+function closeHttpServer(server: Server, response?: ServerResponse): Promise<void> {
   if (!server.listening) return Promise.resolve();
 
   return new Promise<void>((resolve, reject) => {
     server.close((error) => (error === undefined ? resolve() : reject(error)));
+
+    // server.close() is graceful: an unrelated client with incomplete HTTP headers
+    // can otherwise hold the callback result (and its already-cleared timeout) forever.
+    // Never interrupt the legitimate callback's response before it is flushed.
+    if (response === undefined || response.writableFinished || response.destroyed) {
+      server.closeAllConnections();
+      return;
+    }
+
+    const forceClose = () => {
+      response.off('finish', forceClose);
+      response.off('close', forceClose);
+      server.closeAllConnections();
+    };
+    response.once('finish', forceClose);
+    response.once('close', forceClose);
   });
 }
 
@@ -133,7 +149,7 @@ export async function startOAuthCallbackListener(
       settled = true;
       clearCallbackTimeout();
       writeResponse(response, 400, 'OAuth authorization was not completed.');
-      void closeHttpServer(server).then(
+      void closeHttpServer(server, response).then(
         () => rejectResult(terminalError),
         () => rejectResult(new Error('OAuth callback listener failed to close')),
       );
@@ -149,7 +165,7 @@ export async function startOAuthCallbackListener(
       settled = true;
       clearCallbackTimeout();
       writeResponse(response, 200, 'OAuth authorization received. You may close this window.');
-      void closeHttpServer(server).then(
+      void closeHttpServer(server, response).then(
         () => resolveResult(consumed),
         () => rejectResult(new Error('OAuth callback listener failed to close')),
       );
@@ -158,7 +174,7 @@ export async function startOAuthCallbackListener(
       clearCallbackTimeout();
       const terminalError = error instanceof Error ? error : new Error('OAuth callback validation failed');
       writeResponse(response, 400, 'OAuth callback validation failed.');
-      void closeHttpServer(server).then(
+      void closeHttpServer(server, response).then(
         () => rejectResult(terminalError),
         () => rejectResult(new Error('OAuth callback listener failed to close')),
       );
