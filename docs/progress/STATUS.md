@@ -1,8 +1,8 @@
 # Project Status
 
-## Concurrent M17.0 OAuth callback security increment — local GREEN, remote release pending
+## M17.0 OAuth callback lifecycle — VERIFIED/MERGED (2026-10-28)
 
-Verified upstream main `cef8e9791c6fad6fdb56c2242340e7e437f3f88f` after docs closeout PR #30 (main push CI `40680570366` SUCCESS). In isolated `feat/m17-oauth-callback-lifecycle`, a real half-open loopback TCP client independently reproduced an OAuth callback result hang on valid code and terminal error despite HTTP success/error response; source RED regression then GREEN by forcibly closing lingering HTTP sockets only after response flush. Node24 local 1,264/1,264 across 124 suites, framework 14/14, format/lint/typecheck/build and compiled STDIO/HTTP PASS. Independent post-fix audit, feature CI, guarded merge and separate main push CI still PENDING in this source checkpoint. M17 overall is NOT complete; M13.1 provider-backed organization access is BLOCKED/UNAVAILABLE.
+Authenticated local loopback OAuth callback availability hardening was independently reproduced RED (real held incomplete HTTP headers), fixed GREEN after response flush, and verified through [PR #31](https://github.com/salman0butt/linkedin-mcp/pull/31) feature `c8b42f6fe895d246d4ad81e44cd6adf161c6cc26` CI `40687205091` SUCCESS. Guarded squash `main` `7ad4f38f0280cfa99b7f2d1ef3cd5eeb99c2f031` parent `cef8e9791c6fad6fdb56c2242340e7e437f3f88f` tree `bec90faffd7761c6756e39bf530b187bcb6790db` has distinct push workflow `40687526120` SUCCESS; 318 remote blobs identical. Full Node24 1,264/1,264 across 124 suites, framework 14/14, format/lint/typecheck/build and compiled STDIO/HTTP GREEN. Independent read-only reviewer real TCP race/held socket/abort probes unresolved Critical 0 / Important 0. M17.0 VERIFIED/MERGED; overall M17/v1.0 remains PLANNED, M13.1 org scope/roles remain BLOCKED. Next HTTP hardening is separate scope and requires its own real RED→GREEN.
 
 ## Current checkpoint — 2026-10-28 (M13.0 VERIFIED/MERGED; M13 PROVIDER ACCESS BLOCKED)
 

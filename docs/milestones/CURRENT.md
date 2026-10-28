@@ -1,8 +1,8 @@
 # Current Milestone
 
-## Concurrent M17.0 security hardening — feature release pending
+## M17.0 OAuth callback lifecycle — VERIFIED/MERGED (overall M17 still PLANNED)
 
-Latest verified upstream `main`: `cef8e9791c6fad6fdb56c2242340e7e437f3f88f`, tree `68cf008b977349fb3757d3d50680abb92d5da1f7` ([M13 docs PR #30](https://github.com/salman0butt/linkedin-mcp/pull/30), separate main push CI `40680570366` SUCCESS). M17.0 OAuth callback listener lifecycle hardening is scoped to isolated `feat/m17-oauth-callback-lifecycle` and has genuine Node24 RED→GREEN with 1,264/1,264 full local suite and 14/14 framework. See `docs/milestones/M17-production-hardening.md`. **M17.0 has not yet been remotely verified/merged as of this source-branch checkpoint; M17 overall remains planned.**
+Exact [PR #31](https://github.com/salman0butt/linkedin-mcp/pull/31) feature `c8b42f6fe895d246d4ad81e44cd6adf161c6cc26` had CI `40687205091` SUCCESS; guarded squash `main` `7ad4f38f0280cfa99b7f2d1ef3cd5eeb99c2f031` has identical reviewed tree `bec90faffd7761c6756e39bf530b187bcb6790db`, parent `cef8e9791c6fad6fdb56c2242340e7e437f3f88f`, and separate exact push CI `40687526120` SUCCESS. All 318 GitHub blobs match. Full Node24 1,264/1,264 tests (124 suites), framework 14/14, complete gates and compiled STDIO/HTTP GREEN; independent scoped read-only TCP security signoff Critical 0 / Important 0. The single M17.0 callback lifecycle fix is **VERIFIED/MERGED**, not v1.0/M17 complete. Further independently reproduced HTTP transport hardening candidates remain open.
 
 M13.1 stays BLOCKED pending independently credential-bound organization roles, Community Management entitlement and `w_organization_social`. No organization provider writes are enabled.
 
