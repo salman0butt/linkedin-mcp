@@ -55,17 +55,31 @@ try {
       params:{name:${JSON.stringify(TOOL)},arguments:${JSON.stringify(input)}}})});
   const rawText=await raw.text();
   const event=rawText.split(String.fromCharCode(10)).find(line=>line.startsWith('data: '));
-  const toolsRaw=await fetch(url,{method:'POST',
-    headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},
-    body:JSON.stringify({jsonrpc:'2.0',id:'x'.repeat(128),method:'tools/list',params:{}})});
-  const toolsText=await toolsRaw.text();
-  const toolsEvent=toolsText.split(String.fromCharCode(10)).find(line=>line.startsWith('data: '));
+  let cursor;
+  let rawToolsCount=0;
+  let rawToolsBytes=0;
+  let rawToolsStatus=200;
+  let rawToolsPages=0;
+  do {
+    const toolsRaw=await fetch(url,{method:'POST',
+      headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},
+      body:JSON.stringify({jsonrpc:'2.0',id:'x'.repeat(128),method:'tools/list',
+        params:cursor===undefined?{}:{cursor}})});
+    const toolsText=await toolsRaw.text();
+    const toolsEvent=toolsText.split(String.fromCharCode(10)).find(line=>line.startsWith('data: '));
+    const page=toolsEvent?JSON.parse(toolsEvent.slice(6)).result:null;
+    rawToolsStatus=toolsRaw.status===200&&rawToolsStatus===200?200:toolsRaw.status;
+    rawToolsCount+=page?.tools?.length??0;
+    rawToolsBytes=Math.max(rawToolsBytes,Buffer.byteLength(toolsText,'utf8'));
+    cursor=page?.nextCursor;
+    rawToolsPages++;
+    if(rawToolsPages>64)throw new Error('MCP tool pagination did not converge');
+  } while(cursor!==undefined);
   process.stdout.write(JSON.stringify({count:tools.tools.length,
     found:tools.tools.filter(x=>x.name===${JSON.stringify(TOOL)}).length,
     response:response.structuredContent,error:response.isError,
     rawStatus:raw.status,rawBytes:Buffer.byteLength(rawText,'utf8'),
-    rawToolsStatus:toolsRaw.status,rawToolsBytes:Buffer.byteLength(toolsText,'utf8'),
-    rawToolsCount:toolsEvent?JSON.parse(toolsEvent.slice(6)).result?.tools?.length:null,
+    rawToolsStatus,rawToolsBytes,rawToolsCount,rawToolsPages,
     rawEvent:event?JSON.parse(event.slice(6)):null}));
 } finally { await client.close(); await server.close(); }
 `;
@@ -99,6 +113,7 @@ function call(script: string) {
     rawToolsStatus?: number;
     rawToolsBytes?: number;
     rawToolsCount?: number;
+    rawToolsPages?: number;
     rawEvent?: { result: { structuredContent: { status: string } } };
   };
 }
@@ -140,6 +155,7 @@ describe('M12.2 compiled stateless caller observation series transports', () => 
     expect(value.rawToolsStatus).toBe(200);
     expect(value.rawToolsBytes).toBeLessThanOrEqual(262_144);
     expect(value.rawToolsCount).toBe(66);
+    expect(value.rawToolsPages).toBeGreaterThan(1);
     expect(value.rawEvent?.result?.structuredContent).toMatchObject({ status: 'succeeded' });
   }, 30_000);
 });
