@@ -54,6 +54,7 @@ const AUTH_ENV_KEYS = [
   'LINKEDIN_MCP_TOKEN_ENCRYPTION_KEY',
 ] as const;
 const MIB = 1_048_576;
+export const MAX_HTTP_REQUEST_BODY_LIMIT_BYTES = 16 * MIB;
 const DEFAULT_MEDIA_MAX_BYTES = 20 * MIB;
 const MIN_MEDIA_MAX_BYTES = MIB;
 const MAX_MEDIA_MAX_BYTES = 50 * MIB;
@@ -500,6 +501,7 @@ export function parseConfig(env: Env = process.env): ServerConfig {
       env.LINKEDIN_MCP_BODY_LIMIT_BYTES,
       1_048_576,
       'Request body limit',
+      MAX_HTTP_REQUEST_BODY_LIMIT_BYTES,
     ),
     publishingApprovalTtlMs,
     memberPostReadEnabled: readValue === 'true',

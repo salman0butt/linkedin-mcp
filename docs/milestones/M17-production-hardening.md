@@ -26,6 +26,13 @@ Required roadmap traceability has no unexplained gaps; security/reliability gate
 
 Design/plan; threat/security audit; compatibility; resilience/load; docs/package; final review/verification.
 
+### M17.1 — Finite bounded HTTP request-body configuration (local GREEN, remote PENDING)
+
+- Spec `docs/superpowers/specs/2026-10-28-m17-http-body-limit-validation-design.md`, plan `docs/superpowers/plans/2026-10-28-m17-http-body-limit-validation.md`, baseline main `53e9a885788a2b2066a1d3c7b2d645fb20a6f88a`; PR #33 feature CI `40742375125` and postmerge main CI `40742735462` SUCCESS.
+- Independent real HTTP baseline repro: `NaN`/`Infinity` direct body-limit options accepted 1,049,110-byte POST as HTTP 200; unsafe `1e20` environment setting passed parseConfig. Shared 16 MiB maximum now enforces positive safe integer values for direct options and `LINKEDIN_MCP_BODY_LIMIT_BYTES` before HTTP listener startup, preserving 1 MiB default and 413 for completed overlimit requests.
+- Genuine Node24 focused RED: 10 expected behavioral failures, 71 other focused tests passing. After minimum fix: 83/83 focused and complete **1,280/1,280** across **124** suites, framework **14/14**, compiled STDIO/HTTP and full format/lint/typecheck/build GREEN.
+- Independent read-only security review and exact GitHub feature/merged-main CI pending. M17.1 is not yet released; M17 overall PLANNED. Unfinished partial-stream overlimit detection and batched intermediate response amplification remain distinct open tasks.
+
 ### M17.0 — OAuth callback listener availability (scoped)
 
 - Design: `docs/superpowers/specs/2026-10-28-m17-oauth-callback-lifecycle-design.md`; plan: `docs/superpowers/plans/2026-10-28-m17-oauth-callback-lifecycle.md`.

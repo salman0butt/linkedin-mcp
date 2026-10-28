@@ -664,7 +664,13 @@ describe('parseConfig', () => {
     [{ LINKEDIN_MCP_HTTP_PORT: '70000' }, /port/i],
     [{ LINKEDIN_MCP_LOG_LEVEL: 'verbose' }, /log level/i],
     [{ LINKEDIN_MCP_BODY_LIMIT_BYTES: '0' }, /body limit/i],
+    [{ LINKEDIN_MCP_BODY_LIMIT_BYTES: '16777217' }, /body limit/i],
+    [{ LINKEDIN_MCP_BODY_LIMIT_BYTES: '100000000000000000000' }, /body limit/i],
   ])('rejects invalid configuration %j', (env, expected) => {
     expect(() => parseConfig(env)).toThrow(expected);
+  });
+
+  it('accepts the bounded 16 MiB HTTP request body limit', () => {
+    expect(parseConfig({ LINKEDIN_MCP_BODY_LIMIT_BYTES: '16777216' }).requestBodyLimitBytes).toBe(16_777_216);
   });
 });
