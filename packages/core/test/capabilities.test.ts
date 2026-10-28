@@ -129,6 +129,15 @@ describe('capability registry', () => {
       milestone: 'M11',
       approvalRequired: false,
     });
+    expect(
+      futureCapabilities.find((descriptor) => descriptor.id === 'analytics.snapshots.compare'),
+    ).toMatchObject({
+      provider: 'LOCAL_ONLY',
+      availability: 'AVAILABLE',
+      status: 'ACTIVE',
+      milestone: 'M12',
+      approvalRequired: false,
+    });
     const others = futureCapabilities.filter(
       (descriptor) =>
         !verifiedLocal.includes(descriptor) &&
@@ -139,6 +148,7 @@ describe('capability registry', () => {
           'research.compare_cohorts',
           'research.repurposing.prepare',
           'calendar.preview',
+          'analytics.snapshots.compare',
         ].includes(descriptor.id),
     );
     expect(others.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);

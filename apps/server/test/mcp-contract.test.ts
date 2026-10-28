@@ -173,6 +173,14 @@ describe('LinkedIn MCP server contract', () => {
         availability: 'AVAILABLE',
         provider: 'LOCAL_ONLY',
       });
+      expect(
+        capabilities.find((capability) => capability.id === 'analytics.snapshots.compare'),
+      ).toMatchObject({
+        status: 'ACTIVE',
+        availability: 'AVAILABLE',
+        provider: 'LOCAL_ONLY',
+        milestone: 'M12',
+      });
     } finally {
       await client.close();
       await handler.close();
@@ -191,6 +199,7 @@ describe('LinkedIn MCP server contract', () => {
       const { tools } = await client.listTools();
 
       expect(tools.map((tool) => tool.name).sort()).toEqual([
+        'linkedin.analytics.compare_snapshots',
         'linkedin.article.draft.companion',
         'linkedin.article.draft.preview',
         'linkedin.article.draft.validate',

@@ -54,13 +54,19 @@ describe('foundation result factories', () => {
           'research.compare_cohorts',
           'research.repurposing.prepare',
           'calendar.preview',
+          'analytics.snapshots.compare',
         ].includes(capability.id)
       ) {
         expect(capability).toMatchObject({
           provider: 'LOCAL_ONLY',
           status: 'ACTIVE',
           availability: 'AVAILABLE',
-          milestone: capability.id === 'calendar.preview' ? 'M11' : 'M10',
+          milestone:
+            capability.id === 'analytics.snapshots.compare'
+              ? 'M12'
+              : capability.id === 'calendar.preview'
+                ? 'M11'
+                : 'M10',
         });
       } else {
         expect(capability.status).not.toBe('VERIFIED');
@@ -104,6 +110,15 @@ describe('foundation result factories', () => {
       availability: 'UNAVAILABLE',
       provider: 'LOCAL_ONLY',
       milestone: 'M11',
+      approvalRequired: false,
+    });
+    expect(
+      result.data.capabilities.find((capability) => capability.id === 'analytics.snapshots.compare'),
+    ).toMatchObject({
+      status: 'ACTIVE',
+      availability: 'AVAILABLE',
+      provider: 'LOCAL_ONLY',
+      milestone: 'M12',
       approvalRequired: false,
     });
     expect(
