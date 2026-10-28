@@ -1,10 +1,10 @@
 # Project Status
 
-## M17.1 — HTTP request-body limit configuration (local GREEN; GitHub release PENDING)
+## M17.1 — HTTP request-body limit configuration VERIFIED/MERGED (2026-10-28)
 
-From main `53e9a885788a2b2066a1d3c7b2d645fb20a6f88a` ([PR #33](https://github.com/salman0butt/linkedin-mcp/pull/33), feature CI `40742375125` and distinct main push CI `40742735462` SUCCESS), branch `feat/m17-http-body-limit-validation` contains a genuine RED→GREEN fix for programmatic `NaN`/`Infinity` request body limits and unsafe environment values. Initially 10 intended focused failures, then **83/83** focused and **1,280/1,280** full Node24 tests in 124 suites, compiled STDIO/HTTP 67-tool contracts and framework **14/14** passed. Full formatting, lint, typecheck and build passed. Both configuration paths now require a positive safe integer at most 16 MiB; default 1 MiB unchanged. Independent read-only review and exact GitHub feature/main CI PENDING; this is not a merged M17.1 release. M17 overall remains PLANNED; M13.1 provider authorization remains BLOCKED.
+From main `53e9a885788a2b2066a1d3c7b2d645fb20a6f88a` ([PR #33](https://github.com/salman0butt/linkedin-mcp/pull/33) push CI `40742735462` SUCCESS), [PR #34](https://github.com/salman0butt/linkedin-mcp/pull/34) fixes the direct `NaN`/`Infinity` configured body-limit bypass, unsafe environment limits, and ignored environment fallback. Direct options and environment both use positive safe integers up to 16 MiB; default 1 MiB unchanged. Genuine initial RED 10 targeted failures, and independent Important issue RED HTTP 200 instead of 413, then final **83/83** focused and **1,280/1,280** complete Node24 tests across 124 suites; compiled STDIO/HTTP 67 tools, framework **14/14**, format/lint/typecheck/build all GREEN. Independent final code/security/documentation reviews **Critical 0 / Important 0**. Feature `bd395174d86cabd10f315549322b45f4d63addd3` tree `5df33aed2c5c63e75bab61295aa5b0f6e735ce0b` CI `40745315254` SUCCESS; guarded squash main `8139cff30d33a57f7eca9e40b11125459b05fb69` identical tree separate push CI `40745757021` SUCCESS. M17.1 VERIFIED/MERGED; M17 overall PLANNED, M13.1 provider authorization BLOCKED.
 
-Exact next work: **Complete M17.1 independent security review Critical 0 / Important 0, exact feature-head CI and guarded squash merge with distinct main push CI.** Separate delayed partial-stream and batched intermediate-response issues remain OPEN.
+Exact next work: **In a fresh isolated M17 HTTP worktree, demonstrate and repair slow/unfinished oversized request uploads that delay HTTP 413 until EOF, with genuine RED→GREEN and independent security review.** Keep the batch intermediate-response issue separately OPEN; preserve private HTTP boundaries, 67 tools, 96 KiB pagination and 256 KiB final responses.
 
 ## M17.0 OAuth callback lifecycle — VERIFIED/MERGED (2026-10-28)
 
@@ -12,7 +12,7 @@ Authenticated local loopback OAuth callback availability hardening was independe
 
 Documentation closeout [PR #32](https://github.com/salman0butt/linkedin-mcp/pull/32) feature `67c5df116a2139bb075a8c2c2ace97d5c37cd243` CI `40688435154` SUCCESS, guarded squash `main` `ac686d09e539bdf9072836bc63f1fe5ebe79b18a` with distinct main push CI `40688986570` SUCCESS.
 
-Historical M17.0 handoff was to reproduce the nonfinite HTTP request-body limit. M17.1 has now implemented the local RED→GREEN fix and awaits separate release gates. Slow over-limit request streams and batched response intermediate buffering remain separate known candidates. Preserve 256 KiB responses, 96 KiB tool pages, the full inventory and private HTTP boundaries.
+Historical M17.0 handoff was to reproduce the nonfinite HTTP request-body limit. M17.1 has now completed local RED→GREEN, independent review and feature/main GitHub release gates. Slow over-limit request streams and batched response intermediate buffering remain separate known candidates. Preserve 256 KiB responses, 96 KiB tool pages, the full inventory and private HTTP boundaries.
 
 ## Previous checkpoint — 2026-10-28 (M13.0 VERIFIED/MERGED; M13 PROVIDER ACCESS BLOCKED)
 
