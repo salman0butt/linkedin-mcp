@@ -1,5 +1,7 @@
 # Milestone Program
 
+**M13.0 VERIFIED/MERGED:** [PR #29](https://github.com/salman0butt/linkedin-mcp/pull/29) feature `07599e1d151c3737f2c4cf995c408a88eca54a7f` CI `40679056408` SUCCESS; guarded squash main `e93d3c300b8e77317d93076d96c4eff392ded1de` tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90` separate push CI `40679432769` SUCCESS; Node24 1,260/1,260 in 124 suites and independent pure/MCP Critical0 Important0. M13.1 provider-backed organization identity/authorization and publishing are BLOCKED pending verified Community Management access and credential-bound organization role.
+
 **M12.3 VERIFIED/MERGED:** [PR #28](https://github.com/salman0butt/linkedin-mcp/pull/28), feature CI `40673718696`, guarded squash main `ebee040d809c61bf57534d0c3cb81bd382107dc9` tree `68b52ba273ce27b1597d48c32be94ac6e80a92bd`, distinct main push CI `40674038860` SUCCESS. 1,237/1,237 Node24 tests in 121 suites and independent Critical0 Important0. M13.0 organization editorial manual handoff implementing; official organization access unavailable.
 
 **M12.2 VERIFIED/MERGED:** [PR #27](https://github.com/salman0butt/linkedin-mcp/pull/27), feature CI `40668979524`, squash main `8d3019a872a34b3990567f193d58d5f7bdb11d42` tree `b2e9f4482ab5a370d203ba92f54762f78c0e2fcf` distinct main push CI `40669592590` SUCCESS. Node24 1,231/1,231 in 119 suites, independent Critical0 Important0. M12.3 tool inventory pagination hardening implementing, all provider analytics unavailable.

@@ -1,11 +1,11 @@
 # Current Milestone
 
 Milestone: M13 — Company Pages (official organization identity/role/permissions and publication access UNAVAILABLE)
-Status: IMPLEMENTING — M12.0–M12.3 scoped LOCAL_ONLY/transport releases VERIFIED/MERGED; M13.0 caller-only organization editorial handoff implementing. No validated organization actor, durable approval, queue or publication claim.
-Iteration: M13.0 — strict 1–5 caller-written company-page copy packages, manual-only and `organizationUrn` caller asserted, no provider/role verification. Design `docs/superpowers/specs/2026-10-28-m13-local-organization-editorial-handoff-design.md`; plan `docs/superpowers/plans/2026-10-28-m13-local-organization-editorial-handoff.md`. Pure+MCP genuine RED→GREEN; full Node24 1,260/1,260 in 124 suites and compiled STDIO/HTTP GREEN; independent pure and MCP/transport Critical0 Important0; GitHub feature/main CI pending.
-Branch: `feat/m13-local-organization-readiness` (isolated at exact verified M12.3 squash main).
-PR: #16–#28 MERGED. M12.3 PR #28 feature `08ed234fd7641c9260f9326118e4c5820fe88ba1` CI `40673718696` SUCCESS; guarded squash `ebee040d809c61bf57534d0c3cb81bd382107dc9` main push CI `40674038860` SUCCESS.
-Latest verified main: `ebee040d809c61bf57534d0c3cb81bd382107dc9`; exact tree `68b52ba273ce27b1597d48c32be94ac6e80a92bd`, separate main push CI `40674038860` SUCCESS. M12.3 Node24 1,237/1,237 across 121 suites, independent Critical0 Important0.
+Status: IMPLEMENTING — M13.0 strictly LOCAL_ONLY organization editorial handoff VERIFIED/MERGED. Official organization identity, credential-bound role verification, `w_organization_social` entitlement, approval/publishing, engagement and analytics remain UNAVAILABLE.
+Iteration: M13.1 — BLOCKED on independently verified LinkedIn organization identity and Community Management product permission. Do not implement a provider actor/write path from caller-supplied role claims. Future plan is conditional on actual legitimate access.
+Branch: `main` (M13.0 feature branch merged; no active M13.1 feature).
+PR: #16–#29 MERGED. M13.0 [PR #29](https://github.com/salman0butt/linkedin-mcp/pull/29) feature `07599e1d151c3737f2c4cf995c408a88eca54a7f` CI `40679056408` SUCCESS; guarded squash main `e93d3c300b8e77317d93076d96c4eff392ded1de` tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90` separate push CI `40679432769` SUCCESS; Node24 1,260/1,260 in 124 suites and independent pure/MCP Critical0 Important0.
+Latest verified main: `e93d3c300b8e77317d93076d96c4eff392ded1de`; tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90`, exact main push CI `40679432769` SUCCESS. No further main commits assumed.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
