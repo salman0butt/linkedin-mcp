@@ -199,6 +199,7 @@ describe('LinkedIn MCP server contract', () => {
       const { tools } = await client.listTools();
 
       expect(tools.map((tool) => tool.name).sort()).toEqual([
+        'linkedin.analytics.compare_snapshot_series',
         'linkedin.analytics.compare_snapshots',
         'linkedin.analytics.rank_snapshot_changes',
         'linkedin.article.draft.companion',

@@ -1,6 +1,8 @@
 # Milestone Program
 
-**M12.0 VERIFIED/MERGED:** [PR #25](https://github.com/salman0butt/linkedin-mcp/pull/25), feature CI `40658356126`, main `79568b556e926566362ad82e8203e1195d35d2e8` push CI `40658638728` SUCCESS; 1,200/1,200 Node24 tests and independent Critical0 Important0. M12.1 local signed metric-delta ranking implementing, no provider analytics.
+**M12.1 VERIFIED/MERGED:** [PR #26](https://github.com/salman0butt/linkedin-mcp/pull/26), feature CI `40664805538`, main `40c714df69039ab65e648ae78d58a30496698c1e` tree `2820ce11430aea3f0e91d7098cd716cc5295bad0`, push CI `40665262565` SUCCESS; 1,213/1,213 local Node24 tests across 116 suites and independent Critical0 Important0. M12.2 local caller-only observation series implementing; no provider analytics.
+
+**M12.0 VERIFIED/MERGED:** [PR #25](https://github.com/salman0butt/linkedin-mcp/pull/25), feature CI `40658356126`, main `79568b556e926566362ad82e8203e1195d35d2e8` push CI `40658638728` SUCCESS; 1,200/1,200 Node24 tests and independent Critical0 Important0.
 
 **M11.3 VERIFIED/MERGED:** PR [#24](https://github.com/salman0butt/linkedin-mcp/pull/24), feature CI `40654948672` SUCCESS and squash main `d7d46ab4b117109b2aad6e266fb78ecd453b10b2` push CI `40655163394` SUCCESS; 1,188/1,188 tests in 110 suites, independent Critical0 Important0. M12.0 caller-only analytics snapshot comparison is implementing; real LinkedIn analytics remain unavailable.
 

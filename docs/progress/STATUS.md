@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-28 (M12.0 VERIFIED/MERGED; M12.1 LOCAL ANALYTICS DELTA RANKING IMPLEMENTING)
+## Current checkpoint — 2026-10-28 (M12.1 VERIFIED/MERGED; M12.2 LOCAL OBSERVATION SERIES IMPLEMENTING)
+
+**M12.1 VERIFIED/MERGED:** PR [#26](https://github.com/salman0butt/linkedin-mcp/pull/26) feature `810b8bc90fe85fcb477a717a35382dd3616d9c6e` CI `40664805538` SUCCESS; guarded squash main `40c714df69039ab65e648ae78d58a30496698c1e` tree `2820ce11430aea3f0e91d7098cd716cc5295bad0` separate push CI `40665262565` SUCCESS. Full Node24 1,213/1,213 across 116 suites, formatting/lint/typecheck/build, real compiled STDIO/HTTP/raw SSE all GREEN; independent pure and MCP/transport reviews Critical0 Important0. No official provider analytics or publication claimed.
+
+**M12.2 IMPLEMENTING:** New isolated `feat/m12-local-observation-series` from verified M12.1 main. Strict caller-only 3–10 observation chronology for one content item, adjacent local signed deltas with nullable metrics, no verified LinkedIn windows, rates, trends or provider access. Design/plan in `docs/superpowers/` dated 2026-10-28. Genuine pure/module and SDK/missing-tool RED→GREEN; final Node24 1,231/1,231 in 119 suites, formatting/lint/typecheck/build, compiled STDIO/HTTP and actual 66-tool raw SSE (including 128-byte JSON-RPC ID) GREEN. Independent pure and MCP/transport reviews Critical0 Important0. Remote feature/main CI PENDING.
+
+Exact next work: **M12.2 TDD, typed real MCP SDK and compiled STDIO/HTTP, security audits, full Node24 and separate exact feature/main CI.**
+
+## Previous checkpoint — M12.1 implementing
 
 **M12.0 VERIFIED/MERGED:** PR [#25](https://github.com/salman0butt/linkedin-mcp/pull/25) exact feature `9edc336a0b1fb26c8ccbffa513ce8ff113fb6f97` CI `40658356126` SUCCESS, guarded squash main `79568b556e926566362ad82e8203e1195d35d2e8` tree `a4f42182b086072c20f6d6b4a91f43a661389afa` exact push CI `40658638728` quality SUCCESS. Full Node24 1,200/1,200 tests across 113 suites, independent pure and MCP/transport Critical0 Important0. Stateless caller-supplied unverified metric snapshots; `analytics.post` remains OFFICIAL_API/UNAVAILABLE.
 

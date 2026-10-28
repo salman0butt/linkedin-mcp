@@ -98,9 +98,9 @@ function runScript(script: string) {
 }
 
 describe('M12.0 actual compiled stateless STDIO/HTTP analytics', () => {
-  it('exposes 65 real STDIO tools and caller-only metrics with truthful LOCAL_ONLY capability', () => {
+  it('exposes 66 real STDIO tools and caller-only metrics with truthful LOCAL_ONLY capability', () => {
     const value = runScript(stdioScript);
-    expect(value.count).toBe(65);
+    expect(value.count).toBe(66);
     expect(value.found).toBe(true);
     expect(value.error).not.toBe(true);
     expect(value.response).toMatchObject({
@@ -120,7 +120,7 @@ describe('M12.0 actual compiled stateless STDIO/HTTP analytics', () => {
 
   it('exposes stateless caller-only analytics over actual HTTP and bounded raw SSE', () => {
     const value = runScript(httpScript);
-    expect(value.count).toBe(65);
+    expect(value.count).toBe(66);
     expect(value.found).toBe(true);
     expect(value.error).not.toBe(true);
     expect(value.response).toMatchObject({
