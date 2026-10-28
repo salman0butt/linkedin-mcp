@@ -1,11 +1,17 @@
 # Current Milestone
 
+## Concurrent M17.0 security hardening — feature release pending
+
+Latest verified upstream `main`: `cef8e9791c6fad6fdb56c2242340e7e437f3f88f`, tree `68cf008b977349fb3757d3d50680abb92d5da1f7` ([M13 docs PR #30](https://github.com/salman0butt/linkedin-mcp/pull/30), separate main push CI `40680570366` SUCCESS). M17.0 OAuth callback listener lifecycle hardening is scoped to isolated `feat/m17-oauth-callback-lifecycle` and has genuine Node24 RED→GREEN with 1,264/1,264 full local suite and 14/14 framework. See `docs/milestones/M17-production-hardening.md`. **M17.0 has not yet been remotely verified/merged as of this source-branch checkpoint; M17 overall remains planned.**
+
+M13.1 stays BLOCKED pending independently credential-bound organization roles, Community Management entitlement and `w_organization_social`. No organization provider writes are enabled.
+
 Milestone: M13 — Company Pages (official organization identity/role/permissions and publication access UNAVAILABLE)
 Status: IMPLEMENTING — M13.0 strictly LOCAL_ONLY organization editorial handoff VERIFIED/MERGED. Official organization identity, credential-bound role verification, `w_organization_social` entitlement, approval/publishing, engagement and analytics remain UNAVAILABLE.
 Iteration: M13.1 — BLOCKED on independently verified LinkedIn organization identity and Community Management product permission. Do not implement a provider actor/write path from caller-supplied role claims. Future plan is conditional on actual legitimate access.
 Branch: `main` (M13.0 feature branch merged; no active M13.1 feature).
-PR: #16–#29 MERGED. M13.0 [PR #29](https://github.com/salman0butt/linkedin-mcp/pull/29) feature `07599e1d151c3737f2c4cf995c408a88eca54a7f` CI `40679056408` SUCCESS; guarded squash main `e93d3c300b8e77317d93076d96c4eff392ded1de` tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90` separate push CI `40679432769` SUCCESS; Node24 1,260/1,260 in 124 suites and independent pure/MCP Critical0 Important0.
-Latest verified main: `e93d3c300b8e77317d93076d96c4eff392ded1de`; tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90`, exact main push CI `40679432769` SUCCESS. No further main commits assumed.
+PR: #16–#30 MERGED. M13.0 [PR #29](https://github.com/salman0butt/linkedin-mcp/pull/29) feature `07599e1d151c3737f2c4cf995c408a88eca54a7f` CI `40679056408` SUCCESS; guarded squash main `e93d3c300b8e77317d93076d96c4eff392ded1de` tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90` separate push CI `40679432769` SUCCESS; Node24 1,260/1,260 in 124 suites and independent pure/MCP Critical0 Important0.
+M13.0 implementation squash verification: `e93d3c300b8e77317d93076d96c4eff392ded1de`; tree `2f4cb2862470f3cdc539736c25f65e494b0d1c90`, exact main push CI `40679432769` SUCCESS. A subsequent documentation-only PR #30 was merged as shown above.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -42,4 +48,4 @@ M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-m
 
 M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Complete M13.0 caller-only organization editorial handoff with strict pure/MCP TDD, full Node24, complementary read-only review, GitHub feature CI and distinct main push CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.
+Exact next work: **Finish M17.0 independent review Critical0 Important0, exact-feature CI, guarded merge and distinct merged-main push CI.** M13.0 is already verified and merged; M13.1 remains access-blocked. LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.
