@@ -1,0 +1,8 @@
+# M12.1 Caller Snapshot Delta Ranking — Implementation Plan
+
+Base exact verified M12.0 main `79568b556e926566362ad82e8203e1195d35d2e8`; isolated branch `feat/m12-local-delta-ranking`.
+
+1. **Pure RED→GREEN** — new `apps/server/src/analytics/snapshot-delta-ranking.ts` and `apps/server/test/analytics-snapshot-delta-ranking.test.ts`. Reuse strict M12.0 pure comparison with 2–10 caller entries, same two capture minutes, distinct safe content IDs, deterministic stable descending selected metric deltas. Null absent excluded, negative delta preserved. No trusted-provider inference. Hostile inputs and bound/freeze.
+2. **MCP RED→GREEN** — new `apps/server/src/analytics-ranking-mcp.ts` and `apps/server/test/mcp-analytics-snapshot-delta-ranking-contract.test.ts`. Strict Zod input/output and prehandler secret sanitization, host requestId bounds, raw SSE budget, invalid input safe failure, no account/provider/store/approval.
+3. **Integration** — add registrar to create-server, core LOCAL_ONLY capability, inventory 60→61 / 64→65, framework and foundation truthfulness, real compiled STDIO/HTTP plus raw response smoke, milestones/status/traceability, no actual analytics.post capability activation.
+4. **Independent review and guarded release** — strict pure and MCP/transport read-only reviews; fix any Important/Critical RED→GREEN. Node24 format/lint/typecheck/build/full tests, exact GitHub blob/tree equality, one focused PR, exact feature CI quality, expected-head squash merge and exact main push CI quality success before declaring M12.1 VERIFIED/MERGED. Do not enable real scheduling or LinkedIn analytics.

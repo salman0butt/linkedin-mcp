@@ -1,11 +1,11 @@
 # Current Milestone
 
-Milestone: M12 — Analytics (M11 actual scheduled execution and M10 provider research remain blocked)
-Status: IMPLEMENTING — M10.0–M10.4 and M11.0–M11.3 LOCAL_ONLY increments VERIFIED/MERGED; M12.0 caller-supplied analytics snapshots implementing. No LinkedIn provider analytics, scheduled execution, queue or publication claim.
-Iteration: M12.0 — stateless strictly LOCAL_ONLY comparison of two unverified caller-supplied post/article metric snapshots. Design `docs/superpowers/specs/2026-10-28-m12-local-analytics-snapshots-design.md`; plan `docs/superpowers/plans/2026-10-28-m12-local-analytics-snapshots.md`. Full Node24 1,200/1,200 tests in 113 suites, formatting/lint/typecheck/build, compiled STDIO/HTTP/raw SSE GREEN; independent Critical0 Important0; remote CI PENDING.
-Branch: `feat/m12-local-analytics-snapshots` (isolated worktree from exact verified M11.3 squash main).
-PR: #16–#24 MERGED. M11.3 PR #24 feature `70c798b8e8ef1c6a96f093fd92e130d20980fb7c` CI `40654948672` SUCCESS; guarded squash main `d7d46ab4b117109b2aad6e266fb78ecd453b10b2` exact push CI `40655163394` SUCCESS. M12.0 PR PENDING.
-Latest verified main: `d7d46ab4b117109b2aad6e266fb78ecd453b10b2`; exact push CI `40655163394` SUCCESS; tree `65cba502e822a9c1dc99c7f77f22fa8cde130cd2`. M11.3 local 1,188/1,188 in 110 suites, independent Critical=0 Important=0, actual compiled STDIO/HTTP green.
+Milestone: M12 — Analytics (provider-backed analytics and M11 scheduler execution remain unavailable)
+Status: IMPLEMENTING — M10.0–M10.4, M11.0–M11.3 and M12.0 LOCAL_ONLY increments VERIFIED/MERGED. M12.1 caller-only signed metric-delta ranking implementation underway. No provider access, durable execution, queue, approval or publication claim.
+Iteration: M12.1 — strict comparison/ranking of caller-supplied metric changes over identical reported UTC capture instants. Design `docs/superpowers/specs/2026-10-28-m12-local-snapshot-delta-ranking-design.md`; plan `docs/superpowers/plans/2026-10-28-m12-local-snapshot-delta-ranking.md`. Full Node24 1,213/1,213 tests across 116 suites, formatting/lint/typecheck/build and compiled STDIO/HTTP/raw SSE GREEN; independent review and remote CI PENDING.
+Branch: `feat/m12-local-delta-ranking` (isolated worktree from exact verified M12.0 squash main).
+PR: #16–#25 MERGED. M12.0 PR #25 feature `9edc336a0b1fb26c8ccbffa513ce8ff113fb6f97` CI `40658356126` SUCCESS; guarded squash main `79568b556e926566362ad82e8203e1195d35d2e8` push CI `40658638728` SUCCESS. M12.1 PR PENDING.
+Latest verified main: `79568b556e926566362ad82e8203e1195d35d2e8`; exact push CI `40658638728` SUCCESS; tree `a4f42182b086072c20f6d6b4a91f43a661389afa`. M12.0 local Node24 1,200/1,200 in 113 suites, independent Critical0 Important0, compiled STDIO/HTTP GREEN.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -42,4 +42,4 @@ M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-m
 
 M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Complete M12.0 local caller-snapshot analytics via independent review, full Node24 gates, connector-first exact-tree PR and exact feature/merged-main CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.
+Exact next work: **Complete M12.1 caller-only metric-delta ranking, independent review, full Node24 gates, exact-tree GitHub PR, feature and merged-main CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.

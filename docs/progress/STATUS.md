@@ -1,5 +1,15 @@
 # Project Status
 
+## Current checkpoint — 2026-10-28 (M12.0 VERIFIED/MERGED; M12.1 LOCAL ANALYTICS DELTA RANKING IMPLEMENTING)
+
+**M12.0 VERIFIED/MERGED:** PR [#25](https://github.com/salman0butt/linkedin-mcp/pull/25) exact feature `9edc336a0b1fb26c8ccbffa513ce8ff113fb6f97` CI `40658356126` SUCCESS, guarded squash main `79568b556e926566362ad82e8203e1195d35d2e8` tree `a4f42182b086072c20f6d6b4a91f43a661389afa` exact push CI `40658638728` quality SUCCESS. Full Node24 1,200/1,200 tests across 113 suites, independent pure and MCP/transport Critical0 Important0. Stateless caller-supplied unverified metric snapshots; `analytics.post` remains OFFICIAL_API/UNAVAILABLE.
+
+**M12.1 ACTIVE:** Isolated `feat/m12-local-delta-ranking` on exact verified M12.0 main. Typed `linkedin.analytics.rank_snapshot_changes` and pure signed counter-delta ranking for 2–10 caller post/article snapshot pairs with identical claimed UTC capture minutes; unavailable selected metric excluded (never converted to zero), negatives retained, ties stable. Deep strictly caller-only validation, no provider, account access, rates, storage, scheduling or publication. Genuine pure missing-module RED and real MCP absent-tool RED→GREEN; full Node24 1,213/1,213 tests across 116 suites, formatting/lint/typecheck/build and compiled STDIO/HTTP/raw SSE GREEN. Independent reviews and remote feature/main CI PENDING. Spec/plan 2026-10-28 M12.1 in docs/superpowers.
+
+Exact next work: **M12.1 full Node24 quality, independent Critical0 Important0, exact GitHub blobs/tree/PR, feature CI, guarded merge and exact main push CI.**
+
+## Previous checkpoint — M12.0 implementing
+
 ## Current checkpoint — 2026-10-28 (M11.3 VERIFIED/MERGED; M12.0 caller-only analytics IMPLEMENTING)
 
 **M11.3 VERIFIED/MERGED:** PR [#24](https://github.com/salman0butt/linkedin-mcp/pull/24) feature `70c798b8e8ef1c6a96f093fd92e130d20980fb7c` CI `40654948672` SUCCESS; guarded squash main `d7d46ab4b117109b2aad6e266fb78ecd453b10b2`, tree `65cba502e822a9c1dc99c7f77f22fa8cde130cd2`, push CI `40655163394` SUCCESS. 1,188/1,188 local tests in 110 suites, independent Critical0 Important0. All calendar features remain planning-only.

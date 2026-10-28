@@ -659,7 +659,7 @@ describe('built HTTP server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 64,
+      toolCount: 65,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },

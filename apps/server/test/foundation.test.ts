@@ -55,6 +55,7 @@ describe('foundation result factories', () => {
           'research.repurposing.prepare',
           'calendar.preview',
           'analytics.snapshots.compare',
+          'analytics.snapshots.rank',
         ].includes(capability.id)
       ) {
         expect(capability).toMatchObject({
@@ -62,7 +63,7 @@ describe('foundation result factories', () => {
           status: 'ACTIVE',
           availability: 'AVAILABLE',
           milestone:
-            capability.id === 'analytics.snapshots.compare'
+            capability.id === 'analytics.snapshots.compare' || capability.id === 'analytics.snapshots.rank'
               ? 'M12'
               : capability.id === 'calendar.preview'
                 ? 'M11'
