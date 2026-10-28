@@ -340,7 +340,18 @@ describe('M13.0 real SDK organization editorial handoff', () => {
   });
 
   it('keeps raw JSON-RPC/SSE under 256 KiB with a 128-byte escaped client request ID', async () => {
-    const { handler } = connect({ independent: true });
+    // Raw HTTP does not need a client handshake. `connect()` starts an asynchronous
+    // legacy SDK handshake, which can outlive this test and contact a handler
+    // after afterEach has closed it (an unhandled rejection on CI).
+    const handler = createMcpHandler(() => {
+      const server = new McpServer({ name: 'm13-independent-raw', version: '1.0.0' });
+      registerOrganizationEditorialHandoffTools(server, {
+        createRequestId: () => 'm13-organization-safe-id',
+        now: () => new Date('2026-10-28T10:00:00.000Z'),
+      });
+      return server;
+    });
+    handlers.push(handler);
     const id = '\u0000'.repeat(128);
     const raw = await handler.fetch(
       new Request('http://test.local/mcp', {
