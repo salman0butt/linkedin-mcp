@@ -34,7 +34,7 @@ function getStatus(port: number, headers: Record<string, string>): Promise<numbe
   });
 }
 
-function postStatus(port: number, body: Buffer): Promise<number> {
+function postStatus(port: number, body: Buffer, headers: Record<string, string> = {}): Promise<number> {
   return new Promise((resolve, reject) => {
     const outgoing = request(
       {
@@ -45,6 +45,7 @@ function postStatus(port: number, body: Buffer): Promise<number> {
         headers: {
           Host: `127.0.0.1:${port}`,
           'Content-Type': 'application/json',
+          ...headers,
         },
       },
       (response) => {
@@ -58,6 +59,91 @@ function postStatus(port: number, body: Buffer): Promise<number> {
 }
 
 describe('createHttpServer', () => {
+  it.each([
+    ['NaN', Number.NaN],
+    ['positive infinity', Number.POSITIVE_INFINITY],
+    ['negative infinity', Number.NEGATIVE_INFINITY],
+    ['zero', 0],
+    ['negative', -1],
+    ['fractional', 0.5],
+    ['unsafe integer', Number.MAX_SAFE_INTEGER + 1],
+    ['over the 16 MiB maximum', 16_777_217],
+  ])('rejects an invalid %s request body limit before opening HTTP', async (_description, limit) => {
+    let opened: Awaited<ReturnType<typeof createHttpServer>> | undefined;
+    let failure: unknown;
+    try {
+      opened = await createHttpServer({ host: '127.0.0.1', port: 0, requestBodyLimitBytes: limit });
+    } catch (error) {
+      failure = error;
+    } finally {
+      await opened?.close();
+    }
+    expect(failure).toBeInstanceOf(Error);
+    expect((failure as Error).message).toMatch(/request body limit/i);
+  });
+
+  it.each([1, 1_048_576, 16_777_216])('allows finite valid body limit %i', async (limit) => {
+    const server = await createHttpServer({
+      host: '127.0.0.1',
+      port: 0,
+      requestBodyLimitBytes: limit,
+    });
+    await server.close();
+  });
+
+  it('enforces the environment request body limit when no explicit HTTP override is provided', async () => {
+    vi.stubEnv('LINKEDIN_MCP_BODY_LIMIT_BYTES', '1');
+    let server: Awaited<ReturnType<typeof createHttpServer>> | undefined;
+    try {
+      server = await createHttpServer({ host: '127.0.0.1', port: 0 });
+      const body = Buffer.from(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: { name: 'linkedin.health', arguments: {} },
+        }),
+      );
+      expect(body.byteLength).toBeGreaterThan(1);
+      expect(
+        await postStatus(server.address.port, body, {
+          Accept: 'application/json, text/event-stream',
+        }),
+      ).toBe(413);
+    } finally {
+      await server?.close();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('honors an explicit HTTP request body limit over a smaller environment value', async () => {
+    vi.stubEnv('LINKEDIN_MCP_BODY_LIMIT_BYTES', '1');
+    let server: Awaited<ReturnType<typeof createHttpServer>> | undefined;
+    try {
+      server = await createHttpServer({
+        host: '127.0.0.1',
+        port: 0,
+        requestBodyLimitBytes: 1_048_576,
+      });
+      const body = Buffer.from(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: { name: 'linkedin.health', arguments: {} },
+        }),
+      );
+      expect(
+        await postStatus(server.address.port, body, {
+          Accept: 'application/json, text/event-stream',
+        }),
+      ).toBe(200);
+    } finally {
+      await server?.close();
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('rejects oversized JSON-RPC IDs before dispatch and keeps the complete HTTP response bounded', async () => {
     const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
     const marker = 'A'.repeat(1_400);

@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 
 import { createMcpHandler } from '@modelcontextprotocol/server';
 
-import { parseConfig } from './config.js';
+import { MAX_HTTP_REQUEST_BODY_LIMIT_BYTES, parseConfig } from './config.js';
 import { createLinkedInMcpServer } from './create-server.js';
 import { createLinkedInRuntime, type LinkedInRuntime } from './runtime.js';
 import { InvalidToolListPage, paginateToolInventory } from './transport/tool-list-pagination.js';
@@ -25,7 +25,6 @@ export interface RunningHttpServer {
 
 const LOOPBACK_BIND_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
-const DEFAULT_REQUEST_BODY_LIMIT_BYTES = 1_048_576;
 const MAX_JSON_RPC_ID_BYTES = 128;
 const MAX_HTTP_RESPONSE_BYTES = 256 * 1024;
 
@@ -264,8 +263,17 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
   }
 
   const port = options.port ?? 3000;
-  const requestBodyLimitBytes = options.requestBodyLimitBytes ?? DEFAULT_REQUEST_BODY_LIMIT_BYTES;
   const config = parseConfig();
+  const requestBodyLimitBytes = options.requestBodyLimitBytes ?? config.requestBodyLimitBytes;
+  if (
+    !Number.isSafeInteger(requestBodyLimitBytes) ||
+    requestBodyLimitBytes <= 0 ||
+    requestBodyLimitBytes > MAX_HTTP_REQUEST_BODY_LIMIT_BYTES
+  ) {
+    throw new Error(
+      `HTTP request body limit must be a positive safe integer no greater than ${MAX_HTTP_REQUEST_BODY_LIMIT_BYTES}`,
+    );
+  }
   const runtime = options.runtime ?? createLinkedInRuntime({ ...config, transport: 'http' });
   const toolListSecret = randomBytes(32);
   // Build an explicit safe allowlist: never even read any injected private-store

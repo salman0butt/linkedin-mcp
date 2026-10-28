@@ -1,12 +1,18 @@
 # Project Status
 
+## M17.1 — HTTP request-body limit configuration (local GREEN; GitHub release PENDING)
+
+From main `53e9a885788a2b2066a1d3c7b2d645fb20a6f88a` ([PR #33](https://github.com/salman0butt/linkedin-mcp/pull/33), feature CI `40742375125` and distinct main push CI `40742735462` SUCCESS), branch `feat/m17-http-body-limit-validation` contains a genuine RED→GREEN fix for programmatic `NaN`/`Infinity` request body limits and unsafe environment values. Initially 10 intended focused failures, then **83/83** focused and **1,280/1,280** full Node24 tests in 124 suites, compiled STDIO/HTTP 67-tool contracts and framework **14/14** passed. Full formatting, lint, typecheck and build passed. Both configuration paths now require a positive safe integer at most 16 MiB; default 1 MiB unchanged. Independent read-only review and exact GitHub feature/main CI PENDING; this is not a merged M17.1 release. M17 overall remains PLANNED; M13.1 provider authorization remains BLOCKED.
+
+Exact next work: **Complete M17.1 independent security review Critical 0 / Important 0, exact feature-head CI and guarded squash merge with distinct main push CI.** Separate delayed partial-stream and batched intermediate-response issues remain OPEN.
+
 ## M17.0 OAuth callback lifecycle — VERIFIED/MERGED (2026-10-28)
 
 Authenticated local loopback OAuth callback availability hardening was independently reproduced RED (real held incomplete HTTP headers), fixed GREEN after response flush, and verified through [PR #31](https://github.com/salman0butt/linkedin-mcp/pull/31) feature `c8b42f6fe895d246d4ad81e44cd6adf161c6cc26` CI `40687205091` SUCCESS. Guarded squash `main` `7ad4f38f0280cfa99b7f2d1ef3cd5eeb99c2f031` parent `cef8e9791c6fad6fdb56c2242340e7e437f3f88f` tree `bec90faffd7761c6756e39bf530b187bcb6790db` has distinct push workflow `40687526120` SUCCESS; 318 remote blobs identical. Full Node24 1,264/1,264 across 124 suites, framework 14/14, format/lint/typecheck/build and compiled STDIO/HTTP GREEN. Independent read-only reviewer real TCP race/held socket/abort probes unresolved Critical 0 / Important 0. M17.0 VERIFIED/MERGED; overall M17/v1.0 remains PLANNED, M13.1 org scope/roles remain BLOCKED. Next HTTP hardening is separate scope and requires its own real RED→GREEN.
 
 Documentation closeout [PR #32](https://github.com/salman0butt/linkedin-mcp/pull/32) feature `67c5df116a2139bb075a8c2c2ace97d5c37cd243` CI `40688435154` SUCCESS, guarded squash `main` `ac686d09e539bdf9072836bc63f1fe5ebe79b18a` with distinct main push CI `40688986570` SUCCESS.
 
-Exact next work: **Reproduce and address the nonfinite configured HTTP request-body limit in a new isolated M17 transport hardening increment with genuine RED→GREEN and independent security review.** Slow over-limit request streams and batched response intermediate buffering remain separate known candidates for later scoped work. Preserve 256 KiB responses, 96 KiB tool pages, the full inventory and private HTTP boundaries.
+Historical M17.0 handoff was to reproduce the nonfinite HTTP request-body limit. M17.1 has now implemented the local RED→GREEN fix and awaits separate release gates. Slow over-limit request streams and batched response intermediate buffering remain separate known candidates. Preserve 256 KiB responses, 96 KiB tool pages, the full inventory and private HTTP boundaries.
 
 ## Previous checkpoint — 2026-10-28 (M13.0 VERIFIED/MERGED; M13 PROVIDER ACCESS BLOCKED)
 
