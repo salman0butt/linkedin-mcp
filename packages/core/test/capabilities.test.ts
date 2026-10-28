@@ -150,6 +150,7 @@ describe('capability registry', () => {
           'calendar.preview',
           'analytics.snapshots.compare',
           'analytics.snapshots.rank',
+          'analytics.snapshots.series',
         ].includes(descriptor.id),
     );
     expect(others.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);

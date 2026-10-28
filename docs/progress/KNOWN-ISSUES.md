@@ -2,7 +2,7 @@
 
 ## Current unresolved issues
 
-**M12.0 VERIFIED/MERGED** via PR #25 feature CI `40658356126`, squash main `79568b556e926566362ad82e8203e1195d35d2e8` exact push CI `40658638728` SUCCESS, Node24 1,200/1,200 and independent Critical0 Important0. M12.1 strictly LOCAL_ONLY caller-supplied signed metric-change ranking implementing; it must not claim LinkedIn provider metrics, comparable lifetime performance, engagement rates or an actual scheduled/published post.
+**M12.1 VERIFIED/MERGED** via PR #26 feature CI `40664805538`, squash main `40c714df69039ab65e648ae78d58a30496698c1e` tree `2820ce11430aea3f0e91d7098cd716cc5295bad0` separate push CI `40665262565` SUCCESS, Node24 1,213/1,213 and independent Critical0 Important0. M12.2 strictly LOCAL_ONLY caller-supplied chronological observations implementing; neither observation intervals nor signed differences verify LinkedIn provider windows, performance, engagement rates or actual scheduled/published posts.
 
 ### M10.0–M10.4 and M11.0–M11.3 LOCAL_ONLY verified/merged; M12.0 caller snapshot analytics implementing, real provider analytics and scheduled publishing unavailable
 

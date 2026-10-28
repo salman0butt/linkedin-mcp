@@ -375,7 +375,21 @@ const descriptors: CapabilityDescriptor[] = [
       'Stateless unverified caller-only counter differences; identical reported capture minutes do not prove a provider-comparable performance window. No provider access, account, rates or posting.',
     approvalRequired: false,
     evidence:
-      'M12.1 deterministic local delta ranking and typed MCP/real transport verification; remote CI pending.',
+      'M12.1 PR #26 feature CI 40664805538 and merged main push CI 40665262565 SUCCESS; independent Critical0 Important0.',
+  },
+  {
+    id: 'analytics.snapshots.series',
+    desiredBehavior:
+      'Compare 3–10 chronological caller-supplied metric observations of one content item using adjacent signed counter differences.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M12',
+    status: 'ACTIVE',
+    accessNote:
+      'Stateless unverified caller metrics only; capture gaps are not verified LinkedIn accounting windows, trends, rates, performance, provider authorization or publication.',
+    approvalRequired: false,
+    evidence:
+      'M12.2 pure strict adjacent-comparison and typed MCP/real STDIO/HTTP contracts with bounded provenance.',
   },
   {
     id: 'research.topic',
