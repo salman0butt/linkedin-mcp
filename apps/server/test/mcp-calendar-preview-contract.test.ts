@@ -75,7 +75,7 @@ describe('M11.0 typed stateless LOCAL_ONLY calendar preview MCP contract', () =>
     const { tools } = await client.listTools();
     // M11.0 calendar.preview remains one stateless tool; seven M11.1-M11.3
     // private-plan operations bring the default in-memory inventory to 59.
-    expect(tools).toHaveLength(62);
+    expect(tools).toHaveLength(63);
     const matches = tools.filter((tool) => tool.name === TOOL);
     expect(matches).toHaveLength(1);
     expect(matches[0]?.inputSchema).toMatchObject({

@@ -119,9 +119,9 @@ function call(script: string) {
 }
 
 describe('M12.2 compiled stateless caller observation series transports', () => {
-  it('registers 66 STDIO tools and truthful LOCAL_ONLY series capability', () => {
+  it('registers 67 STDIO tools and truthful LOCAL_ONLY series capability', () => {
     const value = call(stdioScript);
-    expect(value.count).toBe(66);
+    expect(value.count).toBe(67);
     expect(value.found).toBe(1);
     expect(value.error).not.toBe(true);
     expect(value.response).toMatchObject({
@@ -138,9 +138,9 @@ describe('M12.2 compiled stateless caller observation series transports', () => 
     });
   }, 30_000);
 
-  it('registers 66 HTTP tools and bounds complete raw HTTP/SSE response', () => {
+  it('registers 67 HTTP tools and bounds complete raw HTTP/SSE response', () => {
     const value = call(httpScript);
-    expect(value.count).toBe(66);
+    expect(value.count).toBe(67);
     expect(value.found).toBe(1);
     expect(value.error).not.toBe(true);
     expect(value.response).toMatchObject({
@@ -154,7 +154,7 @@ describe('M12.2 compiled stateless caller observation series transports', () => 
     expect(value.rawBytes).toBeLessThanOrEqual(262_144);
     expect(value.rawToolsStatus).toBe(200);
     expect(value.rawToolsBytes).toBeLessThanOrEqual(262_144);
-    expect(value.rawToolsCount).toBe(66);
+    expect(value.rawToolsCount).toBe(67);
     expect(value.rawToolsPages).toBeGreaterThan(1);
     expect(value.rawEvent?.result?.structuredContent).toMatchObject({ status: 'succeeded' });
   }, 30_000);

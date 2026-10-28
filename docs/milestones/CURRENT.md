@@ -1,11 +1,11 @@
 # Current Milestone
 
-Milestone: M12 — Analytics (provider-backed analytics and M11 scheduler execution remain unavailable)
-Status: IMPLEMENTING — M10.0–M10.4, M11.0–M11.3 and M12.0–M12.2 LOCAL_ONLY increments VERIFIED/MERGED. M12.3 HTTP tool-inventory pagination hardening implementing. No provider access, durable execution, queue, approval or publication claim.
-Iteration: M12.3 — protocol-compatible bounded HTTP MCP `tools/list` pages, all 66 descriptors preserved, unchanged 256KiB response limit and unmodified STDIO. Design `docs/superpowers/specs/2026-10-28-m12-tool-inventory-http-pagination-design.md`; plan `docs/superpowers/plans/2026-10-28-m12-tool-inventory-http-pagination.md`. Genuine real HTTP RED→GREEN, full Node24 1,237/1,237 across 121 suites and compiled STDIO/HTTP/quality GREEN; independent HTTP Critical0 Important0, pure final review/remote CI pending.
-Branch: `feat/m12-tool-inventory-pagination` (isolated from exact verified M12.2 squash main).
-PR: #16–#27 MERGED. M12.2 PR #27 feature `8c2c19d02a72b4ea79dfbb53c18ca02378a1cb41` CI `40668979524` SUCCESS; guarded squash main `8d3019a872a34b3990567f193d58d5f7bdb11d42` push CI `40669592590` SUCCESS.
-Latest verified main: `8d3019a872a34b3990567f193d58d5f7bdb11d42`; exact push CI `40669592590` SUCCESS; tree `b2e9f4482ab5a370d203ba92f54762f78c0e2fcf`. M12.2 local Node24 1,231/1,231 in 119 suites, independent Critical0 Important0.
+Milestone: M13 — Company Pages (official organization identity/role/permissions and publication access UNAVAILABLE)
+Status: IMPLEMENTING — M12.0–M12.3 scoped LOCAL_ONLY/transport releases VERIFIED/MERGED; M13.0 caller-only organization editorial handoff implementing. No validated organization actor, durable approval, queue or publication claim.
+Iteration: M13.0 — strict 1–5 caller-written company-page copy packages, manual-only and `organizationUrn` caller asserted, no provider/role verification. Design `docs/superpowers/specs/2026-10-28-m13-local-organization-editorial-handoff-design.md`; plan `docs/superpowers/plans/2026-10-28-m13-local-organization-editorial-handoff.md`. Pure+MCP genuine RED→GREEN; full Node24 1,260/1,260 in 124 suites and compiled STDIO/HTTP GREEN; independent pure and MCP/transport Critical0 Important0; GitHub feature/main CI pending.
+Branch: `feat/m13-local-organization-readiness` (isolated at exact verified M12.3 squash main).
+PR: #16–#28 MERGED. M12.3 PR #28 feature `08ed234fd7641c9260f9326118e4c5820fe88ba1` CI `40673718696` SUCCESS; guarded squash `ebee040d809c61bf57534d0c3cb81bd382107dc9` main push CI `40674038860` SUCCESS.
+Latest verified main: `ebee040d809c61bf57534d0c3cb81bd382107dc9`; exact tree `68b52ba273ce27b1597d48c32be94ac6e80a92bd`, separate main push CI `40674038860` SUCCESS. M12.3 Node24 1,237/1,237 across 121 suites, independent Critical0 Important0.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -42,4 +42,4 @@ M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-m
 
 M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Complete M12.3 HTTP tools/list pagination hardening, full Node24 gates, independent audits, exact-tree feature PR and distinct merged-main push CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.
+Exact next work: **Complete M13.0 caller-only organization editorial handoff with strict pure/MCP TDD, full Node24, complementary read-only review, GitHub feature CI and distinct main push CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.

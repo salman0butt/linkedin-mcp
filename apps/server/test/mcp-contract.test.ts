@@ -239,6 +239,7 @@ describe('LinkedIn MCP server contract', () => {
         'linkedin.jobs.saved_searches.remove',
         'linkedin.jobs.saved_searches.save',
         'linkedin.jobs.search',
+        'linkedin.organization.content_handoff.prepare',
         'linkedin.post.approve.image',
         'linkedin.post.approve.multi_image',
         'linkedin.post.approve.text',
