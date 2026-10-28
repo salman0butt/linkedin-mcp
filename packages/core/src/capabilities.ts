@@ -364,6 +364,20 @@ const descriptors: CapabilityDescriptor[] = [
       'M12.0 strict local snapshot comparison, typed MCP/real STDIO and HTTP contract tests; remote CI pending.',
   },
   {
+    id: 'analytics.snapshots.rank',
+    desiredBehavior:
+      'Order signed changes of one selected metric across two to ten caller-supplied post or article snapshot pairs.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M12',
+    status: 'ACTIVE',
+    accessNote:
+      'Stateless unverified caller-only counter differences; identical reported capture minutes do not prove a provider-comparable performance window. No provider access, account, rates or posting.',
+    approvalRequired: false,
+    evidence:
+      'M12.1 deterministic local delta ranking and typed MCP/real transport verification; remote CI pending.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',

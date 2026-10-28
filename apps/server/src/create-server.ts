@@ -14,6 +14,7 @@ import { registerArticleTools } from './article-mcp.js';
 import { registerArticlePrompts } from './article-prompts.js';
 import { registerResearchTools } from './research-mcp.js';
 import { registerAnalyticsTools } from './analytics-mcp.js';
+import { registerAnalyticsRankingTools } from './analytics-ranking-mcp.js';
 import { registerCalendarTools } from './calendar-mcp.js';
 import { registerCalendarPlanTools } from './calendar-plan-mcp.js';
 import type { LocalCalendarPlanStore } from './scheduling/calendar-plan-store.js';
@@ -70,6 +71,7 @@ export function createLinkedInMcpServer(deps: LinkedInMcpServerDeps = {}): McpSe
   registerJobIntelligenceTools(server, { createRequestId, now });
   registerResearchTools(server, { createRequestId, now });
   registerAnalyticsTools(server, { createRequestId, now });
+  registerAnalyticsRankingTools(server, { createRequestId, now });
   registerCalendarTools(server, { createRequestId, now });
   registerCalendarPlanTools(server, {
     ...(normalizedDeps.calendarStore === undefined ? {} : { calendarStore: normalizedDeps.calendarStore }),
