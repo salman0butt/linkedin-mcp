@@ -23,11 +23,31 @@ const calendar = {
   ],
 } as const;
 
+const companionCalendar = {
+  referenceUtc: '2026-10-27T10:00:00.000Z',
+  items: [
+    {
+      id: 'shared-other-plan',
+      label: 'Private second-plan label 🪐',
+      kind: 'manual_article_handoff',
+      plannedAtUtc: '2026-10-28T12:00:00.000Z',
+    },
+    {
+      id: 'independent',
+      label: 'Private unique idea 🛰️',
+      kind: 'text_post',
+      plannedAtUtc: '2026-10-30T12:00:00.000Z',
+    },
+  ],
+} as const;
+
 const realStdioScript = `
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 const calendar = ${JSON.stringify(calendar)};
+const companionCalendar = ${JSON.stringify(companionCalendar)};
 const client = new Client({ name: 'm11-private-calendar-smoke', version: '1.0.0' });
 const transport = new StdioClientTransport({ command: process.execPath,
   args: [resolve(process.cwd(), 'dist/stdio.js')], env: process.env });
@@ -36,14 +56,23 @@ try {
   const create = await client.callTool({ name:'linkedin.calendar.plans.create',
     arguments:{ idempotencyKey:'calendar-persisted-test', calendar } });
   const id = create.structuredContent?.data?.id;
+  const companion = await client.callTool({name:'linkedin.calendar.plans.create',
+    arguments:{idempotencyKey:'calendar-persisted-companion',calendar:companionCalendar}});
+  const companionId = companion.structuredContent?.data?.id;
   const list = await client.callTool({ name:'linkedin.calendar.plans.list', arguments:{} });
   const get = id ? await client.callTool({ name:'linkedin.calendar.plans.get', arguments:{id} }) : null;
   const inspect = id ? await client.callTool({name:'linkedin.calendar.plans.inspect',
     arguments:{id,expectedRevision:1,asOfUtc:'2026-10-28T12:00:00.000Z'}}) : null;
+  const beforeCompare = readFileSync(process.env.LINKEDIN_MCP_CALENDAR_STORE_PATH);
+  const compare = id && companionId ? await client.callTool({name:'linkedin.calendar.plans.compare_slots',
+    arguments:{plans:[{id,expectedRevision:1},{id:companionId,expectedRevision:1}]}}) : null;
+  const comparisonDidNotModifyStore = beforeCompare.equals(readFileSync(process.env.LINKEDIN_MCP_CALENDAR_STORE_PATH));
   process.stdout.write(JSON.stringify({create:create.structuredContent,
+    companion:companion.structuredContent,companionError:companion.isError,
     createError:create.isError,list:list.structuredContent,listError:list.isError,
     get:get?.structuredContent,getError:get?.isError,
-    inspect:inspect?.structuredContent,inspectError:inspect?.isError}));
+    inspect:inspect?.structuredContent,inspectError:inspect?.isError,
+    compare:compare?.structuredContent,compareError:compare?.isError,comparisonDidNotModifyStore}));
 } finally { await client.close(); }
 `;
 
@@ -67,6 +96,7 @@ try {
     {name:'linkedin.calendar.plans.list',arguments:{}},
     {name:'linkedin.calendar.plans.get',arguments:{id:'123e4567-e89b-42d3-a456-426614174000'}},
     {name:'linkedin.calendar.plans.inspect',arguments:{id:'123e4567-e89b-42d3-a456-426614174000',expectedRevision:1,asOfUtc:'2026-10-28T12:00:00.000Z'}},
+    {name:'linkedin.calendar.plans.compare_slots',arguments:{plans:[{id:'123e4567-e89b-42d3-a456-426614174000',expectedRevision:1},{id:'123e4567-e89b-42d3-a456-426614174001',expectedRevision:1}]}},
     {name:'linkedin.calendar.plans.update',arguments:{id:'123e4567-e89b-42d3-a456-426614174000',expectedRevision:1,calendar:${JSON.stringify(calendar)}}},
     {name:'linkedin.calendar.plans.remove',arguments:{id:'123e4567-e89b-42d3-a456-426614174000',expectedRevision:1}},
   ];
@@ -98,7 +128,7 @@ function invokeScript(script: string, environment: Record<string, string>): unkn
   ) as unknown;
 }
 
-describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
+describe('M11.1–M11.3 real compiled STDIO / HTTP private calendar transport', () => {
   it('persists an original-order multilingual calendar through real STDIO restarts only with host opt-in', async () => {
     const root = await realpath(await mkdtemp(join(tmpdir(), 'm11-calendar-stdio-')));
     const path = join(root, 'private', 'plans.json');
@@ -109,7 +139,11 @@ describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
           listError?: boolean;
           getError?: boolean;
           inspectError?: boolean;
+          companionError?: boolean;
+          compareError?: boolean;
+          comparisonDidNotModifyStore: boolean;
           create: { status: string; data: { id: string; revision: number; calendar: typeof calendar } };
+          companion: { status: string; data: { id: string; revision: number } };
           list: { status: string; data: Array<Record<string, unknown>> };
           get: { status: string; data: { id: string; calendar: typeof calendar } };
           inspect: {
@@ -123,6 +157,15 @@ describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
               counts: { pastAsOf: number; futureAsOf: number };
             };
           };
+          compare: {
+            status: string;
+            data: {
+              snapshotConsistency: string;
+              plans: Array<{ id: string; revision: number }>;
+              collisions: Array<{ plannedAtUtc: string; items: Array<{ planId: string; itemId: string }> }>;
+              counts: { comparedPlans: number; collisionMinutes: number; collisionItems: number };
+            };
+          };
         };
       const first = run();
       const replayAfterRestart = run();
@@ -130,6 +173,9 @@ describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
       expect(first.listError).not.toBe(true);
       expect(first.getError).not.toBe(true);
       expect(first.inspectError).not.toBe(true);
+      expect(first.companionError).not.toBe(true);
+      expect(first.compareError).not.toBe(true);
+      expect(first.comparisonDidNotModifyStore).toBe(true);
       expect(first.create.status).toBe('succeeded');
       expect(first.create.data.id).toMatch(/^[0-9a-f-]{36}$/iu);
       expect(first.create.data.revision).toBe(1);
@@ -146,11 +192,35 @@ describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
       expect(first.inspect.data.planDigest).toMatch(/^[0-9a-f]{64}$/u);
       expect(JSON.stringify(first.inspect)).not.toContain('Earlier 🤖 plan');
       expect(JSON.stringify(first.inspect)).not.toContain('Later 🌍 plan');
-      expect(first.list.data).toHaveLength(1);
+      expect(first.companion.status).toBe('succeeded');
+      expect(first.companion.data.id).not.toBe(first.create.data.id);
+      expect(first.compare.status).toBe('succeeded');
+      expect(first.compare.data).toMatchObject({
+        snapshotConsistency: 'independent_revisions_not_atomic',
+        plans: [
+          { id: first.create.data.id, revision: 1 },
+          { id: first.companion.data.id, revision: 1 },
+        ],
+        collisions: [
+          {
+            plannedAtUtc: '2026-10-28T12:00:00.000Z',
+            items: [
+              { planId: first.create.data.id, itemId: 'first' },
+              { planId: first.companion.data.id, itemId: 'shared-other-plan' },
+            ],
+          },
+        ],
+        counts: { comparedPlans: 2, collisionMinutes: 1, collisionItems: 2 },
+      });
+      expect(JSON.stringify(first.compare)).not.toContain('Earlier 🤖 plan');
+      expect(JSON.stringify(first.compare)).not.toContain('Private second-plan label 🪐');
+      expect(first.list.data).toHaveLength(2);
       expect(JSON.stringify(first.list)).not.toContain('Earlier 🤖 plan');
       expect(replayAfterRestart.create.data.id).toBe(first.create.data.id);
       expect(replayAfterRestart.get.data.calendar).toEqual(first.get.data.calendar);
       expect(replayAfterRestart.inspect.data.planDigest).toBe(first.inspect.data.planDigest);
+      expect(replayAfterRestart.companion.data.id).toBe(first.companion.data.id);
+      expect(replayAfterRestart.compare.data.collisions).toEqual(first.compare.data.collisions);
       expect((await readFile(path, 'utf8')).includes('Later 🌍 plan')).toBe(true);
     } finally {
       await rm(root, { recursive: true, force: true });
@@ -163,7 +233,7 @@ describe('M11.1 real compiled STDIO / HTTP private calendar transport', () => {
       results: Array<{ name: string; isError?: boolean; body: { status: string; error?: { code: string } } }>;
     };
     expect(output.reads).toBe(0);
-    expect(output.results).toHaveLength(6);
+    expect(output.results).toHaveLength(7);
     for (const result of output.results) {
       expect(result.isError).toBe(true);
       expect(result.body).toMatchObject({

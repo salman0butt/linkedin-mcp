@@ -1,6 +1,6 @@
 # M11 — Scheduling & Automation
 
-Status: **IMPLEMENTING — M11.0 LOCAL_ONLY preview and M11.1 STDIO-only private persistence VERIFIED/MERGED; M11.2 read-only private plan inspection implementing. Actual scheduling, approval-aware execution and publication remain PLANNED/UNAVAILABLE.**
+Status: **IMPLEMENTING — M11.0 preview, M11.1 STDIO-private persistence and M11.2 revision-gated inspection VERIFIED/MERGED; M11.3 strictly read-only two-plan UTC slot comparison implementing. Actual scheduling, approval-aware execution and publication remain PLANNED/UNAVAILABLE.**
 
 ## Goal
 
@@ -24,7 +24,7 @@ Scheduled actions are durable/idempotent, respect approval/capability/auth state
 
 ## Tasks / Iterations
 
-M11.0 caller-authored UTC content calendar **preview only** (strict user input, no persistence/queue/provider/approval/publish), design `docs/superpowers/specs/2026-10-27-m11-local-content-calendar-preview-design.md` and plan `docs/superpowers/plans/2026-10-27-m11-local-content-calendar-preview.md`, verified via PR #21 feature `7f6c75431c43330cf78c6abaed1c779c4951c67a` CI `40472594047` SUCCESS and squash main `96e4052eb4fd92d24afb0489c3142e65447e63c7` push CI `40475275490` SUCCESS. M11.1 opt-in private STDIO-only durable CRUD VERIFIED/MERGED via PR #22: corrected feature `4382b54d579e211c0aeac916ec265d82b4730934` CI `40493902705` SUCCESS, exact-tree squash main `4dbecdebb2b94ee26d646b3933f268e4796251fa` push CI `40494259585` SUCCESS; final independent Critical0 Important0. M11.2 read-only saved-plan inspection is implementing per `docs/superpowers/specs/2026-10-27-m11-calendar-plan-inspection-design.md` and `docs/superpowers/plans/2026-10-27-m11-calendar-plan-inspection.md`. Later executor design must address scheduler claims, at-execution trusted approval and auth/scopes/capability checks, bounded retries/uncertain-outcome handling, cancellation/rescheduling and auditable verification.
+M11.0 caller-authored UTC content calendar **preview only** is VERIFIED/MERGED via PR #21 feature CI `40472594047` and squash main `96e4052eb4fd92d24afb0489c3142e65447e63c7` push CI `40475275490` SUCCESS. M11.1 opt-in private STDIO-only durable CRUD VERIFIED/MERGED via PR #22: corrected feature `4382b54d579e211c0aeac916ec265d82b4730934` CI `40493902705` and squash main `4dbecdebb2b94ee26d646b3933f268e4796251fa` push CI `40494259585` SUCCESS. M11.2 read-only saved-plan inspection VERIFIED/MERGED via PR #23 feature `855c9324a72ee88467b38236ceaa77ee9d885064` CI `40497799619`, squash main `39d843dda4a5ffc00b9c74aaf1c5f320af967e93` push CI `40498119965` SUCCESS; Node24 1,173/1,173 and independent Critical0 Important0. M11.3 strictly read-only cross-plan slot comparison implementing per `docs/superpowers/specs/2026-10-27-m11-cross-plan-slot-comparison-design.md` and `docs/superpowers/plans/2026-10-27-m11-cross-plan-slot-comparison.md`. Later executor requires fresh at-execution trusted approval, live auth/scopes, durable fencing/claims/recovery, bounded retries and unknown-outcome handling; no currently active scheduling.
 
 ## TDD Evidence
 
@@ -32,7 +32,7 @@ M11.0 genuine test-first missing-module RED (`ERR_MODULE_NOT_FOUND` for `calenda
 
 ## Integration Test Evidence
 
-M11.0 Node24 **1,119/1,119 tests across 103 suites** with built STDIO and loopback HTTP smoke and actual raw SSE full wire bytes ≤256KiB, 56 real built tools. Full format/lint/typecheck/build/diff GREEN; independent cross-owner security reviews and exact feature/main CI all succeeded. M11.1 final Node24 **1,156/1,156 in 106 suites**, all quality/real STDIO/HTTP checks GREEN, independent cross-owner security review Critical=0 Important=0; PR #22 exact feature CI `40493902705` and merged-main CI `40494259585` SUCCESS. M11.2 Node24 local **1,173/1,173 in 108 suites**, quality and real STDIO/HTTP GREEN; independent review and remote release PENDING.
+M11.0 Node24 **1,119/1,119 tests across 103 suites**, built STDIO/loopback HTTP/raw SSE ≤256KiB and 56 built tools; full gates and exact CI passed. M11.1 Node24 **1,156/1,156 in 106 suites**, real transports, independent Critical0 Important0, PR #22 feature/main CI success. M11.2 Node24 **1,173/1,173 in 108 suites**, quality and real STDIO/HTTP GREEN, independent Critical0 Important0, PR #23 feature CI `40497799619`, main CI `40498119965` SUCCESS. M11.3 full local Node24 **1,188/1,188 tests in 110 suites**, formatting/lint/typecheck/build and compiled STDIO/HTTP GREEN; independent review/remote CI PENDING.
 
 ## Security Review
 
@@ -40,13 +40,13 @@ For eventual execution: recheck live credentials/scopes/entitlements and trusted
 
 ## Code Review Findings
 
-Independent M11.0 PURE calendar-preview security review signed off unresolved Critical=0 Important=0: 90/90 standalone hostile probes plus 8/8 focused tests, revoked/proxy/getter/accessor safety, real UTC minute/90-day bounds, deep freeze, source-only data and no IO. Complementary MCP/capability/transport review signed off Critical=0 Important=0 after built STDIO+HTTP 6/6, direct raw HTTP/SSE 22/22, private-store 13/13; 56 built tools, no `schedule.create`, no remote publishing. M11.1 had its own independent final Critical0 Important0 review; M11.2 requires another independent review.
+Independent M11.0 PURE calendar-preview security review signed off unresolved Critical0 Important0: 90/90 hostile probes and 8/8 focused tests. Complementary MCP/transport review Critical0 Important0 after real STDIO/HTTP, 22/22 raw SSE and 13/13 private-store probes. M11.1 had independent final Critical0 Important0 review. M11.2 independently reviewed with pure 131/131 hostile checks, 83 MCP and 17 raw HTTP/SSE hostile checks and final Critical0 Important0. M11.3 requires separate independent pure and MCP/transport review.
 
 M11.1 independent host-integration audit found four Important path-isolation edge cases: macOS physical casefold aliases, private-store/media-root companion overlap, case-sensitive APFS Unicode normalization, and cross-device mounted case-sensitivity probes. Each was reproduced with genuine RED→GREEN and independently re-reviewed to Critical0 Important0. Ubuntu's first feature CI uncovered three portable test fixture assumptions about `/private/tmp`; corrected without production change, verified local Node24 1,156/1,156 and new Ubuntu exact feature CI success before guarded squash merge.
 
 ## Fresh Verification Results
 
-M11.0 Node24 full gates and all 1,119 tests PASS; PR #21 squash merge exact tree `72e192cbc0ada8dd300561e032fe703c0911cbb5`, feature/main CI success. M11.1 genuine store missing-module RED, real SDK missing-tool RED, prime capability/config/inventory RED, semantic output/path RED→GREEN; full Node24 1,156/1,156 GREEN. M11.1 exact feature CI `40493902705` SUCCESS; guarded squash main `4dbecdebb2b94ee26d646b3933f268e4796251fa` tree `2be8c57c58a6d9c8c62e3d68dc2446444d09d46f`, exact main push CI `40494259585` SUCCESS. M11.2 genuine pure missing-module, SDK missing-tool and prime inventory RED→GREEN, Node24 1,173/1,173 GREEN; independent review and remote feature/main CI PENDING.
+M11.0 Node24 1,119/1,119 and PR #21 exact feature/main CI SUCCESS. M11.1 genuine RED→GREEN plus Node24 1,156/1,156 GREEN, PR #22 feature CI `40493902705`, guarded squash main `4dbecdebb2b94ee26d646b3933f268e4796251fa` push CI `40494259585` SUCCESS. M11.2 genuine pure missing-module/SDK missing-tool/inventory RED→GREEN and Node24 1,173/1,173 GREEN; PR #23 feature `855c9324a72ee88467b38236ceaa77ee9d885064` CI `40497799619`, guarded squash main `39d843dda4a5ffc00b9c74aaf1c5f320af967e93` tree `8247b98a4d736603b11feabc971711805fdcdb25` push CI `40498119965` SUCCESS. M11.3 genuine missing-module pure, missing-method real SDK and inventory RED→GREEN (58→59 in-memory, 62→63 compiled), full Node24 1,188/1,188 in 110 suites GREEN; independent reviews/remote feature/main CI PENDING.
 
 ## Durable Recovery Sources
 
@@ -57,5 +57,6 @@ PRD, capability matrix, M11 spec/plan, Git/PR/CI.
 - [x] M11.0 preview scoped acceptance, independent Critical/Important and exact feature/main CI verified.
 - [x] M11.1 local private calendar plan scoped acceptance and independent security review Critical=0 Important=0.
 - [x] M11.1 exact-final-head `40493902705` and post-merge main `40494259585` CI green.
-- [ ] M11.2 deterministic read-only inspection, independent Critical0 Important0, exact feature/main CI verified.
+- [x] M11.2 deterministic read-only inspection, independent Critical0 Important0, exact feature CI `40497799619` and main CI `40498119965` verified.
+- [ ] M11.3 two-plan slot comparison acceptance, independent Critical0 Important0, exact feature/main CI verified.
 - [ ] Full M11 scheduler execution acceptance remains blocked pending separate at-execution approval and provider design.

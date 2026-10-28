@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 
+import { compareLocalCalendarPlanSlots } from './scheduling/calendar-plan-slot-comparison.js';
 import { inspectLocalCalendarPlan } from './scheduling/calendar-plan-inspection.js';
 import { previewLocalContentCalendar } from './scheduling/calendar-preview.js';
 import { CalendarPlanStoreError, type LocalCalendarPlanStore } from './scheduling/calendar-plan-store.js';
@@ -60,6 +61,21 @@ const inspectInput = z.strictObject(
     ),
   },
   { error: () => 'Invalid calendar plan inspection request.' },
+);
+const planRevisionRef = z.strictObject(
+  { id, expectedRevision: revision },
+  { error: () => 'Invalid private calendar plan comparison reference.' },
+);
+const compareSlotsInput = z.strictObject(
+  {
+    plans: z
+      .array(planRevisionRef)
+      .length(2)
+      .refine((entries) => entries[0]?.id !== entries[1]?.id, {
+        error: () => 'Private calendar plan comparison requires distinct IDs.',
+      }),
+  },
+  { error: () => 'Invalid private calendar plan comparison request.' },
 );
 
 const timestamp = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u);
@@ -136,6 +152,58 @@ const inspection = z.strictObject({
     )
     .min(3)
     .max(5),
+});
+const slotComparisonItem = z.strictObject({
+  planId: id,
+  itemId: item.shape.id,
+  kind: item.shape.kind,
+  manualOnly: z.boolean(),
+});
+const slotComparison = z.strictObject({
+  kind: z.literal('local_cross_plan_utc_slot_comparison'),
+  status: z.literal('planning_only'),
+  origin: z.literal('caller_defined'),
+  ...planning.shape,
+  snapshotConsistency: z.literal('independent_revisions_not_atomic'),
+  plans: z
+    .array(
+      z.strictObject({
+        id,
+        revision,
+        referenceUtc: utcMinute,
+        itemCount: z.number().int().min(1).max(20),
+      }),
+    )
+    .length(2),
+  collisions: z
+    .array(
+      z.strictObject({
+        plannedAtUtc: utcMinute,
+        items: z.array(slotComparisonItem).min(2).max(40),
+      }),
+    )
+    .max(20),
+  counts: z.strictObject({
+    comparedPlans: z.literal(2),
+    collisionMinutes: z.number().int().min(0).max(20),
+    collisionItems: z.number().int().min(0).max(40),
+  }),
+  warnings: z
+    .tuple([
+      z.literal('caller_planned_only'),
+      z.literal('independent_revisions_not_atomic'),
+      z.literal('no_scheduling_or_publishing'),
+      z.literal('approval_not_evaluated'),
+    ])
+    .or(
+      z.tuple([
+        z.literal('caller_planned_only'),
+        z.literal('independent_revisions_not_atomic'),
+        z.literal('no_scheduling_or_publishing'),
+        z.literal('approval_not_evaluated'),
+        z.literal('cross_plan_same_minute_collision'),
+      ]),
+    ),
 });
 
 const codes = [
@@ -334,6 +402,28 @@ export function registerCalendarPlanTools(server: McpServer, deps: CalendarPlanT
           plan,
           expectedRevision: input.expectedRevision,
           asOfUtc: input.asOfUtc,
+        });
+      }),
+  );
+  server.registerTool(
+    'linkedin.calendar.plans.compare_slots',
+    {
+      description:
+        'Compare UTC-minute collisions between two explicitly selected private STDIO plan revisions. Independent read-only snapshots; no queue, approval, provider or publication.',
+      inputSchema: compareSlotsInput,
+      outputSchema: outputFor(slotComparison),
+    },
+    (input) =>
+      saved(slotComparison, false, async (store) => {
+        // No cross-plan transaction is claimed: these two independently read
+        // persisted revisions are checked by the pure semantic comparator.
+        const first = await store.get({ id: input.plans[0]!.id });
+        if (first === null) throw new CalendarPlanStoreError('not_found');
+        const second = await store.get({ id: input.plans[1]!.id });
+        if (second === null) throw new CalendarPlanStoreError('not_found');
+        return compareLocalCalendarPlanSlots({
+          plans: [first, second],
+          expectedRevisions: [input.plans[0]!.expectedRevision, input.plans[1]!.expectedRevision],
         });
       }),
   );

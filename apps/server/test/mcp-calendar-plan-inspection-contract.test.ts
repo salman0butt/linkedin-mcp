@@ -108,7 +108,7 @@ describe('M11.2 typed read-only private calendar plan inspection', () => {
       required: ['id', 'expectedRevision', 'asOfUtc'],
     });
     expect(found?.outputSchema).toMatchObject({ type: 'object', additionalProperties: false });
-    expect(tools.filter((tool) => tool.name.startsWith('linkedin.calendar.plans.'))).toHaveLength(6);
+    expect(tools.filter((tool) => tool.name.startsWith('linkedin.calendar.plans.'))).toHaveLength(7);
     for (const name of ['linkedin.schedule.create', 'linkedin.article.native.publish'])
       expect(tools.some((tool) => tool.name === name)).toBe(false);
   });
