@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-28 (M12.2 VERIFIED/MERGED; M12.3 HTTP TOOL-INVENTORY HARDENING IMPLEMENTING)
+## Current checkpoint — 2026-10-28 (M12.3 VERIFIED/MERGED; M13.0 ORGANIZATION MANUAL HANDOFF IMPLEMENTING)
+
+**M12.3 VERIFIED/MERGED:** PR [#28](https://github.com/salman0butt/linkedin-mcp/pull/28) exact feature `08ed234fd7641c9260f9326118e4c5820fe88ba1` CI `40673718696` SUCCESS, guarded squash main `ebee040d809c61bf57534d0c3cb81bd382107dc9` tree `68b52ba273ce27b1597d48c32be94ac6e80a92bd` separate push CI `40674038860` SUCCESS. Full Node24 1,237/1,237 in 121 suites and real compiled STDIO/HTTP, 96KiB raw HTTP tool listing pages; independent pure and HTTP Critical0 Important0. All 309 blobs matched remote tree.
+
+**M13.0 IMPLEMENTING:** New clean isolated `feat/m13-local-organization-readiness` from verified M12.3 main. First strictly LOCAL_ONLY organization editorial manual handoff for 1–5 caller-written posts, explicitly caller-asserted company URN and unverified actor/role/scopes, not a provider API payload, approval or publication. Real LinkedIn organization write requires verified Community Management entitlement, credential-bound org role/access resolver, w_organization_social and fresh approval; none is configured or authorized. Genuine pure missing-module RED and real SDK missing-tool RED→GREEN; Node24 1,260/1,260 across 124 suites, format/lint/typecheck/build and real compiled STDIO/HTTP/67-tool paged raw SSE all GREEN. Independent pure and MCP/transport Critical0 Important0 (pure 20,491+ hostile/random assertions; compiled 67 STDIO/HTTP, all page bytes <96KiB incl 128-byte escaped ID, no provider/private reads). Remote PR/main CI PENDING.
+
+Exact next work: **M13.0 genuine pure/SDK RED→GREEN, full Node24, independent Critical0 Important0, exact GitHub feature PR/CI, guarded merge and separate main CI.**
+
+## Previous checkpoint — M12.3 implementing
 
 **M12.2 VERIFIED/MERGED:** [PR #27](https://github.com/salman0butt/linkedin-mcp/pull/27) exact feature `8c2c19d02a72b4ea79dfbb53c18ca02378a1cb41` CI `40668979524` SUCCESS; guarded squash main `8d3019a872a34b3990567f193d58d5f7bdb11d42` tree `b2e9f4482ab5a370d203ba92f54762f78c0e2fcf` distinct main push CI `40669592590` SUCCESS. Node24 1,231/1,231 in 119 suites, real compiled STDIO/HTTP/raw SSE and format/lint/typecheck/build GREEN; independent pure and transport reviews Critical0 Important0. Caller-only observations, never LinkedIn provider analytics.
 

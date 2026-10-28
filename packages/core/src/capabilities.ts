@@ -392,6 +392,31 @@ const descriptors: CapabilityDescriptor[] = [
       'M12.2 pure strict adjacent-comparison and typed MCP/real STDIO/HTTP contracts with bounded provenance.',
   },
   {
+    id: 'organization.content_handoff',
+    desiredBehavior:
+      'Prepare a bounded caller-authored company-page editorial draft package for independent manual review and copying.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M13',
+    status: 'ACTIVE',
+    accessNote:
+      'Organization URN is only caller asserted, not authenticated; no role, scope or approval check and no LinkedIn API, publishing or scheduling. Copy manually only after independent authorization.',
+    approvalRequired: false,
+    evidence:
+      'M13.0 strict stateless 1–5 caller text editorial handoff with typed real SDK and compiled STDIO/HTTP security contracts.',
+  },
+  {
+    id: 'organization.post.create',
+    desiredBehavior: 'Publish on behalf of a verified, permissioned LinkedIn company page.',
+    provider: 'OFFICIAL_API',
+    availability: 'UNAVAILABLE',
+    milestone: 'M13',
+    status: 'PLANNED',
+    accessNote:
+      'Requires approved Community Management product, credential-bound organization role/identity verification and w_organization_social plus trusted approval/idempotency; no authorized provider workflow exists.',
+    approvalRequired: true,
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',

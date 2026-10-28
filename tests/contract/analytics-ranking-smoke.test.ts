@@ -92,9 +92,9 @@ function call(script: string) {
   };
 }
 describe('M12.1 compiled stateless analytics ranking transports', () => {
-  it('registers 66 STDIO tools, caller delta results and truthful local capability', () => {
+  it('registers 67 STDIO tools, caller delta results and truthful local capability', () => {
     const value = call(stdioScript);
-    expect(value.count).toBe(66);
+    expect(value.count).toBe(67);
     expect(value.found).toBe(true);
     expect(value.error).not.toBe(true);
     expect(value.response).toMatchObject({
@@ -114,9 +114,9 @@ describe('M12.1 compiled stateless analytics ranking transports', () => {
       milestone: 'M12',
     });
   }, 30_000);
-  it('registers 66 HTTP tools and maintains complete raw HTTP/SSE response ceiling', () => {
+  it('registers 67 HTTP tools and maintains complete raw HTTP/SSE response ceiling', () => {
     const value = call(httpScript);
-    expect(value.count).toBe(66);
+    expect(value.count).toBe(67);
     expect(value.found).toBe(true);
     expect(value.error).not.toBe(true);
     expect(value.response).toMatchObject({

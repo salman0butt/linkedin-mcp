@@ -37,6 +37,8 @@ describe('capability registry', () => {
         'research.repurposing.prepare',
         'calendar.preview',
         'calendar.plans',
+        'organization.content_handoff',
+        'organization.post.create',
         'research.topic',
         'messages.send',
       ]),
@@ -138,6 +140,24 @@ describe('capability registry', () => {
       milestone: 'M12',
       approvalRequired: false,
     });
+    expect(
+      futureCapabilities.find((descriptor) => descriptor.id === 'organization.content_handoff'),
+    ).toMatchObject({
+      provider: 'LOCAL_ONLY',
+      availability: 'AVAILABLE',
+      status: 'ACTIVE',
+      milestone: 'M13',
+      approvalRequired: false,
+    });
+    expect(
+      futureCapabilities.find((descriptor) => descriptor.id === 'organization.post.create'),
+    ).toMatchObject({
+      provider: 'OFFICIAL_API',
+      availability: 'UNAVAILABLE',
+      status: 'PLANNED',
+      milestone: 'M13',
+      approvalRequired: true,
+    });
     const others = futureCapabilities.filter(
       (descriptor) =>
         !verifiedLocal.includes(descriptor) &&
@@ -151,6 +171,7 @@ describe('capability registry', () => {
           'analytics.snapshots.compare',
           'analytics.snapshots.rank',
           'analytics.snapshots.series',
+          'organization.content_handoff',
         ].includes(descriptor.id),
     );
     expect(others.every((descriptor) => descriptor.availability === 'UNAVAILABLE')).toBe(true);

@@ -28,14 +28,14 @@ async function rawPage(url: string, id: string, cursor?: string) {
 }
 
 describe('M12.3 real HTTP MCP paginated tool inventory', () => {
-  it('paginates all 66 tools into bounded stable raw SSE responses, with full SDK aggregation', async () => {
+  it('paginates all 67 tools into bounded stable raw SSE responses, with full SDK aggregation', async () => {
     const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
     const url = `http://127.0.0.1:${server.address.port}/mcp`;
     const client = new Client({ name: 'm12-tool-pagination', version: '1.0.0' });
     try {
       await client.connect(new StreamableHTTPClientTransport(new URL(url)));
       const aggregate = await client.listTools();
-      expect(aggregate.tools).toHaveLength(66);
+      expect(aggregate.tools).toHaveLength(67);
       const withMeta = await client.listTools({ _meta: { progressToken: 'safe-progress' } });
       expect(withMeta.tools.map((tool) => tool.name)).toEqual(aggregate.tools.map((tool) => tool.name));
       const originalNames = aggregate.tools.map((tool) => tool.name);
@@ -53,7 +53,7 @@ describe('M12.3 real HTTP MCP paginated tool inventory', () => {
         expect(raw.event?.id).toBe('💚'.repeat(32));
         const page = raw.result;
         expect(page?.tools.length).toBeGreaterThan(0);
-        expect(page?.tools.length).toBeLessThan(66);
+        expect(page?.tools.length).toBeLessThan(67);
         for (const tool of page?.tools ?? []) {
           expect(seen.has(tool.name)).toBe(false);
           seen.add(tool.name);
@@ -66,7 +66,7 @@ describe('M12.3 real HTTP MCP paginated tool inventory', () => {
       expect(pages.length).toBeGreaterThan(1);
       expect(pages.at(-1)?.nextCursor).toBeUndefined();
       expect([...pages.flatMap((p) => p.tools.map((tool) => tool.name))]).toEqual(originalNames);
-      expect(seen.size).toBe(66);
+      expect(seen.size).toBe(67);
 
       const first = await rawPage(url, 'repeat', undefined);
       expect(first.result).toEqual({ ...pages[0], nextCursor: pages[0]!.nextCursor });

@@ -57,6 +57,7 @@ describe('foundation result factories', () => {
           'analytics.snapshots.compare',
           'analytics.snapshots.rank',
           'analytics.snapshots.series',
+          'organization.content_handoff',
         ].includes(capability.id)
       ) {
         expect(capability).toMatchObject({
@@ -64,13 +65,15 @@ describe('foundation result factories', () => {
           status: 'ACTIVE',
           availability: 'AVAILABLE',
           milestone:
-            capability.id === 'analytics.snapshots.compare' ||
-            capability.id === 'analytics.snapshots.rank' ||
-            capability.id === 'analytics.snapshots.series'
-              ? 'M12'
-              : capability.id === 'calendar.preview'
-                ? 'M11'
-                : 'M10',
+            capability.id === 'organization.content_handoff'
+              ? 'M13'
+              : capability.id === 'analytics.snapshots.compare' ||
+                  capability.id === 'analytics.snapshots.rank' ||
+                  capability.id === 'analytics.snapshots.series'
+                ? 'M12'
+                : capability.id === 'calendar.preview'
+                  ? 'M11'
+                  : 'M10',
         });
       } else {
         expect(capability.status).not.toBe('VERIFIED');
