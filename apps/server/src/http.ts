@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 
 import { createMcpHandler } from '@modelcontextprotocol/server';
@@ -5,6 +6,7 @@ import { createMcpHandler } from '@modelcontextprotocol/server';
 import { parseConfig } from './config.js';
 import { createLinkedInMcpServer } from './create-server.js';
 import { createLinkedInRuntime, type LinkedInRuntime } from './runtime.js';
+import { InvalidToolListPage, paginateToolInventory } from './transport/tool-list-pagination.js';
 
 export interface HttpServerOptions {
   host?: string;
@@ -26,6 +28,91 @@ const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
 const DEFAULT_REQUEST_BODY_LIMIT_BYTES = 1_048_576;
 const MAX_JSON_RPC_ID_BYTES = 128;
 const MAX_HTTP_RESPONSE_BYTES = 256 * 1024;
+
+interface ToolListRequest {
+  id: string | number;
+  cursor: unknown;
+}
+
+async function getToolListRequest(request: Request): Promise<ToolListRequest | undefined> {
+  if (request.method !== 'POST') return undefined;
+  try {
+    const value: unknown = await request.clone().json();
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
+    const json = value as Record<string, unknown>;
+    if (json.jsonrpc !== '2.0' || json.method !== 'tools/list') return undefined;
+    if (typeof json.id !== 'string' && typeof json.id !== 'number') return undefined;
+    const params = json.params;
+    if (params === undefined) return { id: json.id, cursor: undefined };
+    if (params === null || typeof params !== 'object' || Array.isArray(params))
+      return { id: json.id, cursor: null };
+    const keys = Object.keys(params);
+    // MCP's standard paginated params permit _meta (progress/trace data).
+    // Do not mistake compliant metadata for an invalid pagination cursor.
+    if (keys.some((key) => key !== 'cursor' && key !== '_meta')) return { id: json.id, cursor: null };
+    return { id: json.id, cursor: (params as Record<string, unknown>).cursor };
+  } catch {
+    return undefined; // Malformed requests retain existing SDK protocol behavior.
+  }
+}
+
+function paginatedSseResponse(
+  source: Response,
+  id: string | number,
+  result?: unknown,
+  error?: string,
+): Response {
+  const envelope =
+    error === undefined
+      ? { jsonrpc: '2.0', id, result }
+      : { jsonrpc: '2.0', id, error: { code: -32602, message: error } };
+  const headers = new Headers(source.headers);
+  headers.delete('content-length');
+  headers.delete('content-encoding');
+  headers.delete('transfer-encoding');
+  headers.set('Content-Type', 'text/event-stream');
+  headers.set('Cache-Control', 'no-cache');
+  return new Response(`event: message\ndata: ${JSON.stringify(envelope)}\n\n`, {
+    status: 200,
+    headers,
+  });
+}
+
+/** A narrow HTTP adapter; STDIO and the SDK's tool registry remain unchanged. */
+async function paginateHttpToolList(
+  response: Response,
+  request: ToolListRequest,
+  secret: Uint8Array,
+): Promise<Response> {
+  if (response.status !== 200 || !response.headers.get('content-type')?.includes('text/event-stream'))
+    return response;
+  const wire = await response.text();
+  const frames = wire.trim().split(/\r?\n\r?\n/u);
+  if (frames.length !== 1)
+    return paginatedSseResponse(response, request.id, undefined, 'Tool inventory could not be safely read.');
+  const dataLines = frames[0]!.split(/\r?\n/u).filter((line) => line.startsWith('data: '));
+  if (dataLines.length !== 1)
+    return paginatedSseResponse(response, request.id, undefined, 'Tool inventory could not be safely read.');
+  try {
+    const envelope: unknown = JSON.parse(dataLines[0]!.slice(6));
+    if (envelope === null || typeof envelope !== 'object' || Array.isArray(envelope))
+      throw new InvalidToolListPage();
+    const payload = envelope as Record<string, unknown>;
+    if (
+      payload.jsonrpc !== '2.0' ||
+      payload.id !== request.id ||
+      payload.result === null ||
+      typeof payload.result !== 'object' ||
+      Array.isArray(payload.result)
+    )
+      throw new InvalidToolListPage();
+    const result = payload.result as Record<string, unknown>;
+    const page = paginateToolInventory(result.tools, request.cursor, secret);
+    return paginatedSseResponse(response, request.id, { ...result, ...page });
+  } catch {
+    return paginatedSseResponse(response, request.id, undefined, 'Invalid tool inventory cursor.');
+  }
+}
 
 class PayloadTooLargeError extends Error {}
 
@@ -180,6 +267,7 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
   const requestBodyLimitBytes = options.requestBodyLimitBytes ?? DEFAULT_REQUEST_BODY_LIMIT_BYTES;
   const config = parseConfig();
   const runtime = options.runtime ?? createLinkedInRuntime({ ...config, transport: 'http' });
+  const toolListSecret = randomBytes(32);
   // Build an explicit safe allowlist: never even read any injected private-store
   // properties/getters when constructing an HTTP MCP server.
   const handler = createMcpHandler(() =>
@@ -210,8 +298,14 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
         jsonRpcError(response, 400, -32600, 'Invalid Request');
         return;
       }
+      const pagination = await getToolListRequest(webRequest);
       const webResponse = await handler.fetch(webRequest);
-      await writeResponse(webResponse, response);
+      await writeResponse(
+        pagination === undefined
+          ? webResponse
+          : await paginateHttpToolList(webResponse, pagination, toolListSecret),
+        response,
+      );
     })().catch((error: unknown) => {
       if (!response.headersSent) {
         response.statusCode = error instanceof PayloadTooLargeError ? 413 : 500;

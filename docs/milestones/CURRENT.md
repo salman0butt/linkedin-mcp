@@ -1,11 +1,11 @@
 # Current Milestone
 
 Milestone: M12 — Analytics (provider-backed analytics and M11 scheduler execution remain unavailable)
-Status: IMPLEMENTING — M10.0–M10.4, M11.0–M11.3 and M12.0–M12.1 LOCAL_ONLY increments VERIFIED/MERGED. M12.2 caller-only chronological metric observation series implementing. No provider access, durable execution, queue, approval or publication claim.
-Iteration: M12.2 — strict adjacent comparison over 3–10 caller-supplied UTC observations of one content item. Design `docs/superpowers/specs/2026-10-28-m12-local-metric-observation-series-design.md`; plan `docs/superpowers/plans/2026-10-28-m12-local-metric-observation-series.md`. Local Node24 1,231/1,231 across 119 suites, compiled STDIO/HTTP/raw SSE, all quality gates GREEN, independent pure and MCP/transport Critical0 Important0; GitHub feature/main CI pending.
-Branch: `feat/m12-local-observation-series` (isolated worktree from exact verified M12.1 squash main).
-PR: #16–#26 MERGED. M12.1 PR #26 feature `810b8bc90fe85fcb477a717a35382dd3616d9c6e` CI `40664805538` SUCCESS; guarded squash main `40c714df69039ab65e648ae78d58a30496698c1e` push CI `40665262565` SUCCESS.
-Latest verified main: `40c714df69039ab65e648ae78d58a30496698c1e`; exact push CI `40665262565` SUCCESS; tree `2820ce11430aea3f0e91d7098cd716cc5295bad0`. M12.1 local Node24 1,213/1,213 in 116 suites, independent pure and MCP/transport Critical0 Important0, compiled STDIO/HTTP/raw SSE GREEN.
+Status: IMPLEMENTING — M10.0–M10.4, M11.0–M11.3 and M12.0–M12.2 LOCAL_ONLY increments VERIFIED/MERGED. M12.3 HTTP tool-inventory pagination hardening implementing. No provider access, durable execution, queue, approval or publication claim.
+Iteration: M12.3 — protocol-compatible bounded HTTP MCP `tools/list` pages, all 66 descriptors preserved, unchanged 256KiB response limit and unmodified STDIO. Design `docs/superpowers/specs/2026-10-28-m12-tool-inventory-http-pagination-design.md`; plan `docs/superpowers/plans/2026-10-28-m12-tool-inventory-http-pagination.md`. Genuine real HTTP RED→GREEN, full Node24 1,237/1,237 across 121 suites and compiled STDIO/HTTP/quality GREEN; independent HTTP Critical0 Important0, pure final review/remote CI pending.
+Branch: `feat/m12-tool-inventory-pagination` (isolated from exact verified M12.2 squash main).
+PR: #16–#27 MERGED. M12.2 PR #27 feature `8c2c19d02a72b4ea79dfbb53c18ca02378a1cb41` CI `40668979524` SUCCESS; guarded squash main `8d3019a872a34b3990567f193d58d5f7bdb11d42` push CI `40669592590` SUCCESS.
+Latest verified main: `8d3019a872a34b3990567f193d58d5f7bdb11d42`; exact push CI `40669592590` SUCCESS; tree `b2e9f4482ab5a370d203ba92f54762f78c0e2fcf`. M12.2 local Node24 1,231/1,231 in 119 suites, independent Critical0 Important0.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -42,4 +42,4 @@ M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-m
 
 M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Complete M12.2 chronological caller-only metric observation series, genuine RED→GREEN, full Node24 gates, complementary independent reviews and exact GitHub feature/merged-main CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.
+Exact next work: **Complete M12.3 HTTP tools/list pagination hardening, full Node24 gates, independent audits, exact-tree feature PR and distinct merged-main push CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.

@@ -1,6 +1,14 @@
 # Project Status
 
-## Current checkpoint — 2026-10-28 (M12.1 VERIFIED/MERGED; M12.2 LOCAL OBSERVATION SERIES IMPLEMENTING)
+## Current checkpoint — 2026-10-28 (M12.2 VERIFIED/MERGED; M12.3 HTTP TOOL-INVENTORY HARDENING IMPLEMENTING)
+
+**M12.2 VERIFIED/MERGED:** [PR #27](https://github.com/salman0butt/linkedin-mcp/pull/27) exact feature `8c2c19d02a72b4ea79dfbb53c18ca02378a1cb41` CI `40668979524` SUCCESS; guarded squash main `8d3019a872a34b3990567f193d58d5f7bdb11d42` tree `b2e9f4482ab5a370d203ba92f54762f78c0e2fcf` distinct main push CI `40669592590` SUCCESS. Node24 1,231/1,231 in 119 suites, real compiled STDIO/HTTP/raw SSE and format/lint/typecheck/build GREEN; independent pure and transport reviews Critical0 Important0. Caller-only observations, never LinkedIn provider analytics.
+
+**M12.3 IMPLEMENTING:** Isolated `feat/m12-tool-inventory-pagination` at exact verified M12.2 main. Present 66-tool raw `tools/list` response has only ~85 UTF8 bytes of headroom under strict 256KiB HTTP ceiling, and valid escaped 128-byte JSON-RPC IDs can already produce HTTP502. New protocol-compatible HTTP page adapter preserves all original SDK tool definitions and exact order, enables modern SDK auto-aggregation and explicit cursors, and leaves STDIO and existing privacy gates intact. Genuine raw HTTP RED→GREEN; authenticated HMAC cursor and immutable descriptor fixes after independent Important reproductions, valid MCP `_meta` fixed. Final full Node24 1,237/1,237 across 121 suites, format/lint/typecheck/build, real compiled STDIO/HTTP and raw 96KiB page gates GREEN. HTTP independent audit Critical0 Important0, pure final re-review and remote feature/main CI PENDING. Design/plan 2026-10-28 M12.3 in docs/superpowers.
+
+Exact next work: **M12.3 full Node24 gates, two independent read-only reviews, SHA-verified GitHub PR, guarded squash and separate merged-main push CI.**
+
+## Previous checkpoint — M12.2 implementing
 
 **M12.1 VERIFIED/MERGED:** PR [#26](https://github.com/salman0butt/linkedin-mcp/pull/26) feature `810b8bc90fe85fcb477a717a35382dd3616d9c6e` CI `40664805538` SUCCESS; guarded squash main `40c714df69039ab65e648ae78d58a30496698c1e` tree `2820ce11430aea3f0e91d7098cd716cc5295bad0` separate push CI `40665262565` SUCCESS. Full Node24 1,213/1,213 across 116 suites, formatting/lint/typecheck/build, real compiled STDIO/HTTP/raw SSE all GREEN; independent pure and MCP/transport reviews Critical0 Important0. No official provider analytics or publication claimed.
 

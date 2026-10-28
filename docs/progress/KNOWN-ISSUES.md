@@ -2,7 +2,7 @@
 
 ## Current unresolved issues
 
-**M12.1 VERIFIED/MERGED** via PR #26 feature CI `40664805538`, squash main `40c714df69039ab65e648ae78d58a30496698c1e` tree `2820ce11430aea3f0e91d7098cd716cc5295bad0` separate push CI `40665262565` SUCCESS, Node24 1,213/1,213 and independent Critical0 Important0. M12.2 strictly LOCAL_ONLY caller-supplied chronological observations implementing; neither observation intervals nor signed differences verify LinkedIn provider windows, performance, engagement rates or actual scheduled/published posts.
+**M12.2 VERIFIED/MERGED** via PR #27 feature CI `40668979524`, squash main `8d3019a872a34b3990567f193d58d5f7bdb11d42` distinct push CI `40669592590` SUCCESS, Node24 1,231/1,231 and independent Critical0 Important0. M12.3 HTTP tool inventory pagination implementing to prevent 256KiB list overflow with escaped 128-byte IDs; do not weaken tool strictness or claim provider capabilities. Historical M12.1 status: **M12.1 VERIFIED/MERGED** via PR #26 feature CI `40664805538`, squash main `40c714df69039ab65e648ae78d58a30496698c1e` tree `2820ce11430aea3f0e91d7098cd716cc5295bad0` separate push CI `40665262565` SUCCESS, Node24 1,213/1,213 and independent Critical0 Important0. M12.2 strictly LOCAL_ONLY caller-supplied chronological observations implementing; neither observation intervals nor signed differences verify LinkedIn provider windows, performance, engagement rates or actual scheduled/published posts.
 
 ### M10.0–M10.4 and M11.0–M11.3 LOCAL_ONLY verified/merged; M12.0 caller snapshot analytics implementing, real provider analytics and scheduled publishing unavailable
 

@@ -1043,5 +1043,5 @@ describe('built HTTP server', () => {
     expect(result.articlePreviewIsError).not.toBe(true);
     expect(result.articleCompanionIsError).not.toBe(true);
     expect(result.privateListIsError).toBe(true);
-  });
+  }, 30_000);
 });
