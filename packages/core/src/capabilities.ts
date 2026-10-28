@@ -350,6 +350,20 @@ const descriptors: CapabilityDescriptor[] = [
       'M11.1 opt-in private STDIO saved-plan CRUD, revision/idempotency and HTTP isolation contracts.',
   },
   {
+    id: 'analytics.snapshots.compare',
+    desiredBehavior:
+      'Compare two explicitly caller-supplied metric captures of one post or article using local deterministic arithmetic.',
+    provider: 'LOCAL_ONLY',
+    availability: 'AVAILABLE',
+    milestone: 'M12',
+    status: 'ACTIVE',
+    accessNote:
+      'Stateless caller-supplied and unverified counters only. No LinkedIn analytics API, verified account access, engagement rates or actual publication.',
+    approvalRequired: false,
+    evidence:
+      'M12.0 strict local snapshot comparison, typed MCP/real STDIO and HTTP contract tests; remote CI pending.',
+  },
+  {
     id: 'research.topic',
     desiredBehavior: 'Discover current sourced research through a legitimate configured external provider.',
     provider: 'EXTERNAL_DISCOVERY',

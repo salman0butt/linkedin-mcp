@@ -1,5 +1,15 @@
 # Project Status
 
+## Current checkpoint — 2026-10-28 (M11.3 VERIFIED/MERGED; M12.0 caller-only analytics IMPLEMENTING)
+
+**M11.3 VERIFIED/MERGED:** PR [#24](https://github.com/salman0butt/linkedin-mcp/pull/24) feature `70c798b8e8ef1c6a96f093fd92e130d20980fb7c` CI `40654948672` SUCCESS; guarded squash main `d7d46ab4b117109b2aad6e266fb78ecd453b10b2`, tree `65cba502e822a9c1dc99c7f77f22fa8cde130cd2`, push CI `40655163394` SUCCESS. 1,188/1,188 local tests in 110 suites, independent Critical0 Important0. All calendar features remain planning-only.
+
+**M12.0 ACTIVE:** `feat/m12-local-analytics-snapshots` isolated from verified M11.3 main, baseline 1,188/1,188 tests. Strict pure `compareLocalAnalyticsSnapshots` plus typed `linkedin.analytics.compare_snapshots` and truthful LOCAL_ONLY capability compare two unverified caller metric captures, nullable unavailable, with no account, provider analytics, persistence, publication or invented rate. Pure missing-module and MCP inventory RED→GREEN; full Node24 1,200/1,200 tests across 113 suites, formatting/lint/typecheck/build and compiled STDIO/HTTP/raw SSE GREEN. Independent pure 149 hostile probes and MCP/transport review Critical0 Important0; remote feature/main CI PENDING. Design and plan in `docs/superpowers/` for 2026-10-28 M12.
+
+Exact next work: **M12.0 full Node24 gates, independent Critical0 Important0 security review, exact GitHub Git-object PR, feature and squash-main push CI.** `analytics.post` OFFICIAL_API, `schedule.create`, native article publication and external topic research remain unavailable.
+
+## Previous checkpoint
+
 ## Current checkpoint — 2026-10-27 (M11.2 VERIFIED/MERGED; M11.3 TWO-PLAN UTC SLOT COMPARISON IMPLEMENTING)
 
 **M11.2 VERIFIED/MERGED:** [PR #23](https://github.com/salman0butt/linkedin-mcp/pull/23) exact feature `855c9324a72ee88467b38236ceaa77ee9d885064` CI `40497799619` SUCCESS (quality), guarded squash main `39d843dda4a5ffc00b9c74aaf1c5f320af967e93` exact tree `8247b98a4d736603b11feabc971711805fdcdb25` main push CI `40498119965` SUCCESS (quality). Full Node24 **1,173/1,173 in 108 suites** and format/lint/typecheck/build/real STDIO+HTTP GREEN. Independent pure + MCP/HTTP security reviews unresolved Critical0 Important0, including 131 hostile pure, 83 MCP and 17 transport adversarial checks. Inspection remains private STDIO-only planning metadata, not a queue or publication approval.

@@ -575,7 +575,7 @@ describe('built stdio server', () => {
         },
         provider: { type: 'OFFICIAL_API', name: 'LinkedIn' },
       },
-      toolCount: 63,
+      toolCount: 64,
       themeGrouping: {
         status: 'succeeded',
         provider: { type: 'LOCAL_ONLY' },

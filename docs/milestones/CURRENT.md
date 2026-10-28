@@ -1,11 +1,11 @@
 # Current Milestone
 
-Milestone: M11 — Scheduling & Automation (M10 provider-backed research remainder unavailable)
-Status: IMPLEMENTING — M10.0–M10.4 and M11.0–M11.2 LOCAL_ONLY increments VERIFIED/MERGED. M11.3 is implementing a private planning-only UTC slot comparison of two caller-selected saved-plan revisions. No scheduler, queue, approval, publication or external research capability is enabled.
-Iteration: M11.3 — deterministic metadata-only UTC minute overlap comparison of two independently read local plans. Design `docs/superpowers/specs/2026-10-27-m11-cross-plan-slot-comparison-design.md`; plan `docs/superpowers/plans/2026-10-27-m11-cross-plan-slot-comparison.md`. Full local Node24 1,188/1,188 tests in 110 suites, format/lint/typecheck/build and real compiled STDIO/HTTP GREEN; independent review and remote CI PENDING.
-Branch: `feat/m11-plan-conflict-audit` (isolated worktree from exact verified M11.2 squash main).
-PR: #16–#23 MERGED. M11.2 PR #23 feature `855c9324a72ee88467b38236ceaa77ee9d885064` CI `40497799619` SUCCESS, guarded squash main `39d843dda4a5ffc00b9c74aaf1c5f320af967e93` exact push CI `40498119965` SUCCESS. M11.3 PR PENDING.
-Latest verified main: `39d843dda4a5ffc00b9c74aaf1c5f320af967e93`; exact push CI `40498119965` SUCCESS; tree `8247b98a4d736603b11feabc971711805fdcdb25`. M11.2 Node24 local 1,173/1,173 in 108 suites, independent Critical=0 Important=0, actual compiled STDIO/HTTP green.
+Milestone: M12 — Analytics (M11 actual scheduled execution and M10 provider research remain blocked)
+Status: IMPLEMENTING — M10.0–M10.4 and M11.0–M11.3 LOCAL_ONLY increments VERIFIED/MERGED; M12.0 caller-supplied analytics snapshots implementing. No LinkedIn provider analytics, scheduled execution, queue or publication claim.
+Iteration: M12.0 — stateless strictly LOCAL_ONLY comparison of two unverified caller-supplied post/article metric snapshots. Design `docs/superpowers/specs/2026-10-28-m12-local-analytics-snapshots-design.md`; plan `docs/superpowers/plans/2026-10-28-m12-local-analytics-snapshots.md`. Full Node24 1,200/1,200 tests in 113 suites, formatting/lint/typecheck/build, compiled STDIO/HTTP/raw SSE GREEN; independent Critical0 Important0; remote CI PENDING.
+Branch: `feat/m12-local-analytics-snapshots` (isolated worktree from exact verified M11.3 squash main).
+PR: #16–#24 MERGED. M11.3 PR #24 feature `70c798b8e8ef1c6a96f093fd92e130d20980fb7c` CI `40654948672` SUCCESS; guarded squash main `d7d46ab4b117109b2aad6e266fb78ecd453b10b2` exact push CI `40655163394` SUCCESS. M12.0 PR PENDING.
+Latest verified main: `d7d46ab4b117109b2aad6e266fb78ecd453b10b2`; exact push CI `40655163394` SUCCESS; tree `65cba502e822a9c1dc99c7f77f22fa8cde130cd2`. M11.3 local 1,188/1,188 in 110 suites, independent Critical=0 Important=0, actual compiled STDIO/HTTP green.
 M09 final PR #14 feature head: `c6ef52f5` (abbreviated, as reported), exact CI `40218390770` — SUCCESS.
 Verified M08 final feature CI: `40120392598` at `b2c1ad9abec69ec05f1a18024f7abebffb9d007a` — SUCCESS.
 Verified M08 post-merge main CI: `40120555718` at `4b56a8411eed258ad2e2832b1796031288498a0e` — SUCCESS, frozen install, 988/988 tests across 88 suites, format, lint, typecheck and build.
@@ -42,4 +42,4 @@ M10.1 is **VERIFIED/MERGED**: PR [#17](https://github.com/salman0butt/linkedin-m
 
 M10.2 **VERIFIED/MERGED (PR #18; feature and main CI GREEN)**: exact `{sources}` wrapper, strict inherited M10 parser, canonical display-URL groups, source summaries and typed `linkedin.research.index_references` on real built STDIO/HTTP. Node24 1,074/1,074 tests in 97 suites, format/lint/typecheck/build, framework 7/7, built STDIO/HTTP 6/6 GREEN. Independent pure and MCP/transport reviews unresolved Critical=0 Important=0; feature CI `40304586073` and main push CI `40304868402` SUCCESS; exact source tree `f6a8f9252ed73ef4cd75fea7e5e7345bc0ff7c58`.
 
-Exact next work: **Complete M11.3 private two-plan UTC slot comparison using genuine RED→GREEN, independent review, full Node24 gates, connector-first exact-tree PR and feature/merged-main CI.** Comparison is observational and not atomic; actual `schedule.create` remains unavailable; M09.P and M10 provider-backed research remain blocked.
+Exact next work: **Complete M12.0 local caller-snapshot analytics via independent review, full Node24 gates, connector-first exact-tree PR and exact feature/merged-main CI.** LinkedIn analytics.post and actual `schedule.create` remain unavailable; M09.P native publication and M10 provider-backed research remain blocked.
