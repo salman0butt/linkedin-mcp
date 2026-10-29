@@ -1,15 +1,15 @@
 # Current Milestone
 
 Milestone: M17 — Production hardening
-Status: IMPLEMENTING — M17.2 local validation passed; independent security review and remote release pending.
-Branch: `feat/m17-http-stream-overlimit-rejection`
-PR: Pending.
+Status: IMPLEMENTING — M17.2 scoped fix VERIFIED/MERGED; M17 overall PLANNED, next M17.3 risk investigation.
+Branch: `main`
+PR: #36 — MERGED; no active M17.3 PR.
 
-## M17.2 Early HTTP 413 for unfinished oversized uploads — LOCAL GREEN, GitHub release PENDING
+## M17.2 Early HTTP 413 for unfinished oversized uploads — VERIFIED/MERGED
 
-From verified `main` `801df4aeced49d05a558acd225eca903be36e3fb` ([PR #35](https://github.com/salman0butt/linkedin-mcp/pull/35) push CI `40747146525` SUCCESS), M17.2 genuine Node24 TCP RED demonstrated held chunked and Content-Length 257-byte uploads waiting for EOF instead of returning 413 at the 256-byte limit. Non-destroying stream iteration, prompt rejection, bounded draining and `Connection: close` corrected the issue. An independent review then reproduced an Important pipelined second MCP request executing without an acknowledgment after the first 413. A genuine RED test preceded per-socket serialized dispatch and a rejection latch; the regression is GREEN, and normal pipelining still returns ordered 200/200. A completed JSON-RPC body at exactly 256 bytes succeeds, and a held 256+1-byte chunked upload returns 413. Fresh Node24 focused HTTP **32/32**, complete **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Independent final security/docs signoff and remote feature/main CI are pending. M17 overall PLANNED; M13.1 provider permissions BLOCKED; batched intermediate tool-list buffering separately OPEN.
+M17.2 HTTP upload-stream early 413 and per-socket pipelined side-effect suppression **VERIFIED/MERGED**. Node24 genuine held-upload and pipelined second-provider RED→GREEN, legal same-socket pipelining 200/200, exact-256 success and split 256+1 rejection; local HTTP **32/32**, full **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build GREEN. Independent final security/docs review **Critical 0 / Important 0**. [PR #36](https://github.com/salman0butt/linkedin-mcp/pull/36) feature `b5a3dff45ec5e6e1b1ce2c85b6823b15fdd0509d` tree `301456da9d193790334994035b85a649dcc13e16` CI `40840793560` SUCCESS; squash main `f05fe3fb00b2d06f8d6db65d58d74c6ea71fa822` identical reviewed tree, separate exact push CI `40841063691` SUCCESS. M17 overall PLANNED; M13.1 provider access BLOCKED. Next separate investigation: `tools/list` batch/intermediate SSE response buffering before the 256 KiB outbound cap; huge 32/64 MiB fast-client EPIPE is a documented bounded-drain limitation.
 
-Exact next work: **Complete independent M17.2 security review Critical 0 / Important 0, then exact feature-head PR CI, guarded squash and separate successful main push CI.** Batched `tools/list` intermediate response buffering remains a separate future hardening issue.
+Exact next work: **Independently reproduce or disprove M17.3 HTTP batched `tools/list` intermediate-response buffering risk on verified main, then scope a separate RED→GREEN fix if confirmed.**
 
 ## M17.1 HTTP request body limit validation — VERIFIED/MERGED (M17 overall PLANNED)
 
