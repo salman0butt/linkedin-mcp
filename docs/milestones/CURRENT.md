@@ -1,10 +1,21 @@
 # Current Milestone
 
+Milestone: M17 — Production hardening
+Status: IMPLEMENTING — M17.2 local validation passed; independent security review and remote release pending.
+Branch: `feat/m17-http-stream-overlimit-rejection`
+PR: Pending.
+
+## M17.2 Early HTTP 413 for unfinished oversized uploads — LOCAL GREEN, GitHub release PENDING
+
+From verified `main` `801df4aeced49d05a558acd225eca903be36e3fb` ([PR #35](https://github.com/salman0butt/linkedin-mcp/pull/35) push CI `40747146525` SUCCESS), M17.2 genuine Node24 TCP RED demonstrated held chunked and Content-Length 257-byte uploads waiting for EOF instead of returning 413 at the 256-byte limit. Non-destroying stream iteration, prompt rejection, bounded draining and `Connection: close` corrected the issue. An independent review then reproduced an Important pipelined second MCP request executing without an acknowledgment after the first 413. A genuine RED test preceded per-socket serialized dispatch and a rejection latch; the regression is GREEN, and normal pipelining still returns ordered 200/200. A completed JSON-RPC body at exactly 256 bytes succeeds, and a held 256+1-byte chunked upload returns 413. Fresh Node24 focused HTTP **32/32**, complete **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Independent final security/docs signoff and remote feature/main CI are pending. M17 overall PLANNED; M13.1 provider permissions BLOCKED; batched intermediate tool-list buffering separately OPEN.
+
+Exact next work: **Complete independent M17.2 security review Critical 0 / Important 0, then exact feature-head PR CI, guarded squash and separate successful main push CI.** Batched `tools/list` intermediate response buffering remains a separate future hardening issue.
+
 ## M17.1 HTTP request body limit validation — VERIFIED/MERGED (M17 overall PLANNED)
 
 Baseline main `53e9a885788a2b2066a1d3c7b2d645fb20a6f88a` (PR #33 main push CI `40742735462` SUCCESS). M17.1 now rejects nonfinite, nonpositive, fractional and oversized HTTP body limits with a shared 16 MiB maximum, honors the parsed environment limit by default and explicit valid overrides. Genuine Node24 RED initially found 10 intended validation failures; independent review then reproduced a second environment-limit bug (HTTP 200 instead of 413) before its RED→GREEN fix. Final focused **83/83**, full **1,280/1,280** across 124 suites, compiled STDIO/HTTP, framework **14/14**, format/lint/typecheck/build GREEN. Independent final source/security/docs review **Critical 0 / Important 0**. [PR #34](https://github.com/salman0butt/linkedin-mcp/pull/34) final feature `bd395174d86cabd10f315549322b45f4d63addd3` tree `5df33aed2c5c63e75bab61295aa5b0f6e735ce0b` feature CI `40745315254` SUCCESS; guarded squash main `8139cff30d33a57f7eca9e40b11125459b05fb69` identical tree, separate push CI `40745757021` SUCCESS. M17 overall remains PLANNED; M13.1 organization provider access remains BLOCKED.
 
-Exact next work: **In a new isolated M17 HTTP increment, reproduce and fix delayed 413 rejection of unfinished oversized request streams using genuine RED→GREEN, delivering a reliable HTTP response and safe socket cleanup.** Batched `tools/list` intermediate response buffering remains a separate future hardening candidate.
+Historical M17.1 handoff selected the unfinished oversized upload problem. M17.2 now has genuine local RED→GREEN and must pass its separate review and release gates. Batched `tools/list` intermediate response buffering remains a future independent hardening candidate.
 
 ## M17.0 OAuth callback lifecycle — VERIFIED/MERGED (overall M17 still PLANNED)
 
