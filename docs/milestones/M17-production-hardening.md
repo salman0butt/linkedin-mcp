@@ -1,6 +1,6 @@
 # M17 — Production Hardening
 
-Status: **PLANNED overall** — **M17.0 OAuth callback lifecycle VERIFIED/MERGED**; full M17/v1.0 closeout still depends on other milestones and broader production-hardening requirements.
+Status: **PLANNED overall** — **M17.0 and M17.1 VERIFIED/MERGED**, **M17.2 local GREEN pending security review and release**; full M17/v1.0 closeout still depends on other milestones and broader production-hardening requirements.
 
 ## Goal
 
@@ -25,6 +25,13 @@ Required roadmap traceability has no unexplained gaps; security/reliability gate
 ## Tasks / Iterations
 
 Design/plan; threat/security audit; compatibility; resilience/load; docs/package; final review/verification.
+
+### M17.2 — Prompt 413 on unfinished over-limit uploads (local GREEN, release PENDING)
+
+- Design: `docs/superpowers/specs/2026-10-28-m17-http-stream-overlimit-rejection-design.md`; implementation plan: `docs/superpowers/plans/2026-10-28-m17-http-stream-overlimit-rejection.md`; base `main` `801df4aeced49d05a558acd225eca903be36e3fb` ([PR #35](https://github.com/salman0butt/linkedin-mcp/pull/35) separate push CI `40747146525` SUCCESS).
+- Independent Node24 raw TCP baseline: with request-body limit 256 bytes, 257 bytes sent to chunked `Connection: keep-alive` POST without a terminal zero chunk produced **no response** after 371ms; HTTP413 arrived only after sender EOF. A held partial Content-Length stream reproduced the same issue. `readBody` previously marked oversize then drained until EOF.
+- Genuine RED->GREEN for held chunked and incomplete Content-Length above 256 bytes. A separate independently reproduced Important RED showed a second pipelined MCP tool executing behind an overlimit first request without a response; per-socket sequential dispatch and rejected-socket latching prevents further execution while maintaining valid ordered pipelined replies. Explicit exact-limit accepted and split 256+1-byte chunked tests passed. Focused HTTP **32/32 GREEN**.
+- Final Node24 full **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP contracts, format/lint/typecheck/build and diff check GREEN. Prior unchanged 5-second pagination test timed out only under load in an earlier run; focused and multiple later full runs passed without weakening assertions. Independent final security/docs signoff, exact GitHub feature CI, guarded merge and separate main push CI pending. M17.2 local GREEN; M17 overall PLANNED; M13.1 provider access BLOCKED. Batched tool-list intermediate buffering is separately OPEN.
 
 ### M17.1 — Finite bounded HTTP request-body configuration (VERIFIED/MERGED)
 

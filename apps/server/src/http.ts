@@ -175,9 +175,10 @@ async function readBody(
 
   const chunks: Buffer[] = [];
   let totalBytes = 0;
-  let payloadTooLarge = false;
 
-  for await (const rawChunk of request) {
+  // Returning from an ordinary async iteration destroys IncomingMessage and can
+  // abort the socket before the HTTP 413 response is delivered.
+  for await (const rawChunk of request.iterator({ destroyOnReturn: false })) {
     const chunk: unknown = rawChunk;
     let buffer: Buffer;
     if (typeof chunk === 'string') {
@@ -190,15 +191,51 @@ async function readBody(
 
     totalBytes += buffer.byteLength;
     if (totalBytes > requestBodyLimitBytes) {
-      payloadTooLarge = true;
-      continue;
+      throw new PayloadTooLargeError('HTTP request body exceeds configured limit');
     }
-    if (!payloadTooLarge) chunks.push(buffer);
+    chunks.push(buffer);
   }
 
-  if (payloadTooLarge) throw new PayloadTooLargeError('HTTP request body exceeds configured limit');
   if (chunks.length === 0) return undefined;
   return Buffer.concat(chunks);
+}
+
+function finishOversizedUpload(request: IncomingMessage, response: ServerResponse): void {
+  // Let an already-writing client finish sending the bytes held in its socket
+  // buffers before closing. Closing with unread bytes can reset the connection
+  // before the client receives the HTTP 413.
+  const MAX_DRAIN_BYTES = MAX_HTTP_REQUEST_BODY_LIMIT_BYTES;
+  const DRAIN_GRACE_MS = 250;
+  let drained = 0;
+  let finished = false;
+  const timer = setTimeout(finish, DRAIN_GRACE_MS);
+
+  function onData(chunk: Buffer | string): void {
+    drained += typeof chunk === 'string' ? Buffer.byteLength(chunk) : chunk.byteLength;
+    if (drained >= MAX_DRAIN_BYTES) finish();
+  }
+
+  function finish(): void {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+    request.off('data', onData);
+    request.off('end', finish);
+    request.off('close', finish);
+    request.off('error', finish);
+    request.pause();
+    response.end();
+  }
+
+  request.on('data', onData);
+  request.once('end', finish);
+  request.once('close', finish);
+  request.once('error', finish);
+  if (request.readableEnded || request.destroyed) {
+    finish();
+  } else {
+    request.resume();
+  }
 }
 
 function hasOversizedJsonRpcId(body: Buffer | undefined): boolean {
@@ -290,35 +327,58 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
     }),
   );
 
+  // HTTP/1.1 can deliver the next pipelined request before the prior body
+  // reader rejects an oversized upload. Serialize dispatch per socket so a
+  // rejected first request cannot silently execute a later MCP operation.
+  const requestsBySocket = new WeakMap<object, Promise<void>>();
+  const rejectedSockets = new WeakSet<object>();
   const server = createServer((request, response) => {
-    if (
-      !isAllowedHost(request.headers.host) ||
-      !isAllowedOrigin(request.headers.origin, request.headers.host)
-    ) {
-      response.statusCode = 403;
-      response.end();
-      return;
-    }
-
-    void (async () => {
-      const { webRequest, oversizedJsonRpcId } = await toRequest(request, host, requestBodyLimitBytes);
-      if (oversizedJsonRpcId) {
-        jsonRpcError(response, 400, -32600, 'Invalid Request');
+    const socket = request.socket;
+    const previous = requestsBySocket.get(socket) ?? Promise.resolve();
+    const operation = previous.then(async () => {
+      if (rejectedSockets.has(socket) || socket.destroyed || response.destroyed) return;
+      if (
+        !isAllowedHost(request.headers.host) ||
+        !isAllowedOrigin(request.headers.origin, request.headers.host)
+      ) {
+        response.statusCode = 403;
+        response.end();
         return;
       }
-      const pagination = await getToolListRequest(webRequest);
-      const webResponse = await handler.fetch(webRequest);
-      await writeResponse(
-        pagination === undefined
-          ? webResponse
-          : await paginateHttpToolList(webResponse, pagination, toolListSecret),
-        response,
-      );
-    })().catch((error: unknown) => {
-      if (!response.headersSent) {
-        response.statusCode = error instanceof PayloadTooLargeError ? 413 : 500;
+
+      try {
+        const { webRequest, oversizedJsonRpcId } = await toRequest(request, host, requestBodyLimitBytes);
+        if (oversizedJsonRpcId) {
+          jsonRpcError(response, 400, -32600, 'Invalid Request');
+          return;
+        }
+        const pagination = await getToolListRequest(webRequest);
+        const webResponse = await handler.fetch(webRequest);
+        await writeResponse(
+          pagination === undefined
+            ? webResponse
+            : await paginateHttpToolList(webResponse, pagination, toolListSecret),
+          response,
+        );
+      } catch (error: unknown) {
+        if (!response.headersSent) {
+          if (error instanceof PayloadTooLargeError) {
+            rejectedSockets.add(socket);
+            response.statusCode = 413;
+            response.shouldKeepAlive = false;
+            response.setHeader('Connection', 'close');
+            finishOversizedUpload(request, response);
+            return;
+          } else {
+            response.statusCode = 500;
+          }
+        }
+        response.end();
       }
-      response.end();
+    });
+    requestsBySocket.set(socket, operation);
+    void operation.catch(() => {
+      if (!response.destroyed) response.destroy();
     });
   });
 

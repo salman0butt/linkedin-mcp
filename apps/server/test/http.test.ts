@@ -1,5 +1,6 @@
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { request } from 'node:http';
+import { createConnection } from 'node:net';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -58,7 +59,255 @@ function postStatus(port: number, body: Buffer, headers: Record<string, string> 
   });
 }
 
+function heldOversizedUploadResponse(
+  port: number,
+  headerLines: string,
+  partialBody: string,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const socket = createConnection({ host: '127.0.0.1', port });
+    let response = '';
+    let settled = false;
+    const timeout = setTimeout(() => {
+      finish(new Error('Oversized unfinished HTTP upload did not receive a complete early response'));
+    }, 1_500);
+
+    function finish(error?: Error): void {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      socket.destroy();
+      if (error !== undefined) {
+        reject(error);
+      } else if (!/^HTTP\/1\.1 413\b/.test(response) || !/\r\nconnection:\s*close\r\n/i.test(response)) {
+        reject(
+          new Error(`Expected complete HTTP413 and Connection: close, received: ${response.slice(0, 200)}`),
+        );
+      } else {
+        resolve(response);
+      }
+    }
+
+    socket.once('connect', () => {
+      socket.write(
+        `POST /mcp HTTP/1.1\r\nHost: 127.0.0.1:${port}\r\nConnection: keep-alive\r\n${headerLines}\r\n${partialBody}`,
+      );
+    });
+    socket.on('data', (chunk: Buffer) => {
+      response += chunk.toString('latin1');
+    });
+    socket.once('end', () => finish());
+    socket.once('error', (error: Error) => finish(error));
+    socket.once('close', () => {
+      if (!settled) finish(new Error('Unfinished upload socket closed without a complete HTTP response'));
+    });
+  });
+}
+
 describe('createHttpServer', () => {
+  it('preserves ordered responses for two legal pipelined HTTP requests on a keepalive socket', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
+    try {
+      const wire = await new Promise<string>((resolve, reject) => {
+        const socket = createConnection({ host: '127.0.0.1', port: server.address.port });
+        let response = '';
+        const timer = setTimeout(() => {
+          socket.destroy();
+          reject(new Error('Normal pipelined requests did not finish'));
+        }, 2_000);
+        socket.once('connect', () => {
+          const health = (id: number, connection: string) => {
+            const body = JSON.stringify({
+              jsonrpc: '2.0',
+              id,
+              method: 'tools/call',
+              params: { name: 'linkedin.health', arguments: {} },
+            });
+            return (
+              `POST /mcp HTTP/1.1\r\nHost: 127.0.0.1:${server.address.port}\r\n` +
+              `Accept: application/json, text/event-stream\r\nContent-Type: application/json\r\n` +
+              `Content-Length: ${Buffer.byteLength(body)}\r\nConnection: ${connection}\r\n\r\n${body}`
+            );
+          };
+          socket.end(health(1, 'keep-alive') + health(2, 'close'));
+        });
+        socket.on('data', (chunk: Buffer) => {
+          response += chunk.toString('latin1');
+        });
+        socket.once('end', () => {
+          clearTimeout(timer);
+          resolve(response);
+        });
+        socket.once('error', (error: Error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
+      });
+      expect(wire.match(/HTTP\/1\.1 200\b/g)).toHaveLength(2);
+      expect(wire).toContain('"id":1');
+      expect(wire).toContain('"id":2');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('does not execute a pipelined second tool after rejecting an oversized first request', async () => {
+    const search = vi.fn(() => Promise.resolve({ posts: [] }));
+    const runtime = createLinkedInRuntime(parseConfig(), {
+      discoveryProviders: [
+        {
+          providerId: 'pipelined-probe',
+          providerType: 'EXTERNAL_DISCOVERY',
+          name: 'Pipelined safety probe',
+          supportedKinds: ['topic'],
+          search,
+        },
+      ],
+    });
+    const server = await createHttpServer({
+      host: '127.0.0.1',
+      port: 0,
+      requestBodyLimitBytes: 256,
+      runtime,
+    });
+    try {
+      const nextBody = JSON.stringify({
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'tools/call',
+        params: { name: 'linkedin.posts.search', arguments: { kind: 'topic', term: 'AI' } },
+      });
+      const pipelined =
+        `POST /mcp HTTP/1.1\r\nHost: 127.0.0.1:${server.address.port}\r\n` +
+        `Content-Type: application/json\r\nContent-Length: ${Buffer.byteLength(nextBody)}\r\n` +
+        'Accept: application/json, text/event-stream\r\n\r\n' +
+        nextBody;
+      const response = await heldOversizedUploadResponse(
+        server.address.port,
+        'Content-Length: 257\r\nContent-Type: application/json\r\n',
+        'x'.repeat(257) + pipelined,
+      );
+      expect(response).toMatch(/^HTTP\/1\.1 413\b/);
+      expect(search).not.toHaveBeenCalled();
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('delivers HTTP413 and closes a held chunked keepalive upload before the client sends EOF', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, requestBodyLimitBytes: 256 });
+    try {
+      const partialBody = `c8\r\n${'a'.repeat(200)}\r\n39\r\n${'b'.repeat(57)}\r\n`;
+      const response = await heldOversizedUploadResponse(
+        server.address.port,
+        'Transfer-Encoding: chunked\r\nContent-Type: application/json\r\n',
+        partialBody,
+      );
+      expect(response).toContain('413');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('rejects a held chunked upload as soon as a one-byte chunk follows exactly 256 bytes', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, requestBodyLimitBytes: 256 });
+    try {
+      const response = await heldOversizedUploadResponse(
+        server.address.port,
+        'Transfer-Encoding: chunked\r\nContent-Type: application/json\r\n',
+        `100\r\n${'a'.repeat(256)}\r\n1\r\nb\r\n`,
+      );
+      expect(response).toMatch(/^HTTP\/1\.1 413\b/);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('accepts a complete legal JSON-RPC body at exactly the configured limit', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, requestBodyLimitBytes: 256 });
+    try {
+      const rpc = JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/call',
+        params: { name: 'linkedin.health', arguments: {} },
+      });
+      const exact = Buffer.from(rpc.padEnd(256, ' '), 'utf8');
+      expect(exact.byteLength).toBe(256);
+      await expect(
+        postStatus(server.address.port, exact, { Accept: 'application/json, text/event-stream' }),
+      ).resolves.toBe(200);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('delivers HTTP413 and closes a held Content-Length upload before the client finishes it', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, requestBodyLimitBytes: 256 });
+    try {
+      const response = await heldOversizedUploadResponse(
+        server.address.port,
+        'Content-Length: 1000\r\nContent-Type: application/json\r\n',
+        'a'.repeat(257),
+      );
+      expect(response).toContain('413');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('delivers HTTP413 despite a fast oversized upload still writing to the socket', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, requestBodyLimitBytes: 256 });
+    try {
+      const response = await new Promise<string>((resolve, reject) => {
+        const socket = createConnection({ host: '127.0.0.1', port: server.address.port });
+        let reply = '';
+        let settled = false;
+        const timer = setTimeout(
+          () => finish(new Error('Fast uploading client never received HTTP413')),
+          2_000,
+        );
+        function finish(error?: Error): void {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          socket.destroy();
+          if (error !== undefined) reject(error);
+          else if (/^HTTP\/1\.1 413\b/.test(reply) && /\r\nconnection:\s*close\r\n/i.test(reply)) {
+            resolve(reply);
+          } else reject(new Error(`Fast uploading client saw no complete HTTP413: ${reply.slice(0, 120)}`));
+        }
+        socket.once('connect', () => {
+          socket.write(
+            `POST /mcp HTTP/1.1\r\nHost: 127.0.0.1:${server.address.port}\r\nConnection: keep-alive\r\nContent-Length: 10000000\r\n\r\n`,
+          );
+          socket.write(Buffer.alloc(4 * 1024 * 1024, 0x61));
+          // Deliberately leave the declared upload incomplete and the writer open.
+        });
+        socket.on('data', (chunk: Buffer) => {
+          reply += chunk.toString('latin1');
+        });
+        socket.once('end', () => finish());
+        socket.once('error', (error: Error) => finish(error));
+        socket.once('close', () => {
+          if (!settled) finish(new Error('Fast uploading socket closed without HTTP413'));
+        });
+      });
+      expect(response).toContain('413');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('returns HTTP413 to a normal client completing a large rejected upload', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, requestBodyLimitBytes: 256 });
+    try {
+      await expect(postStatus(server.address.port, Buffer.alloc(1_048_576, 'a'))).resolves.toBe(413);
+    } finally {
+      await server.close();
+    }
+  });
+
   it.each([
     ['NaN', Number.NaN],
     ['positive infinity', Number.POSITIVE_INFINITY],

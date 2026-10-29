@@ -1,10 +1,16 @@
 # Project Status
 
+## M17.2 — Prompt HTTP 413 for unfinished oversized uploads (local GREEN, release PENDING)
+
+From verified main `801df4aeced49d05a558acd225eca903be36e3fb` ([PR #35](https://github.com/salman0butt/linkedin-mcp/pull/35) push CI `40747146525` SUCCESS), real held chunked and unfinished Content-Length 257-byte requests against limit 256 both RED with no prompt 413 until EOF; non-destroying iterator and bounded 413 close fixed them. An independent Important adversarial finding confirmed a pipelined second provider call could execute after a rejected first upload with its receipt lost; a new genuine RED test is GREEN after per-socket serialization and reject latch. Valid pipelined 200/200, legal exact-256 body and split chunked 256+1 boundary are explicitly covered. Fresh Node24 HTTP **32/32**, full **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP, formatting/lint/typecheck/build and diff check GREEN. Initial unchanged pagination timeout was load-sensitive and did not reproduce in later full runs. Independent final review and remote feature/main CI pending. Preserve 67 tools, HTTP 256 KiB responses, 96 KiB pagination, private STDIO-only stores and provider provenance. M17 overall PLANNED, M13.1 blocked.
+
+Exact next work: **Complete M17.2 independent Critical0 Important0 review, then verified feature PR CI, guarded squash and distinct merged-main push CI.** Separate batched intermediate-response buffering remains OPEN.
+
 ## M17.1 — HTTP request-body limit configuration VERIFIED/MERGED (2026-10-28)
 
 From main `53e9a885788a2b2066a1d3c7b2d645fb20a6f88a` ([PR #33](https://github.com/salman0butt/linkedin-mcp/pull/33) push CI `40742735462` SUCCESS), [PR #34](https://github.com/salman0butt/linkedin-mcp/pull/34) fixes the direct `NaN`/`Infinity` configured body-limit bypass, unsafe environment limits, and ignored environment fallback. Direct options and environment both use positive safe integers up to 16 MiB; default 1 MiB unchanged. Genuine initial RED 10 targeted failures, and independent Important issue RED HTTP 200 instead of 413, then final **83/83** focused and **1,280/1,280** complete Node24 tests across 124 suites; compiled STDIO/HTTP 67 tools, framework **14/14**, format/lint/typecheck/build all GREEN. Independent final code/security/documentation reviews **Critical 0 / Important 0**. Feature `bd395174d86cabd10f315549322b45f4d63addd3` tree `5df33aed2c5c63e75bab61295aa5b0f6e735ce0b` CI `40745315254` SUCCESS; guarded squash main `8139cff30d33a57f7eca9e40b11125459b05fb69` identical tree separate push CI `40745757021` SUCCESS. M17.1 VERIFIED/MERGED; M17 overall PLANNED, M13.1 provider authorization BLOCKED.
 
-Exact next work: **In a fresh isolated M17 HTTP worktree, demonstrate and repair slow/unfinished oversized request uploads that delay HTTP 413 until EOF, with genuine RED→GREEN and independent security review.** Keep the batch intermediate-response issue separately OPEN; preserve private HTTP boundaries, 67 tools, 96 KiB pagination and 256 KiB final responses.
+Historical M17.1 next work selected prompt 413 on slow/unfinished oversized uploads. M17.2 local RED→GREEN is underway as the active checkpoint above. Keep the batch intermediate-response issue separate and preserve private HTTP boundaries, 67 tools, 96 KiB pagination and 256 KiB final responses.
 
 ## M17.0 OAuth callback lifecycle — VERIFIED/MERGED (2026-10-28)
 
