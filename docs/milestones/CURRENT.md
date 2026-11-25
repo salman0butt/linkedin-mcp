@@ -4,6 +4,8 @@
 
 User priority is a working initial product through M09; later milestones may follow. On main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (CI `40842342086` SUCCESS), a clean Node24 build and real STDIO MCP client verified health, discovery of 67 tools, article preview and manual native-editor handoff. The handoff returned two ordered blocks, `LOCAL_ONLY`, `not_published` and native publication `UNAVAILABLE`; auth was `not_configured` in the clean environment. Full local Node24 suite 1,288/1,288 across 124 files passed with `TMPDIR=/private/tmp`. Native LinkedIn publishing still requires a legitimately authorized provider. User choice of MCP client and acceptance of manual publishing remain pending. M17 PR #38 head `5bb5dbfb71de7660a410c8d1db86a48959fb03c3` CI `45602081201` SUCCESS remains open and unchanged.
 
+Documentation and recovery checkpoint: [PR #39](https://github.com/salman0butt/linkedin-mcp/pull/39) is open; current feature-head CI must be checked.
+
 Exact next work: **Confirm the target MCP client and whether manual LinkedIn editor publishing is acceptable, then connect and verify the tested M09 local article workflow in that client.**
 
 Milestone: M17 — Production hardening
