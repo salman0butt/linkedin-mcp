@@ -2,11 +2,13 @@
 
 ## M09 initial product — local article workflow verified, native publication blocked
 
-User priority is a working initial product through M09; later milestones may follow. On main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (CI `40842342086` SUCCESS), a clean Node24 build and real STDIO MCP client verified health, discovery of 67 tools, article preview and manual native-editor handoff. The handoff returned two ordered blocks, `LOCAL_ONLY`, `not_published` and native publication `UNAVAILABLE`; auth was `not_configured` in the clean environment. Full local Node24 suite 1,288/1,288 across 124 files passed with `TMPDIR=/private/tmp`. Native LinkedIn publishing still requires a legitimately authorized provider. User choice of MCP client and acceptance of manual publishing remain pending. M17 PR #38 head `5bb5dbfb71de7660a410c8d1db86a48959fb03c3` CI `45602081201` SUCCESS remains open and unchanged.
+User priority is a working initial product through M09; later milestones may follow. On main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (CI `40842342086` SUCCESS), a clean Node24 build and real STDIO MCP client verified health, discovery of 67 tools, article preview and manual native-editor handoff. The handoff returned two ordered blocks, `LOCAL_ONLY`, `not_published` and native publication `UNAVAILABLE`; auth was `not_configured` in the clean environment. Full local Node24 suite 1,288/1,288 across 124 files passed with `TMPDIR=/private/tmp`. Native LinkedIn publishing still requires a legitimately authorized provider. Codex was selected as an initial client; user acceptance of manual publishing remains pending. M17 PR #38 head `5bb5dbfb71de7660a410c8d1db86a48959fb03c3` CI `45602081201` SUCCESS remains open and unchanged.
 
 Documentation and recovery checkpoint: [PR #39](https://github.com/salman0butt/linkedin-mcp/pull/39) is open; current feature-head CI must be checked.
 
-Exact next work: **Confirm the target MCP client and whether manual LinkedIn editor publishing is acceptable, then connect and verify the tested M09 local article workflow in that client.**
+Codex now has a separate `linkedin-article-local` entry pointing to the built `m09-initial-product-check` worktree. Launching that exact configured command with an MCP client succeeded (health, 67 tools, article handoff present); no interactive Codex session or live LinkedIn publication has been verified. The client may require a reload. The existing `linkedin-mcp` entry was preserved.
+
+Exact next work: **Confirm whether the manual LinkedIn editor step is acceptable and verify the configured `linkedin-article-local` server in a new Codex session.**
 
 ## M17.2 — Prompt HTTP 413 for unfinished oversized uploads (VERIFIED/MERGED, 2026-10-29)
 
