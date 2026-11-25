@@ -3,13 +3,13 @@
 Milestone: M17 — Production hardening
 Status: IMPLEMENTING — M17.3 HTTP batch tool-list guard local RED→GREEN; independent reviews Critical0 Important0; GitHub release pending.
 Branch: `feat/m17-http-batch-preflight`
-PR: Pending M17.3 (M17.2 PR #36 VERIFIED/MERGED).
+PR: [#38](https://github.com/salman0butt/linkedin-mcp/pull/38) OPEN; exact current-head CI pending (M17.2 PR #36 VERIFIED/MERGED).
 
 ## M17.3 Block unpaginated HTTP tools/list batches — LOCAL GREEN, release PENDING
 
 Verified main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (M17.2 docs PR #37, separate main push CI `40842342086` SUCCESS). Independent real Node24 measurement proved 32 batched `tools/list` entries in a 1,528-byte request could allocate ~8.49 MiB of intermediate SDK response before HTTP502; mixed batches also executed a trusted provider call while discarding its result. Genuine targeted RED: two new real HTTP regression tests received 502 rather than required bounded 400. A pre-dispatch request-body guard now rejects any JSON-RPC batch containing `tools/list` with HTTP400/-32600 before any other MCP operation executes. Standalone paginated `tools/list` and ordinary JSON-RPC batches remain supported. Focused HTTP + pagination **36/36 GREEN**, Node24 full **1,289/1,289** in 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Independent security and correctness reviews **Critical 0 / Important 0**; feature/main CI PENDING. No LinkedIn provider changes; M17 overall PLANNED, M13.1 permissions BLOCKED.
 
-Exact next work: **Persist reviewed M17.3 feature through connector-first GitHub PR, verify exact feature CI, guarded squash and separate successful main push CI.** Generic HTTP `writeResponse` whole-buffer materialization remains a separate future hardening candidate.
+Exact next work: **Verify exact current head CI and review threads for PR #38, then merge only if all gates pass and verify the separate main push CI.** Generic HTTP `writeResponse` whole-buffer materialization remains a separate future hardening candidate.
 
 ## M17.2 Early HTTP 413 for unfinished oversized uploads — VERIFIED/MERGED
 

@@ -4,7 +4,9 @@
 
 From verified main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (PR #37 separate main push CI `40842342086` SUCCESS), independent real Node24 HTTP instrumentation proved 32 `tools/list` batch entries cause ~8.49 MiB unpaginated intermediate allocation from 1.5KiB client input, then HTTP502. Mixed batch could execute an accompanying trusted provider call with no receipt. Two new real transport regressions RED (502 instead of expected 400); now early pre-dispatch batch rejection is GREEN, focused HTTP/pagination **36/36**, Node24 full **1,289/1,289** in 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Normal `tools/list` SDK pagination, 67 complete tools, legal batches, private STDIO stores and output bounds unchanged. Independent security and correctness reviews **Critical 0 / Important 0**; feature PR CI/merge/main push CI PENDING. M17 overall PLANNED, M13.1 provider permissions BLOCKED.
 
-Exact next work: **Persist reviewed M17.3 feature through connector-first GitHub PR, exact CI, guarded squash and distinct main push CI.** Separate generic HTTP `writeResponse` streaming bound investigation remains future work.
+PR [#38](https://github.com/salman0butt/linkedin-mcp/pull/38) is open. The initial feature head `75d566cf068c950098dd0f8003619550514a808f` CI `45597798777` was in progress before this documentation checkpoint; verify the current head's CI. Local Node24 full suite passed 1,289/1,289 with `TMPDIR=/private/tmp`; the default macOS `/var` symlink caused two path-dependent test failures in the first run.
+
+Exact next work: **Verify exact current head CI and review threads for PR #38, then merge only if all gates pass and verify the separate main push CI.** Separate generic HTTP `writeResponse` streaming bound investigation remains future work.
 
 ## M17.2 — Prompt HTTP 413 for unfinished oversized uploads (VERIFIED/MERGED, 2026-10-29)
 
