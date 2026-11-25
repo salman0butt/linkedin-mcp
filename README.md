@@ -2,14 +2,36 @@
 
 TypeScript MCP server for LinkedIn workflows with explicit provider provenance, approval boundaries and durable development state.
 
-The implementation includes foundation tools, OAuth identity, text/media publishing and comment/reaction workflows. Tool discovery and deterministic CI do not establish live LinkedIn access. Live reads/writes require a legitimately configured application, member authorization and the relevant product/scopes. See `docs/progress/project-state.json` and `docs/milestones/CURRENT.md` for current integration status.
+The implementation includes foundation tools, local article preparation, OAuth identity, text/media publishing and comment/reaction workflows. Tool discovery and deterministic CI do not establish live LinkedIn access. Live reads/writes require a legitimately configured application, member authorization and the relevant product/scopes. See `docs/progress/project-state.json` and `docs/milestones/CURRENT.md` for current integration status.
+
+## Start with an article
+
+The local article workflow needs Node 24 and pnpm 12.9.1, but no LinkedIn credentials. From the repository root:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Connect an MCP client to `node` with the absolute path to `apps/server/dist/stdio.js` as its argument. The client starts and manages the process; its stdout carries MCP protocol messages and is not a terminal interface. For example, Codex users can register it under a separate name from the repository root:
+
+```bash
+codex mcp add linkedin-article-local -- "$(command -v node)" "$(pwd)/apps/server/dist/stdio.js"
+```
+
+Use a Node 24 executable in this command, and keep the checkout and built files at the same path. Existing MCP clients may need to reload their configuration. Registration does not link a LinkedIn account.
+
+In the MCP client, ask for an article draft and use `linkedin.article.draft.validate` or `linkedin.article.draft.preview` to review a supplied structured draft. Call `linkedin.article.native.handoff` with that draft to get the title and ordered copyable blocks. Copy and format those blocks in LinkedIn's **Write article** editor and publish there yourself after review. Sources are author-supplied and unverified; the handoff does not open LinkedIn, publish, or confirm a publication. Native article publishing remains unavailable in the server.
+
+Saved article projects are optional and STDIO-only; configure `LINKEDIN_MCP_ARTICLE_STORE_PATH` to a private absolute path before launching the server if persistence is needed. Without it the stateless drafting and handoff tools still work.
 
 ## Tools
 
-Built runtimes discover 28 tools even when OAuth/publishing is unconfigured:
+Built runtimes discover 67 tools even when OAuth/publishing is unconfigured. Available tool names and capability status can be checked through MCP discovery and `linkedin.capabilities`:
 
 - `linkedin.health`, `linkedin.version`, `linkedin.capabilities` — local control plane and truthful capability metadata.
 - `linkedin.auth.start`, `linkedin.auth.status`, `linkedin.profile.me`, `linkedin.auth.logout` — authorization, connection status, identity and local credential cleanup. Product-dependent OAuth/refresh support remains access-dependent.
+- `linkedin.article.draft.validate`, `linkedin.article.draft.preview`, `linkedin.article.draft.companion`, `linkedin.article.native.handoff` — local article review and manual editor preparation; no remote publication.
 - `linkedin.post.preview.text` — local canonical text payload/hash; no authorization, receipt, provider call or file write.
 - `linkedin.post.approve.text` — requests a short-lived receipt for an independently reviewed host grant, connected member identity and granted write scope. The input intent flag alone is insufficient.
 - `linkedin.post.create.text` — consumes an eligible subject/payload-bound receipt and caller idempotency key, durably reserves the operation, and attempts one official Posts request.
