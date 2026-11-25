@@ -26,6 +26,12 @@ Required roadmap traceability has no unexplained gaps; security/reliability gate
 
 Design/plan; threat/security audit; compatibility; resilience/load; docs/package; final review/verification.
 
+### M17.3 — Reject batched tools/list before unpaginated SDK allocation (local GREEN, release PENDING)
+
+- Design `docs/superpowers/specs/2026-10-29-m17-http-tool-list-batch-preflight-design.md`; plan `docs/superpowers/plans/2026-10-29-m17-http-tool-list-batch-preflight.md`; base verified `main` `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (PR #37 main push CI `40842342086` SUCCESS).
+- Independent Node24 real loopback instrumentation: 1,528-byte 32-item `tools/list` batch generated ~8.49 MiB of intermediate SDK response before HTTP502; mixed batch triggered a provider call despite the lost 502 response. Genuine two targeted HTTP RED: 502 vs required bounded 400; early pre-dispatch rejection is GREEN, HTTP + pagination **36/36**. SDK standalone pagination, 67 tools, legal batches, 96KiB pages, 256KiB final response and STDIO-only stores remain intact.
+- Node24 full **1,289/1,289** in 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Independent security and correctness reviews **Critical 0 / Important 0**, remote exact-head PR/main CI PENDING. Generic `writeResponse` eager `arrayBuffer()` remains a future separate hardening issue. M17 overall PLANNED, M13.1 provider access BLOCKED.
+
 ### M17.2 — Prompt 413 on unfinished over-limit uploads (VERIFIED/MERGED)
 
 - Design: `docs/superpowers/specs/2026-10-28-m17-http-stream-overlimit-rejection-design.md`; implementation plan: `docs/superpowers/plans/2026-10-28-m17-http-stream-overlimit-rejection.md`; base `main` `801df4aeced49d05a558acd225eca903be36e3fb` ([PR #35](https://github.com/salman0butt/linkedin-mcp/pull/35) separate push CI `40747146525` SUCCESS).

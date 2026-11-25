@@ -1,10 +1,16 @@
 # Project Status
 
+## M17.3 — HTTP tools/list batch preflight (local RED→GREEN, release PENDING)
+
+From verified main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (PR #37 separate main push CI `40842342086` SUCCESS), independent real Node24 HTTP instrumentation proved 32 `tools/list` batch entries cause ~8.49 MiB unpaginated intermediate allocation from 1.5KiB client input, then HTTP502. Mixed batch could execute an accompanying trusted provider call with no receipt. Two new real transport regressions RED (502 instead of expected 400); now early pre-dispatch batch rejection is GREEN, focused HTTP/pagination **36/36**, Node24 full **1,289/1,289** in 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Normal `tools/list` SDK pagination, 67 complete tools, legal batches, private STDIO stores and output bounds unchanged. Independent security and correctness reviews **Critical 0 / Important 0**; feature PR CI/merge/main push CI PENDING. M17 overall PLANNED, M13.1 provider permissions BLOCKED.
+
+Exact next work: **Persist reviewed M17.3 feature through connector-first GitHub PR, exact CI, guarded squash and distinct main push CI.** Separate generic HTTP `writeResponse` streaming bound investigation remains future work.
+
 ## M17.2 — Prompt HTTP 413 for unfinished oversized uploads (VERIFIED/MERGED, 2026-10-29)
 
 M17.2 HTTP upload-stream early 413 and per-socket pipelined side-effect suppression **VERIFIED/MERGED**. Node24 genuine held-upload and pipelined second-provider RED→GREEN, legal same-socket pipelining 200/200, exact-256 success and split 256+1 rejection; local HTTP **32/32**, full **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build GREEN. Independent final security/docs review **Critical 0 / Important 0**. [PR #36](https://github.com/salman0butt/linkedin-mcp/pull/36) feature `b5a3dff45ec5e6e1b1ce2c85b6823b15fdd0509d` tree `301456da9d193790334994035b85a649dcc13e16` CI `40840793560` SUCCESS; squash main `f05fe3fb00b2d06f8d6db65d58d74c6ea71fa822` identical reviewed tree, separate exact push CI `40841063691` SUCCESS. M17 overall PLANNED; M13.1 provider access BLOCKED. Next separate investigation: `tools/list` batch/intermediate SSE response buffering before the 256 KiB outbound cap; huge 32/64 MiB fast-client EPIPE is a documented bounded-drain limitation.
 
-Exact next work: **Independently reproduce or disprove M17.3 batched `tools/list` intermediate HTTP response buffering on verified main, then design a separate behavior-preserving bounded fix if confirmed.**
+Historical M17.2 next action (completed locally by M17.3): Independently investigate batched `tools/list` HTTP buffering and scope a separate fix if reproduced.
 
 ## M17.1 — HTTP request-body limit configuration VERIFIED/MERGED (2026-10-28)
 

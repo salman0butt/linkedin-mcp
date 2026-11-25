@@ -501,24 +501,72 @@ describe('createHttpServer', () => {
     }
   });
 
-  it('bounds an entire SSE response even when a batch would produce multiple large events', async () => {
+  it('rejects tool-list batches before unpaginated SDK output is materialized', async () => {
     const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
     try {
-      const response = await fetch(`http://127.0.0.1:${server.address.port}/mcp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
-        body: JSON.stringify(['first', 'second'].map((id) => ({ jsonrpc: '2.0', id, method: 'tools/list' }))),
-      });
-      const wire = await response.text();
-      expect(response.status).toBe(502);
-      expect(Buffer.byteLength(wire, 'utf8')).toBeLessThanOrEqual(262_144);
-      expect(response.headers.get('content-type')).toContain('application/json');
-      expect(JSON.parse(wire)).toEqual({
-        jsonrpc: '2.0',
-        id: null,
-        error: { code: -32000, message: 'MCP response too large; operation outcome unknown.' },
-      });
-      expect(wire).not.toContain('linkedin.article.native.handoff');
+      for (const count of [2, 8]) {
+        const response = await fetch(`http://127.0.0.1:${server.address.port}/mcp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+          body: JSON.stringify(
+            Array.from({ length: count }, (_, id) => ({ jsonrpc: '2.0', id, method: 'tools/list' })),
+          ),
+        });
+        const wire = await response.text();
+        expect(response.status).toBe(400);
+        expect(Buffer.byteLength(wire, 'utf8')).toBeLessThanOrEqual(262_144);
+        expect(response.headers.get('content-type')).toContain('application/json');
+        expect(JSON.parse(wire)).toEqual({
+          jsonrpc: '2.0',
+          id: null,
+          error: { code: -32600, message: 'Invalid Request' },
+        });
+        expect(wire).not.toContain('linkedin.article.native.handoff');
+      }
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('never dispatches other tools in a batch containing tools/list, regardless of order', async () => {
+    const search = vi.fn(() => Promise.resolve({ posts: [] }));
+    const runtime = createLinkedInRuntime(parseConfig(), {
+      discoveryProviders: [
+        {
+          providerId: 'batch-preflight-probe',
+          providerType: 'EXTERNAL_DISCOVERY',
+          name: 'Batch preflight probe',
+          supportedKinds: ['topic'],
+          search,
+        },
+      ],
+    });
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0, runtime });
+    const list = { jsonrpc: '2.0', id: 1, method: 'tools/list' };
+    const call = {
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'tools/call',
+      params: { name: 'linkedin.posts.search', arguments: { kind: 'topic', term: 'AI' } },
+    };
+    try {
+      for (const body of [
+        [list, call],
+        [call, list],
+      ]) {
+        const response = await fetch(`http://127.0.0.1:${server.address.port}/mcp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+          body: JSON.stringify(body),
+        });
+        expect(response.status).toBe(400);
+        expect(await response.json()).toEqual({
+          jsonrpc: '2.0',
+          id: null,
+          error: { code: -32600, message: 'Invalid Request' },
+        });
+      }
+      expect(search).not.toHaveBeenCalled();
     } finally {
       await server.close();
     }

@@ -257,6 +257,25 @@ function hasOversizedJsonRpcId(body: Buffer | undefined): boolean {
   });
 }
 
+function hasBatchedToolList(body: Buffer | undefined): boolean {
+  if (body === undefined) return false;
+  try {
+    const value: unknown = JSON.parse(body.toString('utf8'));
+    return (
+      Array.isArray(value) &&
+      value.some(
+        (entry: unknown) =>
+          entry !== null &&
+          typeof entry === 'object' &&
+          !Array.isArray(entry) &&
+          (entry as Record<string, unknown>).method === 'tools/list',
+      )
+    );
+  } catch {
+    return false; // Invalid JSON retains the SDK's existing error semantics.
+  }
+}
+
 function jsonRpcError(target: ServerResponse, status: number, code: number, message: string): void {
   target.statusCode = status;
   target.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -267,7 +286,7 @@ async function toRequest(
   request: IncomingMessage,
   host: string,
   requestBodyLimitBytes: number,
-): Promise<{ webRequest: Request; oversizedJsonRpcId: boolean }> {
+): Promise<{ webRequest: Request; oversizedJsonRpcId: boolean; batchedToolList: boolean }> {
   const body = await readBody(request, requestBodyLimitBytes);
   const init: RequestInit = {
     method: request.method ?? 'GET',
@@ -278,6 +297,7 @@ async function toRequest(
   return {
     webRequest: new Request(`http://${request.headers.host ?? host}${request.url ?? '/'}`, init),
     oversizedJsonRpcId: request.method === 'POST' && hasOversizedJsonRpcId(body),
+    batchedToolList: request.method === 'POST' && hasBatchedToolList(body),
   };
 }
 
@@ -347,8 +367,19 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
       }
 
       try {
-        const { webRequest, oversizedJsonRpcId } = await toRequest(request, host, requestBodyLimitBytes);
+        const { webRequest, oversizedJsonRpcId, batchedToolList } = await toRequest(
+          request,
+          host,
+          requestBodyLimitBytes,
+        );
         if (oversizedJsonRpcId) {
+          jsonRpcError(response, 400, -32600, 'Invalid Request');
+          return;
+        }
+        if (batchedToolList) {
+          // A batched tools/list would bypass the HTTP pagination adapter and
+          // allocate a large intermediate SDK result before a 502. Reject the
+          // entire batch before any accompanying MCP operation can execute.
           jsonRpcError(response, 400, -32600, 'Invalid Request');
           return;
         }
