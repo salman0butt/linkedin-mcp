@@ -1,10 +1,16 @@
 # Project Status
 
+## M09 initial product — local article workflow verified, native publication blocked
+
+User priority is a working initial product through M09; later milestones may follow. On main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (CI `40842342086` SUCCESS), a clean Node24 build and real STDIO MCP client verified health, discovery of 67 tools, article preview and manual native-editor handoff. The handoff returned two ordered blocks, `LOCAL_ONLY`, `not_published` and native publication `UNAVAILABLE`; auth was `not_configured` in the clean environment. Full local Node24 suite 1,288/1,288 across 124 files passed with `TMPDIR=/private/tmp`. Native LinkedIn publishing still requires a legitimately authorized provider. User choice of MCP client and acceptance of manual publishing remain pending. M17 PR #38 head `5bb5dbfb71de7660a410c8d1db86a48959fb03c3` CI `45602081201` SUCCESS remains open and unchanged.
+
+Exact next work: **Confirm the target MCP client and whether manual LinkedIn editor publishing is acceptable, then connect and verify the tested M09 local article workflow in that client.**
+
 ## M17.2 — Prompt HTTP 413 for unfinished oversized uploads (VERIFIED/MERGED, 2026-10-29)
 
 M17.2 HTTP upload-stream early 413 and per-socket pipelined side-effect suppression **VERIFIED/MERGED**. Node24 genuine held-upload and pipelined second-provider RED→GREEN, legal same-socket pipelining 200/200, exact-256 success and split 256+1 rejection; local HTTP **32/32**, full **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build GREEN. Independent final security/docs review **Critical 0 / Important 0**. [PR #36](https://github.com/salman0butt/linkedin-mcp/pull/36) feature `b5a3dff45ec5e6e1b1ce2c85b6823b15fdd0509d` tree `301456da9d193790334994035b85a649dcc13e16` CI `40840793560` SUCCESS; squash main `f05fe3fb00b2d06f8d6db65d58d74c6ea71fa822` identical reviewed tree, separate exact push CI `40841063691` SUCCESS. M17 overall PLANNED; M13.1 provider access BLOCKED. Next separate investigation: `tools/list` batch/intermediate SSE response buffering before the 256 KiB outbound cap; huge 32/64 MiB fast-client EPIPE is a documented bounded-drain limitation.
 
-Exact next work: **Independently reproduce or disprove M17.3 batched `tools/list` intermediate HTTP response buffering on verified main, then design a separate behavior-preserving bounded fix if confirmed.**
+Historical next work: M17.3 was addressed in open PR #38; M09 initial-product work above is now the user-selected priority.
 
 ## M17.1 — HTTP request-body limit configuration VERIFIED/MERGED (2026-10-28)
 
