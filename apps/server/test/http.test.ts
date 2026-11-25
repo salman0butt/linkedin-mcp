@@ -501,6 +501,32 @@ describe('createHttpServer', () => {
     }
   });
 
+  it('returns an outcome-unknown error for an oversized ordinary batch', async () => {
+    const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
+    try {
+      const response = await fetch(`http://127.0.0.1:${server.address.port}/mcp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+        body: JSON.stringify(
+          Array.from({ length: 500 }, (_, id) => ({
+            jsonrpc: '2.0',
+            id,
+            method: 'tools/call',
+            params: { name: 'linkedin.health', arguments: {} },
+          })),
+        ),
+      });
+      expect(response.status).toBe(502);
+      expect(await response.json()).toEqual({
+        jsonrpc: '2.0',
+        id: null,
+        error: { code: -32000, message: 'MCP response too large; operation outcome unknown.' },
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
   it('rejects tool-list batches before unpaginated SDK output is materialized', async () => {
     const server = await createHttpServer({ host: '127.0.0.1', port: 0 });
     try {

@@ -7,6 +7,7 @@ import { MAX_HTTP_REQUEST_BODY_LIMIT_BYTES, parseConfig } from './config.js';
 import { createLinkedInMcpServer } from './create-server.js';
 import { createLinkedInRuntime, type LinkedInRuntime } from './runtime.js';
 import { InvalidToolListPage, paginateToolInventory } from './transport/tool-list-pagination.js';
+import { readResponseBody } from './transport/response-body.js';
 
 export interface HttpServerOptions {
   host?: string;
@@ -26,7 +27,6 @@ export interface RunningHttpServer {
 const LOOPBACK_BIND_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
 const MAX_JSON_RPC_ID_BYTES = 128;
-const MAX_HTTP_RESPONSE_BYTES = 256 * 1024;
 
 interface ToolListRequest {
   id: string | number;
@@ -302,8 +302,8 @@ async function toRequest(
 }
 
 async function writeResponse(response: Response, target: ServerResponse): Promise<void> {
-  const body = Buffer.from(await response.arrayBuffer());
-  if (body.byteLength > MAX_HTTP_RESPONSE_BYTES) {
+  const body = await readResponseBody(response);
+  if (body === undefined) {
     // A handler may have performed a write; its outcome cannot safely be represented as a retryable failure.
     jsonRpcError(target, 502, -32000, 'MCP response too large; operation outcome unknown.');
     return;

@@ -26,6 +26,12 @@ Required roadmap traceability has no unexplained gaps; security/reliability gate
 
 Design/plan; threat/security audit; compatibility; resilience/load; docs/package; final review/verification.
 
+## M17.4 — Bound final HTTP response accumulation (local GREEN, PR CI PENDING)
+
+PR #38 prior head `c61733c367c9714796c56761d7f6f7f6b5f4e7f8` passed CI `45597945539`; the M17.4 changes are not yet covered by that CI. A real HTTP batch of 2,000 health calls produced 1,306,890 response bytes before the 256 KiB check. The final response writer now retains at most 256 KiB of body data and drains overflow before returning the existing 502 outcome-unknown error. Temporary buffer growth may hold less than 512 KiB plus the current chunk. SDK queues and standalone tool-list `response.text()` are separate, unresolved allocation paths. Genuine RED→GREEN for overflow and for avoiding full `arrayBuffer()` reads; Node24 full 1,295/1,295 across 125 files, format/lint/typecheck/build and framework check passed locally. Exact current PR head CI remains pending. M17 and its dependencies remain incomplete.
+
+Exact next work: **Verify exact current PR #38 head CI and independently resolve the remaining SDK and pagination response-buffering risk before considering the milestone merge gates.**
+
 ### M17.3 — Reject batched tools/list before unpaginated SDK allocation (local GREEN, release PENDING)
 
 - Design `docs/superpowers/specs/2026-10-29-m17-http-tool-list-batch-preflight-design.md`; plan `docs/superpowers/plans/2026-10-29-m17-http-tool-list-batch-preflight.md`; base verified `main` `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (PR #37 main push CI `40842342086` SUCCESS).

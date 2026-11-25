@@ -1,12 +1,18 @@
 # Project Status
 
+## M17.4 — Bound final HTTP response accumulation (local GREEN, PR CI PENDING)
+
+PR #38 prior head `c61733c367c9714796c56761d7f6f7f6b5f4e7f8` passed CI `45597945539`; the M17.4 changes are not yet covered by that CI. A real HTTP batch of 2,000 health calls produced 1,306,890 response bytes before the 256 KiB check. The final response writer now retains at most 256 KiB of body data and drains overflow before returning the existing 502 outcome-unknown error. Temporary buffer growth may hold less than 512 KiB plus the current chunk. SDK queues and standalone tool-list `response.text()` are separate, unresolved allocation paths. Genuine RED→GREEN for overflow and for avoiding full `arrayBuffer()` reads; Node24 full 1,295/1,295 across 125 files, format/lint/typecheck/build and framework check passed locally. Exact current PR head CI remains pending. M17 and its dependencies remain incomplete.
+
+Exact next work: **Verify exact current PR #38 head CI and independently resolve the remaining SDK and pagination response-buffering risk before considering the milestone merge gates.**
+
 ## M17.3 — HTTP tools/list batch preflight (local RED→GREEN, release PENDING)
 
 From verified main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (PR #37 separate main push CI `40842342086` SUCCESS), independent real Node24 HTTP instrumentation proved 32 `tools/list` batch entries cause ~8.49 MiB unpaginated intermediate allocation from 1.5KiB client input, then HTTP502. Mixed batch could execute an accompanying trusted provider call with no receipt. Two new real transport regressions RED (502 instead of expected 400); now early pre-dispatch batch rejection is GREEN, focused HTTP/pagination **36/36**, Node24 full **1,289/1,289** in 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Normal `tools/list` SDK pagination, 67 complete tools, legal batches, private STDIO stores and output bounds unchanged. Independent security and correctness reviews **Critical 0 / Important 0**; feature PR CI/merge/main push CI PENDING. M17 overall PLANNED, M13.1 provider permissions BLOCKED.
 
 PR [#38](https://github.com/salman0butt/linkedin-mcp/pull/38) is open. The initial feature head `75d566cf068c950098dd0f8003619550514a808f` CI `45597798777` was in progress before this documentation checkpoint; verify the current head's CI. Local Node24 full suite passed 1,289/1,289 with `TMPDIR=/private/tmp`; the default macOS `/var` symlink caused two path-dependent test failures in the first run.
 
-Exact next work: **Verify exact current head CI and review threads for PR #38, then merge only if all gates pass and verify the separate main push CI.** Separate generic HTTP `writeResponse` streaming bound investigation remains future work.
+Historical M17.3 next action: verify exact-head CI; PR #38 head `c61733c` passed CI `45597945539`. M17.4 above supersedes that action.
 
 ## M17.2 — Prompt HTTP 413 for unfinished oversized uploads (VERIFIED/MERGED, 2026-10-29)
 
