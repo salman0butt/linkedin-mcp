@@ -1,15 +1,27 @@
 # Current Milestone
 
 Milestone: M17 — Production hardening
-Status: IMPLEMENTING — M17.2 scoped fix VERIFIED/MERGED; M17 overall PLANNED, next M17.3 risk investigation.
-Branch: `main`
-PR: #36 — MERGED; no active M17.3 PR.
+Status: IMPLEMENTING — M17.3 exact-head CI passed; M17.4 final response writer bounded locally, current feature CI pending.
+Branch: `feat/m17-http-batch-preflight`
+PR: [#38](https://github.com/salman0butt/linkedin-mcp/pull/38) OPEN; prior head `c61733c` CI `45597945539` SUCCESS, M17.4 exact current-head CI pending.
+
+## M17.4 — Bound final HTTP response accumulation (local GREEN, PR CI PENDING)
+
+PR #38 prior head `c61733c367c9714796c56761d7f6f7f6b5f4e7f8` passed CI `45597945539`; the M17.4 changes are not yet covered by that CI. A real HTTP batch of 2,000 health calls produced 1,306,890 response bytes before the 256 KiB check. The final response writer now retains at most 256 KiB of body data and drains overflow before returning the existing 502 outcome-unknown error. Temporary buffer growth may hold less than 512 KiB plus the current chunk. SDK queues and standalone tool-list `response.text()` are separate, unresolved allocation paths. Genuine RED→GREEN for overflow and for avoiding full `arrayBuffer()` reads; Node24 full 1,295/1,295 across 125 files, format/lint/typecheck/build and framework check passed locally. Exact current PR head CI remains pending. M17 and its dependencies remain incomplete.
+
+Exact next work: **Verify exact current PR #38 head CI and independently resolve the remaining SDK and pagination response-buffering risk before considering the milestone merge gates.**
+
+## M17.3 Block unpaginated HTTP tools/list batches — LOCAL GREEN, release PENDING
+
+Verified main `73c4db0c4d103361d8e3576d1fdd80454cb6286e` (M17.2 docs PR #37, separate main push CI `40842342086` SUCCESS). Independent real Node24 measurement proved 32 batched `tools/list` entries in a 1,528-byte request could allocate ~8.49 MiB of intermediate SDK response before HTTP502; mixed batches also executed a trusted provider call while discarding its result. Genuine targeted RED: two new real HTTP regression tests received 502 rather than required bounded 400. A pre-dispatch request-body guard now rejects any JSON-RPC batch containing `tools/list` with HTTP400/-32600 before any other MCP operation executes. Standalone paginated `tools/list` and ordinary JSON-RPC batches remain supported. Focused HTTP + pagination **36/36 GREEN**, Node24 full **1,289/1,289** in 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build and diff check GREEN. Independent security and correctness reviews **Critical 0 / Important 0**; feature/main CI PENDING. No LinkedIn provider changes; M17 overall PLANNED, M13.1 permissions BLOCKED.
+
+Historical M17.3 next action: verify exact-head CI; PR #38 head `c61733c` passed CI `45597945539`. M17.4 above supersedes that action.
 
 ## M17.2 Early HTTP 413 for unfinished oversized uploads — VERIFIED/MERGED
 
 M17.2 HTTP upload-stream early 413 and per-socket pipelined side-effect suppression **VERIFIED/MERGED**. Node24 genuine held-upload and pipelined second-provider RED→GREEN, legal same-socket pipelining 200/200, exact-256 success and split 256+1 rejection; local HTTP **32/32**, full **1,288/1,288** across 124 suites, framework **14/14**, compiled STDIO/HTTP, format/lint/typecheck/build GREEN. Independent final security/docs review **Critical 0 / Important 0**. [PR #36](https://github.com/salman0butt/linkedin-mcp/pull/36) feature `b5a3dff45ec5e6e1b1ce2c85b6823b15fdd0509d` tree `301456da9d193790334994035b85a649dcc13e16` CI `40840793560` SUCCESS; squash main `f05fe3fb00b2d06f8d6db65d58d74c6ea71fa822` identical reviewed tree, separate exact push CI `40841063691` SUCCESS. M17 overall PLANNED; M13.1 provider access BLOCKED. Next separate investigation: `tools/list` batch/intermediate SSE response buffering before the 256 KiB outbound cap; huge 32/64 MiB fast-client EPIPE is a documented bounded-drain limitation.
 
-Exact next work: **Independently reproduce or disprove M17.3 HTTP batched `tools/list` intermediate-response buffering risk on verified main, then scope a separate RED→GREEN fix if confirmed.**
+Historical M17.2 next action (completed locally by M17.3): Independently investigate batched `tools/list` intermediate response buffering and scope a separate RED→GREEN fix if confirmed.
 
 ## M17.1 HTTP request body limit validation — VERIFIED/MERGED (M17 overall PLANNED)
 

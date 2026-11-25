@@ -7,6 +7,7 @@ import { MAX_HTTP_REQUEST_BODY_LIMIT_BYTES, parseConfig } from './config.js';
 import { createLinkedInMcpServer } from './create-server.js';
 import { createLinkedInRuntime, type LinkedInRuntime } from './runtime.js';
 import { InvalidToolListPage, paginateToolInventory } from './transport/tool-list-pagination.js';
+import { readResponseBody } from './transport/response-body.js';
 
 export interface HttpServerOptions {
   host?: string;
@@ -26,7 +27,6 @@ export interface RunningHttpServer {
 const LOOPBACK_BIND_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
 const LOOPBACK_HOSTNAMES = new Set(['127.0.0.1', 'localhost', '[::1]']);
 const MAX_JSON_RPC_ID_BYTES = 128;
-const MAX_HTTP_RESPONSE_BYTES = 256 * 1024;
 
 interface ToolListRequest {
   id: string | number;
@@ -257,6 +257,25 @@ function hasOversizedJsonRpcId(body: Buffer | undefined): boolean {
   });
 }
 
+function hasBatchedToolList(body: Buffer | undefined): boolean {
+  if (body === undefined) return false;
+  try {
+    const value: unknown = JSON.parse(body.toString('utf8'));
+    return (
+      Array.isArray(value) &&
+      value.some(
+        (entry: unknown) =>
+          entry !== null &&
+          typeof entry === 'object' &&
+          !Array.isArray(entry) &&
+          (entry as Record<string, unknown>).method === 'tools/list',
+      )
+    );
+  } catch {
+    return false; // Invalid JSON retains the SDK's existing error semantics.
+  }
+}
+
 function jsonRpcError(target: ServerResponse, status: number, code: number, message: string): void {
   target.statusCode = status;
   target.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -267,7 +286,7 @@ async function toRequest(
   request: IncomingMessage,
   host: string,
   requestBodyLimitBytes: number,
-): Promise<{ webRequest: Request; oversizedJsonRpcId: boolean }> {
+): Promise<{ webRequest: Request; oversizedJsonRpcId: boolean; batchedToolList: boolean }> {
   const body = await readBody(request, requestBodyLimitBytes);
   const init: RequestInit = {
     method: request.method ?? 'GET',
@@ -278,12 +297,13 @@ async function toRequest(
   return {
     webRequest: new Request(`http://${request.headers.host ?? host}${request.url ?? '/'}`, init),
     oversizedJsonRpcId: request.method === 'POST' && hasOversizedJsonRpcId(body),
+    batchedToolList: request.method === 'POST' && hasBatchedToolList(body),
   };
 }
 
 async function writeResponse(response: Response, target: ServerResponse): Promise<void> {
-  const body = Buffer.from(await response.arrayBuffer());
-  if (body.byteLength > MAX_HTTP_RESPONSE_BYTES) {
+  const body = await readResponseBody(response);
+  if (body === undefined) {
     // A handler may have performed a write; its outcome cannot safely be represented as a retryable failure.
     jsonRpcError(target, 502, -32000, 'MCP response too large; operation outcome unknown.');
     return;
@@ -347,8 +367,19 @@ export async function createHttpServer(options: HttpServerOptions = {}): Promise
       }
 
       try {
-        const { webRequest, oversizedJsonRpcId } = await toRequest(request, host, requestBodyLimitBytes);
+        const { webRequest, oversizedJsonRpcId, batchedToolList } = await toRequest(
+          request,
+          host,
+          requestBodyLimitBytes,
+        );
         if (oversizedJsonRpcId) {
+          jsonRpcError(response, 400, -32600, 'Invalid Request');
+          return;
+        }
+        if (batchedToolList) {
+          // A batched tools/list would bypass the HTTP pagination adapter and
+          // allocate a large intermediate SDK result before a 502. Reject the
+          // entire batch before any accompanying MCP operation can execute.
           jsonRpcError(response, 400, -32600, 'Invalid Request');
           return;
         }
